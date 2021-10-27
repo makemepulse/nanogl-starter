@@ -15,6 +15,8 @@ function shouldSupportAlpha(
 
 
 function writeRgbaColorObject(target: BindingTarget, value: Color): void {
+  console.log("writeRgbaColorObject", target.key, value );
+  
   const obj = value.toRgbaObject();
   target.writeProperty('0', obj.r/255.0);
   target.writeProperty('1', obj.g/255.0);
@@ -23,6 +25,8 @@ function writeRgbaColorObject(target: BindingTarget, value: Color): void {
 }
 
 function writeRgbColorObject(target: BindingTarget, value: Color): void {
+  console.log("writeRgbColorObject", target.key);
+  
   const obj = value.toRgbaObject();
   target.writeProperty('0', obj.r/255.0);
   target.writeProperty('1', obj.g/255.0);
@@ -41,11 +45,17 @@ function createColorObjectWriter(
 }
 
 function colorFromVec(v: unknown): Color {
+  
   if(!isVecColor(v)){
-    return Color.black();
+    if( Color.isColorObject(v) ){
+      return Color.fromObject(v)
+    }
+    return Color.black()
+    // return new Color([0, 1, 0], 'rgb');
   }
 
   const comps:ColorComponents3 | ColorComponents4 = v.length===4 ? [v[0]*255.0, v[1]*255.0, v[2]*255.0, v[3]] : [v[0]*255.0, v[1]*255.0, v[2]*255.0];
+  
   return new Color(comps, 'rgb');
 }
 

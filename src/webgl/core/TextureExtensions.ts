@@ -39,8 +39,6 @@ const ASTC_EXTS = [
 
 export default class TextureExtensions {
 
-  readonly gl: GLContext;
-
   readonly dxt : WEBGL_compressed_texture_s3tc
   readonly pvr : WEBGL_compressed_texture_pvrtc
   readonly etc : WEBGL_compressed_texture_etc1
@@ -48,12 +46,11 @@ export default class TextureExtensions {
 
 
 
-  constructor( gl : GLContext ){
-    this.gl = gl;
+  constructor( readonly gl : GLContext ){
 
-    this.dxt = this.pickExtension( DXT_EXTS  );
-    this.pvr = this.pickExtension( PVR_EXTS  );
-    this.etc = this.pickExtension( ETC1_EXTS  );
+    this.dxt  = this.pickExtension( DXT_EXTS  );
+    this.pvr  = this.pickExtension( PVR_EXTS  );
+    this.etc  = this.pickExtension( ETC1_EXTS  );
     this.astc = this.pickExtension( ASTC_EXTS );
   }
 

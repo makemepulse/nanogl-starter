@@ -102,7 +102,9 @@ export function Gui(targetOrOpts?:any, name?:any): PropertyDecoratorFunction|voi
 
 
 export function GuiBtn(target:any, name:any, descriptor:any){
-  gui.btn( name, descriptor.value )
+  gui.btn( name, ()=>{
+    descriptor.value.apply(target)
+  } )
 }
 
 export function GuiFolder(name:string) {

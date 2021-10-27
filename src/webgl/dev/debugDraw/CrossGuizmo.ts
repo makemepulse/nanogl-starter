@@ -65,10 +65,10 @@ class Guizmo extends Node {
     this.prg = new Program(gl, VERT, FRAG);
 
     this.cfg = renderer.glstate.config()
-    this.cfg.enableCullface(false)
-    this.cfg.enableDepthTest()
-    this.cfg.depthMask(true)
-    this.cfg.lineWidth(1);
+      .enableCullface(false)
+      .enableDepthTest()
+      .depthMask(true)
+      .lineWidth(1);
 
   }
 

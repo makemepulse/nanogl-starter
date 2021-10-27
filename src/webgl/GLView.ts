@@ -65,7 +65,7 @@ class GLView {
     const opts: WebGLContextAttributes =
     {
       depth: depth,
-      antialias: false,
+      antialias: true,
       stencil: false,
       alpha: alpha,
       premultipliedAlpha: false,

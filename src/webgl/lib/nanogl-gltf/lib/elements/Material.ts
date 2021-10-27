@@ -21,7 +21,7 @@ import Flag from 'nanogl-pbr/Flag';
 import { isAllZeros } from '../lib/Utils';
 import UnlitPass from 'nanogl-pbr/UnlitPass';
 import ShaderVersion from 'nanogl-pbr/ShaderVersion';
-import { StandardPass } from 'nanogl-pbr/StandardPass';
+import { StandardMetalness, StandardPass } from 'nanogl-pbr/StandardPass';
 import { MetalnessSurface } from 'nanogl-pbr/PbrSurface';
 
 
@@ -39,7 +39,6 @@ export interface IPbrInputsData {
 
 export interface IMaterial extends IElement {
   readonly gltftype: GltfTypes.MATERIAL
-  name : string|undefined
   createMaterialForPrimitive( gl : GLContext, node : Node, primitive : Primitive ) : BaseMaterial
 }
 
@@ -49,10 +48,9 @@ export type GltfMaterialPass = MaterialPass & {
 }
 
 
-export default class Material implements IMaterial {
+export abstract class GltfBaseMaterial<TPass extends GltfMaterialPass> implements IMaterial {
 
   readonly gltftype = GltfTypes.MATERIAL;
-  
   name        : undefined | string;
   extras      : any   ;
 
@@ -69,9 +67,9 @@ export default class Material implements IMaterial {
 
 
   
-  protected _materialPass   : GltfMaterialPass
+  protected _materialPass   : TPass
 
-  get materialPass() : GltfMaterialPass {
+  get materialPass() : TPass {
     return this._materialPass;
   }
 
@@ -161,7 +159,12 @@ export default class Material implements IMaterial {
     }
   }
 
+  abstract setupMaterials(): void;
 
+
+}
+
+export default class Material extends GltfBaseMaterial<StandardPass> {
 //
   setupMaterials(): void {
     const pass = new StandardPass(this.name);

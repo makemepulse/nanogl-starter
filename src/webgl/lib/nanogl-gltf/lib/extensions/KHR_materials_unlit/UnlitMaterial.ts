@@ -1,10 +1,10 @@
-import Material from "../../elements/Material"
+import Material, { GltfBaseMaterial } from "../../elements/Material"
 import UnlitPass from 'nanogl-pbr/UnlitPass'
 import { isAllOnes } from "../../lib/Utils";
 import PbrMetallicRoughness from "../../elements/PbrMetallicRoughness";
 import { Uniform } from "nanogl-pbr/Input";
 
-export default class UnlitMaterial extends Material {
+export default class UnlitMaterial extends GltfBaseMaterial<UnlitPass> {
 
   setupMaterials(): void {
     const pass = new UnlitPass(this.name);

@@ -9,6 +9,7 @@ import { IGLContextProvider } from "./IGLContextProvider";
 import { GLContext } from "nanogl/types";
 import TexturesLoader from "./TextureLoader";
 import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
+import Capabilities from "@webgl/core/Capabilities";
 
 
 export enum TextureWrap {
@@ -103,7 +104,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
 
   async doLoad(): Promise<T> {
-    this.texture = this.createTexture()
+    if( this.texture === null ){
+      this.texture = this.createTexture()
+    }
     await this.loadLevelAsync( 0 );
     this.setupOptions()
     return this.texture
@@ -126,9 +129,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       gl.generateMipmap(this.texture._target)
     }
 
-    if( this.options.aniso > 0 ){
-      const loader = BaseTextureResource.getTextureLoader( gl );
-      gl.texParameterf( gl.TEXTURE_2D, loader.extAniso.TEXTURE_MAX_ANISOTROPY_EXT, this.options.aniso );
+    const aniso = Math.min( Capabilities(gl).maxAnisotropy , this.options.aniso )
+    if( aniso > 0 ){
+      gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, this.options.aniso );
     }
 
     switch( this.options.wrap ){
@@ -140,13 +143,12 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
   async loadLevelAsync(level: number): Promise<T> {
+    const gl = this.glp.gl 
+    const loader = BaseTextureResource.getTextureLoader( gl );
 
-    const loader = BaseTextureResource.getTextureLoader( this.glp.gl );
-
-    const extensions = loader.extTextures;
     // find which source is available based on codecs and extensions
     // TODO: test if null
-    const cres = await TextureCodecs.getCodecForRequest(this._request, extensions);
+    const cres = await TextureCodecs.getCodecForRequest(this._request, gl );
     if( cres === null ){
       throw `can't find codecs for request ${JSON.stringify(this._request) }`
     }
@@ -156,7 +158,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     await this.loadSourceLod(source.lods[level]);
     // run codec to create or setup TextureData
     try {
-      await codec.decodeLod(source, level, extensions);
+      await codec.decodeLod(source, level, gl);
     } catch(e){
       console.error( `can't decode `, source );
       
@@ -214,11 +216,11 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
 
   async loadLevelAsync(): Promise<TextureCube> {
 
-    const loader = BaseTextureResource.getTextureLoader( this.glp.gl );
-    const extensions = loader.extTextures;
+    const gl = this.glp.gl 
+    const loader = BaseTextureResource.getTextureLoader( gl );
     // find which source is available based on codecs and extensions
     // TODO: test if null
-    const [codec, source] = await TextureCodecs.getCodecForRequest(this._request, extensions);
+    const [codec, source] = await TextureCodecs.getCodecForRequest(this._request, gl);
 
     for (let i = 0; i < source.lods.length; i++) {
       // load files for a given request source based on lod
@@ -226,7 +228,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
       // console.log(source.datas);
     }
     // run codec to create or setup TextureData
-    await codec.decodeCube(source, extensions);
+    await codec.decodeCube(source, gl);
     // use texture loader to upload data to texture
     loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
 

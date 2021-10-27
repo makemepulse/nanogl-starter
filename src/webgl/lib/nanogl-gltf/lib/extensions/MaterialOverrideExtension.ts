@@ -42,12 +42,10 @@ class MaterialOverride implements IExtensionInstance {
   readonly priority: number = 10;
   
   loader: GltfLoader;
-  private materials: Record<string, BaseMaterial>;
 
 
-  constructor( gltfLoader : GltfLoader, materials: Record<string, BaseMaterial>) {
+  constructor( gltfLoader : GltfLoader, readonly ext:MaterialOverrideExtension ) {
     this.loader = gltfLoader;
-    this.materials = materials;
   }
 
 
@@ -66,7 +64,7 @@ class MaterialOverride implements IExtensionInstance {
 
 
   createMaterial(data: Gltf2.IMaterial): Promise<IMaterial> {
-    const material = this.materials[data.name];
+    const material = this.ext._resolveMaterial( data );
     if( material !== undefined ){
       const el = new OverrideMaterial( material );
       return Promise.resolve(el);
@@ -77,18 +75,29 @@ class MaterialOverride implements IExtensionInstance {
 
 }
 
+type OverrideFactory = ( data: Gltf2.IMaterial )=>BaseMaterial;
 
 export default class MaterialOverrideExtension implements IExtensionFactory {
-
+  
+  
   readonly name: string = 'material_override';
+  
+  readonly overrides: Map<string, OverrideFactory> = new Map();
 
-  overrides: Record<string, BaseMaterial>;
+  _resolveMaterial(data: Gltf2.IMaterial):BaseMaterial {
+    return this.overrides.get(data.name)?.(data)
+  }
+
+  add( name:string, m: OverrideFactory ): void {
+    if( this.overrides.has( name )) throw `override "${name}" already exist`
+    this.overrides.set( name, m )
+  }
 
   createInstance(gltfLoader: GltfLoader): IExtensionInstance {
     if( this.overrides === undefined ){
       throw new Error("MaterialOverrideExtension overrides not set");
     }
-    return new MaterialOverride(gltfLoader, this.overrides);
+    return new MaterialOverride(gltfLoader, this);
   }
 
 

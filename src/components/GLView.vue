@@ -32,14 +32,13 @@ export default class GLView extends Vue {
 
   destroyed():void{
     this.isdestroyed = true
-    // this.viewer.stop()
-    console.log('.stop()')
+    this.viewer.stop()
   }
 
 
   onLoaded(): void {
     if( this.isdestroyed ) return
-    // this.viewer.start()
+    this.viewer.start()
     this.loaded = true
   }
 

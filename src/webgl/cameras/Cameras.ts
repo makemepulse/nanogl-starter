@@ -14,7 +14,15 @@ import CameraManager from './CameraManager';
 
 export default class Cameras {
 
-  private _current       : CameraManager<PerspectiveLens>
+  private _current: CameraManager<PerspectiveLens>;
+
+  public get current(): CameraManager<PerspectiveLens> {
+    return this._current;
+  }
+  
+  public set current(value: CameraManager<PerspectiveLens>) {
+    this._current = value;
+  }
 
   mainManager    : CameraManager<PerspectiveLens>
   devManager     : CameraManager<PerspectiveLens>
@@ -29,15 +37,16 @@ export default class Cameras {
     return this.devManager.camera
   }
 
-  useDevCam():void {
-    this._current = this.devManager
-  }
-
   useMainCam():void {
     this._current = this.mainManager
   }
 
-
+  useDevCam():void {
+    this._current = this.devManager
+  }
+  
+  
+  
   constructor( readonly renderer:Renderer ){
 
 
@@ -45,6 +54,7 @@ export default class Cameras {
     // ======
     this.mainManager   = new CameraManager(this.makeDefaultCamera())
     this.devManager    = new CameraManager(this.makeDefaultCamera())
+    this._current = this.devManager
 
     // CONTROLERS
     // ======
@@ -53,14 +63,16 @@ export default class Cameras {
 
     // GRAPH
     // ======
-    renderer.root.add( this.mainCamera )
-    renderer.root.add( this.devCamera  )
+    renderer.scene.root.add( this.mainCamera )
+    renderer.scene.root.add( this.devCamera  )
 
     
     const g = gui.folder( 'cameras' )
-    g.btn('mainCam', ()=>{this.useDevCam()})
-    g.btn('devCam', ()=>{this.useMainCam()})
-    g.btn('logDebugCam',  ()=>{ console.log( this.devCamera._matrix ) })
+    g.btns({
+      main:()=>{this.useMainCam()},
+      dev :()=>{this.useDevCam()},
+      log:()=>{console.log( this.camera._matrix )},
+    })
 
     g.add(this.mainCamera.lens, 'near', .1, 50)
     g.add(this.mainCamera.lens, 'far', 10, 200)

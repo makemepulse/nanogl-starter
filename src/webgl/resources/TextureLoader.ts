@@ -5,7 +5,6 @@ import Profiler from '@webgl/dev/TexturesProfiler';
 
 
 import { GLContext } from "nanogl/types";
-import TextureExtensions from "./TextureExtensions";
 import { TextureType, Texture } from "nanogl/texture-base";
 import TextureData, { CompressedTextureData, cubeFaceForSurface, FaceIndex, UncompressedTextureData, TextureDataType, RawTextureData } from "./TextureData";
 import { BaseTextureResource } from "./TextureResource";
@@ -16,17 +15,8 @@ import TextureCube from "nanogl/texture-cube";
 
 export default class TexturesLoader {
 
-  readonly extAniso: EXT_texture_filter_anisotropic
-  readonly extTextures: TextureExtensions;
 
   constructor(readonly gl: GLContext) {
-
-    this.extTextures = new TextureExtensions(gl);
-
-    this.extAniso =
-      gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ||
-      gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
-      gl.getExtension("EXT_texture_filter_anisotropic");
 
   }
 

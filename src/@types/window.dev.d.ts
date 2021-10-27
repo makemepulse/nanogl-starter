@@ -3,7 +3,7 @@
 
 declare global {
   interface Dev {
-    textureProfile: ()=>void 
+    textureUsage: ()=>void 
   }
   interface Window { 
     dev:Partial<Dev>

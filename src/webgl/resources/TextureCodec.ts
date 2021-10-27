@@ -1,15 +1,15 @@
 
-import TextureExtensions from "./TextureExtensions";
+import { GLContext } from "nanogl/types";
 import { ITextureRequest, ITextureRequestSource } from "./TextureRequest";
 
 
 export interface ITextureCodec {
 
   name : string;
-  isSupported( extensions : TextureExtensions ) : Promise<boolean>;
+  isSupported( gl:GLContext ) : Promise<boolean>;
   // createTextureData( textureResource : BaseTextureResource, source : ITextureRequestSource ) : TextureData;
-  decodeLod( source : ITextureRequestSource, lod:number, extensions: TextureExtensions ) : Promise<void>;
-  decodeCube(source : ITextureRequestSource, extensions: TextureExtensions ): Promise<void>;
+  decodeLod( source : ITextureRequestSource, lod:number, gl:GLContext ) : Promise<void>;
+  decodeCube(source : ITextureRequestSource, gl:GLContext ): Promise<void>;
 
 }
 
@@ -29,12 +29,12 @@ export class TextureCodecs {
   }
 
   
-  static async getCodecForRequest( request : ITextureRequest, extensions: TextureExtensions ) : Promise<[ITextureCodec,ITextureRequestSource]  | null> {
+  static async getCodecForRequest( request : ITextureRequest, gl:GLContext ) : Promise<[ITextureCodec,ITextureRequestSource]  | null> {
     const sources = request.sources;
     for (const source of sources ) {
       const codec = this._codecs[source.codec];
       if( codec !== undefined  ) {
-        const isSupported = await codec.isSupported( extensions )
+        const isSupported = await codec.isSupported( gl )
         if( isSupported ){
           return [codec, source];
         }

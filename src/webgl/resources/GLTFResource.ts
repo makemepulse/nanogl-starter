@@ -4,14 +4,16 @@ import WebGltfIO from "@webgl/lib/nanogl-gltf/lib/io/web";
 import { GltfLoaderOptions } from "@webgl/lib/nanogl-gltf/lib/io/GltfLoaderOptions";
 import { IGLContextProvider } from "./IGLContextProvider";
 
-export default class GLTFResource extends Resource<Gltf>{
+export default class GltfResource extends Resource<Gltf>{
   
-  
-  constructor(private request: string, private glp: IGLContextProvider, private opts : GltfLoaderOptions = {}) {
-    super()
-    this.request = request
-    this.opts = opts
+  get gltf(): Gltf {
+    return this.value
   }
+  
+  constructor(protected request: string, protected glp: IGLContextProvider, protected opts : GltfLoaderOptions = {}) {
+    super()
+  }
+  
   
   async doLoad(): Promise<Gltf> {
     const gltf = await WebGltfIO.loadGltf(this.request, this.opts)
@@ -19,9 +21,11 @@ export default class GLTFResource extends Resource<Gltf>{
     return gltf
   }
 
-
   doUnload(): void {
     0
   }
+
+  
+
 
 }

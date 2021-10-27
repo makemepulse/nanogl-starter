@@ -2,10 +2,6 @@ import './features'
 import GLView from './GLView';
 import Renderer from './Renderer';
 
-import TestGui from './testGui';
-
-
-new TestGui()
 
 /**
   @opts :
@@ -34,8 +30,8 @@ export default class GLApp {
     return this._instance
   }
 
-  glview: GLView
-  renderer: Renderer
+  readonly glview: GLView
+  readonly renderer: Renderer
 
   private constructor() {
 
@@ -44,17 +40,21 @@ export default class GLApp {
     this.glview = new GLView(canvas);
     this.renderer  = new Renderer( this.glview );
     
+  }
+
+  
+  load(): Promise<void> {
+    return this.renderer.load();
+  }
+
+  start():void {
     this.glview.start()
   }
 
-  /**
-    Start loading assets
-    @return a (when.js) promise 
-  **/
-  load(): Promise<void> {
-    return Promise.resolve()
-    // await this.scene.load();
+  stop():void {
+    this.glview.stop()
   }
+
 
 
 }

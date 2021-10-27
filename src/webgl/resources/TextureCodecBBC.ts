@@ -1,9 +1,10 @@
 import { ITextureCodec } from "./TextureCodec";
-import TextureExtensions from "./TextureExtensions";
 import { ITextureRequestSource } from "./TextureRequest";
 import KTXParser from "./KTXParser";
 import TextureData, { TextureDataType, TextureMip } from "./TextureData";
 import { TextureType } from "nanogl/texture-base";
+import { GLContext } from "nanogl/types";
+import Capabilities from "@webgl/core/Capabilities";
 
 export abstract class TextureCodecBBC implements ITextureCodec {
 
@@ -14,7 +15,7 @@ export abstract class TextureCodecBBC implements ITextureCodec {
     this.parser = new KTXParser();
   }
 
-  abstract isSupported(extensions: TextureExtensions): Promise<boolean>;
+  abstract isSupported(gl:GLContext): Promise<boolean>;
 
   decodeLod(source: ITextureRequestSource, lod: number): Promise<void> {
 
@@ -58,23 +59,23 @@ export abstract class TextureCodecBBC implements ITextureCodec {
 
 export class TextureCodecDxt extends TextureCodecBBC {
   name: 'dxt' = 'dxt';
-  isSupported(extensions: TextureExtensions): Promise<boolean> {
-    return Promise.resolve(extensions.dxt != null);
+  isSupported(gl:GLContext): Promise<boolean> {
+    return Promise.resolve(Capabilities(gl).textureExtensions.dxt != null);
   }
 }
 
 
 export class TextureCodecEtc extends TextureCodecBBC {
   name: 'etc' = 'etc';
-  isSupported(extensions: TextureExtensions): Promise<boolean> {
-    return Promise.resolve(extensions.etc != null);
+  isSupported(gl:GLContext): Promise<boolean> {
+    return Promise.resolve(Capabilities(gl).textureExtensions.etc != null);
   }
 }
 
 
 export class TextureCodecPvr extends TextureCodecBBC {
   name: 'pvr' = 'pvr';
-  isSupported(extensions: TextureExtensions): Promise<boolean> {
-    return Promise.resolve(extensions.pvr != null);
+  isSupported(gl:GLContext): Promise<boolean> {
+    return Promise.resolve(Capabilities(gl).textureExtensions.pvr != null);
   }
 }

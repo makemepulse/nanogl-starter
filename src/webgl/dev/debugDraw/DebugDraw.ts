@@ -2,10 +2,12 @@
 import Guizmo from './CrossGuizmo'
 import Frustum from './FrustumGuizmo'
 import { vec3, mat4 } from 'gl-matrix';
-import IRenderer from '@webgl/core/IRenderer';
-import { Gui } from '../gui/decorators';
+import { Gui, GuiFolder } from '../gui/decorators';
 import Texture2D from 'nanogl/texture-2d';
 import TextureDraw, { TextureDrawCommand } from './TextureDraw';
+import TextRenderer from './Text';
+import Grid, { GridOrientation } from './Grid';
+import Renderer from '@webgl/Renderer';
 
 
 
@@ -20,7 +22,7 @@ function m4fromV3( v3:vec3 ) : mat4 {
   return m;
 }
 
-
+@GuiFolder("DebugDraw")
 class DebugDrawImpl {
   
   _textures: TextureDrawCommand[];
@@ -29,21 +31,35 @@ class DebugDrawImpl {
 
   guizmo: Guizmo;
   frustum: Frustum;
+  texDraw: TextureDraw;
+  textRenderer: TextRenderer;
+  grid : Grid
 
   @Gui
-  enabled = false
-  texDraw: TextureDraw;
+  enabled = true
+
+  @Gui
+  gridXZ = true
+
+  @Gui
+  gridXY = false
+
+  @Gui
+  gridZY = false
 
 
-  constructor( private renderer:IRenderer ){
+
+  constructor( private renderer:Renderer ){
 
     this._textures = [];
     this._guizmos  = [];
     this._frustums = [];
 
-    this.guizmo  = new Guizmo ( renderer )
-    this.frustum = new Frustum( renderer )
-    this.texDraw = new TextureDraw( renderer )
+    this.guizmo       = new Guizmo ( renderer )
+    this.frustum      = new Frustum( renderer )
+    this.texDraw      = new TextureDraw( renderer )
+    this.textRenderer = new TextRenderer( renderer )
+    this.grid         = new Grid( renderer )
 
   }
 
@@ -52,9 +68,11 @@ class DebugDrawImpl {
     this._guizmos.length = 0;
     this._frustums.length = 0;
     this._textures.length = 0; 
+    this.textRenderer.clear()
   }
 
   drawTexture( tex:Texture2D, x=0, y=0, w=tex.width, h=tex.height ){
+    if( !this.enabled ) return
 
     const vpw = this.renderer.width
     const vph = this.renderer.height
@@ -72,24 +90,33 @@ class DebugDrawImpl {
 
   // take vec3 or mat4
   drawGuizmo( x : vec3 | mat4 ){
-    
+    if( !this.enabled ) return
     if( x.length === 3 ){
       this._guizmos.push( m4fromV3( x as vec3 ) );
     } else {
       this._guizmos.push( x as mat4 );
     }
-    
-    
   }
 
     // take vec3 or mat4
   drawFrustum( vp : mat4 ){
-    
+    if( !this.enabled ) return
     this._frustums.push( vp );
-    
+  }
+
+  drawText( txt:string, wpos: vec3 ):void{
+    if( !this.enabled ) return
+    this.textRenderer.add( txt, wpos)
   }
 
   render(){
+    if( !this.enabled ) return
+
+    this.grid.draw( 
+      (this.gridXZ ? GridOrientation.XZ : 0) |
+      (this.gridXY ? GridOrientation.XY : 0) |
+      (this.gridZY ? GridOrientation.YZ : 0) 
+    )
 
     for (let i = 0; i < this._guizmos.length; i++) {
       this.guizmo._wmatrix.set( this._guizmos[i] );
@@ -104,8 +131,9 @@ class DebugDrawImpl {
     this.texDraw.prepare()
     for (const cmd of this._textures) {
       this.texDraw.draw( cmd )
-      
     }
+
+    this.textRenderer.draw()
 
   }
 
@@ -114,7 +142,7 @@ class DebugDrawImpl {
 
 let _instance : DebugDrawImpl;
 
-function init( renderer:IRenderer ):void{
+function init( renderer:Renderer ):void{
   _instance = new DebugDrawImpl( renderer );
 }
 
@@ -144,6 +172,10 @@ const DebugDraw = {
     _instance.drawTexture(t, x, y, w, h );
   },
 
+  drawText( txt:string, wpos: vec3 ):void{
+    _instance.drawText( txt, wpos );
+  },
+
   render():void{
     _instance.render();
     _instance.clear();
@@ -162,6 +194,7 @@ const DebugDraw = {
   drawGuizmo(x : vec3 | mat4 ):void{0},
   drawFrustum( vp : mat4 ):void{0},
   drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{0},
+  drawText( txt:string, wpos: vec3 ):void{0},
   render():void{0}
 }
 

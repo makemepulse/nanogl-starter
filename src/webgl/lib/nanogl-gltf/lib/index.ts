@@ -25,6 +25,7 @@ import { AnyElement, ElementOfType, IElement } from './types/Elements';
 import IRenderable from './renderer/IRenderable';
 import Assert from './lib/assert';
 import IRenderConfig, { DefaultRenderConfig } from './IRenderConfig';
+import Material from './elements/Material';
 
 
 class ElementCollection<T extends AnyElement = AnyElement>{
@@ -218,6 +219,12 @@ export default class Gltf {
     return ouput;
   }
 
+
+  getMesh     ( name:string ): Mesh      { return this.getElementByName( GltfTypes.MESH     , name ) }
+  getMaterial ( name:string ): IMaterial { return this.getElementByName( GltfTypes.MATERIAL , name ) }
+  getNode     ( name:string ): Node      { return this.getElementByName( GltfTypes.NODE     , name ) }
+  getAnimation( name:string ): Animation { return this.getElementByName( GltfTypes.ANIMATION, name ) }
+  
   
   private _getCollection<T extends GltfTypes>(type: T): ElementCollection<ElementOfType<T>> {
     return this._collections.get(type) as ElementCollection<ElementOfType<T>>;

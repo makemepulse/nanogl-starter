@@ -1,6 +1,5 @@
-import { vec4 } from "gl-matrix"
-import gui from "./dev/gui"
-import { Gui, RangeGui, ColorGui, GuiBtn, GuiFolder } from "./dev/gui/decorators"
+import gui from "../dev/gui"
+import { Gui, RangeGui, GuiBtn, GuiFolder } from "../dev/gui/decorators"
 
 @GuiFolder('Tests')
 export default class TestGui{
@@ -20,11 +19,8 @@ export default class TestGui{
   @RangeGui(0, 20)
   test = 12
   
-  @ColorGui()
-  clearColor = vec4.fromValues(1, 0, 0, 1)
-  
-  @ColorGui
-  someColor = vec4.fromValues(1, 0, 0, 1)
+  // @ColorGui
+  // someColor = vec4.fromValues(1, 0, 0, 1)
   
 
   @GuiBtn
@@ -33,7 +29,7 @@ export default class TestGui{
   }
 
   constructor(){
-    gui.add( this, 'skipRender' )
+    gui.folder('Tests').add( this, 'skipRender' )
   }
 
 

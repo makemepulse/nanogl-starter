@@ -1,14 +1,15 @@
 import { vec4 } from "gl-matrix";
 import Camera from "nanogl-camera";
-import Node from "nanogl-node";
 import GLState from "nanogl-state";
 import { GLContext } from "nanogl/types";
 import Cameras from "./cameras/Cameras";
 import IRenderer from "./core/IRenderer";
+import RenderMask from "./core/RenderMask";
+import RenderPass from "./core/RenderPass";
 import DebugDraw from "./dev/debugDraw/DebugDraw";
 import { ColorGui } from "./dev/gui/decorators";
-import Programs from "./glsl/programs";
 import GLView from "./GLView";
+import Scene from "./scene";
 import Tests from "./tests";
 
 
@@ -16,14 +17,14 @@ export default class Renderer implements IRenderer {
 
 
   ilayer    : HTMLElement
-  root      : Node
   cameras   : Cameras
-  programs  : Programs
   glstate   : GLState
 
   @ColorGui
   clearColor = vec4.fromValues(.95, .95, .95, 1)
+  
   tests: Tests;
+  scene: Scene;
 
   
 
@@ -36,11 +37,10 @@ export default class Renderer implements IRenderer {
 
     DebugDraw.init( this )
 
-    this.root = new Node()
-    this.cameras = new Cameras(this)
-    this.programs = new Programs( this.gl )
-
+    
     this.tests = new Tests( this )
+    this.scene = new Scene( this )
+    this.cameras = new Cameras(this)
 
   }
 
@@ -62,6 +62,11 @@ export default class Renderer implements IRenderer {
   }
 
 
+  load(): Promise<void>{
+    return this.scene.load()
+  }
+
+
   private _onViewRender = (dt:number)=>{
     dt;
 
@@ -75,9 +80,21 @@ export default class Renderer implements IRenderer {
     DebugDraw.render()
   }
 
-  private renderScene(){
+  private renderScene( ){
+
+
+    this.cameras.preRender()
+    this.scene.preRender()
+
+    this.scene.root.updateWorldMatrix()
+
+
+    this.camera.updateViewProjectionMatrix(this.width, this.height);
+
+    this.scene.render({renderer:this, camera:this.camera, mask: RenderMask.BLENDED, pass:RenderPass.COLOR})
+    this.scene.render({renderer:this, camera:this.camera, mask: RenderMask.OPAQUE, pass:RenderPass.COLOR})
     this.tests.render()
-    0
+    
   }
 
 

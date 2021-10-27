@@ -96,7 +96,7 @@ class OrbitAction implements IBehaviour {
     quat.multiply( this.cam.rotation, Q1, this.initialR );
     vec3.transformQuat( V1, this.initialP, Q1 );
     vec3.add( this.cam.position, this.focus, V1 );
-
+    
     this.cam.invalidate()
 
   }
@@ -271,13 +271,15 @@ export default class MaxController implements ICameraController {
     this.cam.updateMatrix()
     mat4.invert( IMVP, this.cam.lens._proj );
     vec3.transformMat4( V1, this.mouse, IMVP );
-    vec3.scale( V1, V1, this.orbitRadius / V1[2] );
+    const orbitRadius = -vec3.length(this.cam._wposition as vec3)
+    vec3.scale( V1, V1, orbitRadius / V1[2] );
     vec3.transformMat4( out, V1, this.cam._matrix );
   }
 
 
 
-  onMouseMove = ( e:MouseEvent ):void=>{
+  onMouseMove = ( e:MouseEvent ):void =>{
+    
     const mode = this._getModeForEvt(e)
     this.setMode( mode );
     setMousePos( e, this.el, this.mouse );

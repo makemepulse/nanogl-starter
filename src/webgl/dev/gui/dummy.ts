@@ -31,23 +31,34 @@ function _factory(){
     add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
       return new DummyControl(tgt[prop]);
     },
-
+    
     addColor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<Color> {
-      return new DummyControl(tgt[prop])
+      return new DummyControl(tgt[prop]);
     },
-
+    
+    addSelect<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
+      return new DummyControl(tgt[prop]);
+    },
 
     btn(): void {
       0;
     },
     
-    
+    btns(): void {
+      0;
+    },
+
+
     folder(): Gui {
       return gui;
     },
-    
-    reset(){
+
+    reset() {
       0;
+    },
+
+    select: function <T>(): Control<T> {
+      return new DummyControl(null);
     }
   }
 
