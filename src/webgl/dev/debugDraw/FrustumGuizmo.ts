@@ -5,9 +5,8 @@ import Node from 'nanogl-node'
 
 import mat4 from 'gl-matrix/src/gl-matrix/mat4'
 import { GLContext } from 'nanogl/types'
-import { LocalConfig } from 'nanogl-state'
+import GLState, { LocalConfig } from 'nanogl-state'
 import Camera from 'nanogl-camera'
-import IRenderer from '@webgl/core/IRenderer'
 
 const M4 = mat4.create();
 
@@ -66,17 +65,14 @@ void main(void){
 export default class Frustum extends Node {
 
   projection: mat4
-  gl        : GLContext
   buffer    : GLArrayBuffer
   indices   : GLIndexBuffer
   prg       : Program
   cfg       : LocalConfig
 
-  constructor(renderer: IRenderer) {
+  constructor(private gl:GLContext) {
 
     super();
-
-    const gl = renderer.gl
 
     this.projection = null;
 
@@ -88,7 +84,7 @@ export default class Frustum extends Node {
 
     this.prg = new Program(gl, VERT, FRAG);
 
-    this.cfg = renderer.glstate.config()
+    this.cfg = GLState.get(gl).config()
       .enableCullface(false)
       .enableDepthTest()
       .depthMask(true)

@@ -1,5 +1,6 @@
 import { AssetsPath } from "@/core/PublicPath";
-import { IRenderContext } from "@webgl/core/IRenderer";
+import { RenderContext } from "@webgl/core/Renderer";
+import Material from "@webgl/lib/nanogl-gltf/lib/elements/Material";
 import Node from "nanogl-node";
 import Scene from ".";
 import { GltfScene } from "./GltfScene";
@@ -33,13 +34,17 @@ export default class Meetmats {
       const gltf =  this.gltfs[i];
       gltf.gltf.root.position[0] = i * 2
       this.node.add( gltf.gltf.root )
+
+      gltf.gltf.materials.forEach( m=>{
+        (m as Material).materialPass.perVertexIrrad.set(true)
+      })
     }
 
     this.gltfs[2].gltf.root.setScale(.04)
     this.gltfs[2].gltf.root.position[1] = -1
   }
   
-  render(ctx:IRenderContext):void{
+  render(ctx:RenderContext):void{
     for (const gltf of this.gltfs) {
       gltf.render( ctx )
     }

@@ -1,10 +1,11 @@
 import Capabilities from "@webgl/core/Capabilities"
+import { RenderContext } from "@webgl/core/Renderer"
 import Programs from "@webgl/glsl/programs"
-import Renderer from "@webgl/Renderer"
 import { mat4, vec3 } from "gl-matrix"
 import Rect from "nanogl-primitives-2d/rect"
-import { LocalConfig } from "nanogl-state"
+import GLState, { LocalConfig } from "nanogl-state"
 import Program from "nanogl/program"
+import { GLContext } from "nanogl/types"
 
 
 
@@ -30,11 +31,10 @@ export default class Grid {
 
 
 
-  constructor( private renderer:Renderer ){
-    const gl = renderer.gl
+  constructor( private gl:GLContext ){
     this.rect = new Rect(gl)
 
-    this.cfg = renderer.glstate.config()
+    this.cfg = GLState.get(gl).config()
       .enableDepthTest()
       .enableBlend()
       .blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
@@ -42,9 +42,9 @@ export default class Grid {
     this.prg = Programs(gl).get('debug-grid')
   }
 
-  draw( orientation : GridOrientation ):void{
+  draw( orientation : GridOrientation, ctx:RenderContext ):void{
     if( orientation === 0 ) return
-    if( !Capabilities(this.renderer.gl).hasStandardDerivatives ) return
+    if( !Capabilities(this.gl).hasStandardDerivatives ) return
 
     this.prg.use()
     this.rect.attribPointer(this.prg)
@@ -58,21 +58,21 @@ export default class Grid {
     if( orientation & GridOrientation.XY ){
       mat4.identity(M4)
       mat4.scale( M4, M4, vec3.fromValues(s,s,s))
-      this.prg.uMVP(this.renderer.camera.getMVP(M4))
+      this.prg.uMVP(ctx.camera.getMVP(M4))
       this.rect.render()
     }
     
     if( orientation & GridOrientation.XZ ){
       mat4.fromXRotation(M4, Math.PI/2)
       mat4.scale( M4, M4, vec3.fromValues(s,s,s))
-      this.prg.uMVP(this.renderer.camera.getMVP(M4))
+      this.prg.uMVP(ctx.camera.getMVP(M4))
       this.rect.render()
     }
     
     if( orientation & GridOrientation.YZ ){
       mat4.fromYRotation(M4, Math.PI/2)
       mat4.scale( M4, M4, vec3.fromValues(s,s,s))
-      this.prg.uMVP(this.renderer.camera.getMVP(M4))
+      this.prg.uMVP(ctx.camera.getMVP(M4))
       this.rect.render()
     }
   }

@@ -1,9 +1,9 @@
-import IRenderer from "@webgl/core/IRenderer";
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw";
 import { TextureSrcSet } from "@webgl/resources/TextureRequest";
 import { TextureResource } from "@webgl/resources/TextureResource";
 import WebglAssets from "@webgl/resources/WebglAssets";
 import { vec3 } from "gl-matrix";
+import { GLContext } from "nanogl/types";
 
 export default class TestDebugDraw{
 
@@ -12,14 +12,14 @@ export default class TestDebugDraw{
   texture1: TextureResource;
   texture2: TextureResource;
 
-  constructor( private renderer : IRenderer ){
+  constructor( private gl : GLContext ){
 
     this.textures = []
-    this.texture1 = WebglAssets.getTexture( 'texture1', renderer.gl )
-    this.texture2 = WebglAssets.getTexture( 'texture2', renderer.gl )
+    this.texture1 = WebglAssets.getTexture( 'texture1', gl )
+    this.texture2 = WebglAssets.getTexture( 'texture2', gl )
 
     for (let index = 0; index < 0; index++) {
-      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/512/512' ), renderer )
+      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/512/512' ), {gl} )
       this.textures.push( texRes )
     }
 

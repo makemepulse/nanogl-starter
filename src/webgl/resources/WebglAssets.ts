@@ -183,7 +183,7 @@ _files.keys().forEach( k=>{
   handleFile( k, _files(k) )
 })
 
-
+console.log( Array.from(_assetsByName.values()).map(i=>i.initialPath) )
 
 
 

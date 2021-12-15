@@ -1,4 +1,4 @@
-import { IRenderContext } from "@webgl/core/IRenderer";
+import { RenderContext } from "@webgl/core/Renderer";
 import Gltf from "@webgl/lib/nanogl-gltf/lib";
 import Animation from "@webgl/lib/nanogl-gltf/lib/elements/Animation";
 import MaterialOverrideExtension from "@webgl/lib/nanogl-gltf/lib/extensions/MaterialOverrideExtension";
@@ -41,10 +41,10 @@ export class GltfScene extends GLTFResource {
   }
 
   
-  render( context:IRenderContext ) : void {
+  render( context:RenderContext ) : void {
     const gltf = this.gltf
     for (const renderable of gltf.renderables) {
-      renderable.render(context.renderer, context.camera, context.mask, context.pass, context.glConfig )
+      renderable.render(context.gl, context.camera, context.mask, context.pass, context.glConfig )
     }
   }
 

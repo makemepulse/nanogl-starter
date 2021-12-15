@@ -131,7 +131,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
     const aniso = Math.min( Capabilities(gl).maxAnisotropy , this.options.aniso )
     if( aniso > 0 ){
-      gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, this.options.aniso );
+      gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, aniso );
     }
 
     switch( this.options.wrap ){

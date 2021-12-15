@@ -1,9 +1,9 @@
-import IRenderer from "@webgl/core/IRenderer";
 import { GLContext } from "nanogl/types";
 import Rect from 'nanogl-primitives-2d/rect'
 import Program from "nanogl/program";
 import Texture2D from "nanogl/texture-2d";
-import { LocalConfig } from "nanogl-state";
+import GLState, { LocalConfig } from "nanogl-state";
+import { RenderContext } from "@webgl/core/Renderer";
 
 const VERT = `
 attribute vec2 aPosition;
@@ -41,19 +41,15 @@ export type TextureDrawCommand = {
 
 export default class TextureDraw {
 
-  gl: GLContext;
   rect : Rect
   prg: Program;
   cfg: LocalConfig;
 
-  constructor( renderer : IRenderer ){
-
-    this.gl = renderer.gl
-    const gl = this.gl
+  constructor( private gl:GLContext ){
 
     this.prg = new Program(gl, VERT, FRAG);
 
-    this.cfg = renderer.glstate.config()
+    this.cfg = GLState.get(gl).config()
       .enableCullface(false)
       .enableDepthTest(false)
       .depthMask(false)
@@ -68,8 +64,17 @@ export default class TextureDraw {
     this.cfg.apply()
   }
   
-  draw( command: TextureDrawCommand ):void{
-    const {x,y,w,h} = command
+  draw( command: TextureDrawCommand, ctx:RenderContext ):void{
+    let {x,y,w,h} = command
+
+    const vpw = ctx.viewport.width
+    const vph = ctx.viewport.height
+
+    x /= vpw
+    y /= vph
+    w /= vpw
+    h /= vph
+
     this.prg.tTex( command.tex )
     this.prg.uScaleTranslate( w, h, (x*2)-1+w, (y*2)-1+h)
     // this.prg.uScaleTranslate( 1, 1, 0, 0 )

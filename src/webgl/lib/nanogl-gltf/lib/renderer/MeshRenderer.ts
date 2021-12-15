@@ -1,7 +1,6 @@
 import Node from "../elements/Node"
 import Mesh from "../elements/Mesh"
 import Primitive from "../elements/Primitive"
-import GLConfig from 'nanogl-state/config'
 import Camera from 'nanogl-camera'
 import BaseMaterial from 'nanogl-pbr/BaseMaterial'
 import DepthPass from 'nanogl-pbr/DepthPass'
@@ -10,10 +9,12 @@ import SkinDeformer, { SkinAttributeSet } from 'nanogl-pbr/SkinDeformer'
 import { GLContext } from "nanogl/types"
 import Assert from "../lib/assert"
 import Program from "nanogl/program"
-import IRenderable, { IRenderingContext } from "./IRenderable"
+import IRenderable from "./IRenderable"
 import Bounds from "nanogl-pbr/Bounds"
 import { MorphAttributeType, MorphAttribInfos, MorphAttributeName } from "nanogl-pbr/MorphCode"
 import DepthFormat from 'nanogl-pbr/DepthFormatEnum';
+import GLState from "nanogl-state"
+import GLConfig from "nanogl-state/GLConfig"
 
 
 
@@ -176,9 +177,9 @@ export default class MeshRenderer implements IRenderable {
 
   
 
-  render( context:IRenderingContext, camera:Camera, mask:number, passId : string,  glconfig?:GLConfig ) : void {
+  render( gl:GLContext, camera:Camera, mask:number, passId : string,  glconfig?:GLConfig ) : void {
 
-    const glstate = context.glstate;
+    const glstate = GLState.get(gl)
 
     const primitives = this.mesh.primitives;
     

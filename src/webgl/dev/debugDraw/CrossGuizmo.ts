@@ -4,9 +4,8 @@ import Node from 'nanogl-node'
 
 import mat4 from 'gl-matrix/src/gl-matrix/mat4'
 import { GLContext } from 'nanogl/types';
-import { LocalConfig } from 'nanogl-state';
+import GLState, { LocalConfig } from 'nanogl-state';
 import Camera from 'nanogl-camera';
-import IRenderer from '@webgl/core/IRenderer';
 
 const M4 = mat4.create();
 
@@ -44,19 +43,15 @@ void main(void){
 
 class Guizmo extends Node {
 
-  gl    : GLContext    ;
   buffer: GLArrayBuffer;
   prg   : Program      ;
   cfg   : LocalConfig  ;
 
 
-  constructor(renderer: IRenderer) {
+  constructor(private gl:GLContext) {
 
     super()
 
-    const gl = renderer.gl
-
-    this.gl = gl;
     this.buffer = new GLArrayBuffer(gl, BUFF);
     this.buffer.attrib('aPosition', 3, gl.FLOAT);
     this.buffer.attrib('aColor', 3, gl.UNSIGNED_BYTE, true);
@@ -64,7 +59,7 @@ class Guizmo extends Node {
 
     this.prg = new Program(gl, VERT, FRAG);
 
-    this.cfg = renderer.glstate.config()
+    this.cfg = GLState.get(gl).config()
       .enableCullface(false)
       .enableDepthTest()
       .depthMask(true)

@@ -1,8 +1,8 @@
 import Capabilities from '@webgl/core/Capabilities'
 import { InstancingImpl } from '@webgl/core/Instancing'
-import IRenderer from '@webgl/core/IRenderer'
+import { RenderContext } from '@webgl/core/Renderer'
 import { vec3, vec4 } from 'gl-matrix'
-import { LocalConfig } from 'nanogl-state'
+import GLState, { LocalConfig } from 'nanogl-state'
 import GLArrayBuffer from 'nanogl/arraybuffer'
 import Program from 'nanogl/program'
 import Texture2D from 'nanogl/texture-2d'
@@ -188,11 +188,9 @@ export default class TextRenderer {
   texts: Text[] = []
   cfg: LocalConfig
 
-  constructor(private renderer: IRenderer) {
+  constructor(private gl: GLContext) {
 
-    this.atlas = new TextureAtlas(renderer.gl)
-
-    const gl = renderer.gl
+    this.atlas = new TextureAtlas(gl)
 
     this.prg = new Program(gl, VERT, FRAG);
 
@@ -211,7 +209,7 @@ export default class TextRenderer {
     this.instBuffer = new GLArrayBuffer(gl, this.instData)
     this.instBuffer.attrib('aInstanceData', 3, gl.FLOAT)
 
-    this.cfg = renderer.glstate.config()
+    this.cfg = GLState.get(gl).config()
       .enableBlend()
       .blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -226,7 +224,7 @@ export default class TextRenderer {
     this.texts.length = 0
   }
 
-  draw(): void {
+  draw( ctx:RenderContext ): void {
     if (this.texts.length === 0) return;
 
     this.atlas.lazyInit()
@@ -235,11 +233,10 @@ export default class TextRenderer {
 
     const renderScale = .5
 
-    const gl = this.renderer.gl
     const dpi = 2
 
-    const vpw = this.renderer.width / dpi
-    const vph = this.renderer.height / dpi
+    const vpw = ctx.viewport.width / dpi
+    const vph = ctx.viewport.height / dpi
 
     const wu = 2 / vpw
     const hu = 2 / vph
@@ -248,7 +245,7 @@ export default class TextRenderer {
 
     let c = 0
     const data = this.instData
-    const camera = this.renderer.camera
+    const camera = ctx.camera
 
     for (let i = 0; i < this.texts.length; i++) {
       const text = this.texts[i];
@@ -294,7 +291,7 @@ export default class TextRenderer {
     this.cfg.apply()
 
     this.instancing.drawArraysInstanced(
-      gl.TRIANGLE_STRIP,
+      this.gl.TRIANGLE_STRIP,
       0,             // offset
       this.quadBuffer.length,   // num vertices per instance
       c,  // num instances

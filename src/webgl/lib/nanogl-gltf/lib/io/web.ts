@@ -45,7 +45,7 @@ function baseDir( p:string ) : string[]{
 
 
 
-class WebImpl implements IOInterface {
+export class WebImpl implements IOInterface {
 
 
 
@@ -69,6 +69,8 @@ class WebImpl implements IOInterface {
   }
 
   resolvePath(path: string, baseurl: string ): string {
+    console.log(path, baseurl);
+    
     if( baseurl === undefined || this.isDataURI( path ) )
       return path;  
     return baseurl + '/' + path;

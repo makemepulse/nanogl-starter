@@ -1,4 +1,4 @@
-import IRenderer from "@webgl/core/IRenderer";
+import { GLContext } from "nanogl/types";
 import TestDebugDraw from "./testDebugDraw";
 import TestGui from './testGui';
 
@@ -9,8 +9,8 @@ export default class Tests {
   
   testGui: TestGui
 
-  constructor( private renderer : IRenderer ){
-    this.testDebugDraw = new TestDebugDraw( renderer )
+  constructor( private gl : GLContext ){
+    this.testDebugDraw = new TestDebugDraw( gl )
     this.testGui = new TestGui()
   }
 

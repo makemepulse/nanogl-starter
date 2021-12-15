@@ -7,7 +7,8 @@ import Texture2D from 'nanogl/texture-2d';
 import TextureDraw, { TextureDrawCommand } from './TextureDraw';
 import TextRenderer from './Text';
 import Grid, { GridOrientation } from './Grid';
-import Renderer from '@webgl/Renderer';
+import { GLContext } from 'nanogl/types';
+import { RenderContext } from '@webgl/core/Renderer';
 
 
 
@@ -49,17 +50,17 @@ class DebugDrawImpl {
 
 
 
-  constructor( private renderer:Renderer ){
+  constructor( private gl:GLContext ){
 
     this._textures = [];
     this._guizmos  = [];
     this._frustums = [];
 
-    this.guizmo       = new Guizmo ( renderer )
-    this.frustum      = new Frustum( renderer )
-    this.texDraw      = new TextureDraw( renderer )
-    this.textRenderer = new TextRenderer( renderer )
-    this.grid         = new Grid( renderer )
+    this.guizmo       = new Guizmo      ( gl )
+    this.frustum      = new Frustum     ( gl )
+    this.texDraw      = new TextureDraw ( gl )
+    this.textRenderer = new TextRenderer( gl )
+    this.grid         = new Grid        ( gl )
 
   }
 
@@ -73,14 +74,6 @@ class DebugDrawImpl {
 
   drawTexture( tex:Texture2D, x=0, y=0, w=tex.width, h=tex.height ){
     if( !this.enabled ) return
-
-    const vpw = this.renderer.width
-    const vph = this.renderer.height
-
-    x /= vpw
-    y /= vph
-    w /= vpw
-    h /= vph
 
     this._textures.push({
       tex,
@@ -109,31 +102,32 @@ class DebugDrawImpl {
     this.textRenderer.add( txt, wpos)
   }
 
-  render(){
+  render( ctx:RenderContext ){
     if( !this.enabled ) return
 
     this.grid.draw( 
       (this.gridXZ ? GridOrientation.XZ : 0) |
       (this.gridXY ? GridOrientation.XY : 0) |
       (this.gridZY ? GridOrientation.YZ : 0) 
+      , ctx
     )
 
     for (let i = 0; i < this._guizmos.length; i++) {
       this.guizmo._wmatrix.set( this._guizmos[i] );
-      this.guizmo.render( this.renderer.camera );
+      this.guizmo.render( ctx.camera );
     }
 
     for (let i = 0; i < this._frustums.length; i++) {
       this.frustum.projection = this._frustums[i];
-      this.frustum.render( this.renderer.camera );
+      this.frustum.render( ctx.camera );
     }
     
     this.texDraw.prepare()
     for (const cmd of this._textures) {
-      this.texDraw.draw( cmd )
+      this.texDraw.draw( cmd, ctx )
     }
 
-    this.textRenderer.draw()
+    this.textRenderer.draw(ctx)
 
   }
 
@@ -142,8 +136,8 @@ class DebugDrawImpl {
 
 let _instance : DebugDrawImpl;
 
-function init( renderer:Renderer ):void{
-  _instance = new DebugDrawImpl( renderer );
+function init( gl:GLContext ):void{
+  _instance = new DebugDrawImpl( gl );
 }
 
 
@@ -176,10 +170,11 @@ const DebugDraw = {
     _instance.drawText( txt, wpos );
   },
 
-  render():void{
-    _instance.render();
+  render(ctx:RenderContext):void{
+    _instance.render(ctx);
     _instance.clear();
   }
+
 }
 
 export default DebugDraw;
@@ -190,12 +185,12 @@ export default DebugDraw;
 
 const DebugDraw = {
   enabled:false,
-  init():void{0},
+  init(gl:GLContext):void{0},
   drawGuizmo(x : vec3 | mat4 ):void{0},
   drawFrustum( vp : mat4 ):void{0},
   drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{0},
   drawText( txt:string, wpos: vec3 ):void{0},
-  render():void{0}
+  render(ctx:IRenderContext):void{0}
 }
 
 export default DebugDraw;

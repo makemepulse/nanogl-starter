@@ -1,5 +1,5 @@
 import { AssetsPath } from "@/core/PublicPath"
-import { IRenderContext } from "@webgl/core/IRenderer"
+import { RenderContext } from "@webgl/core/Renderer"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import MeshRenderer from "@webgl/lib/nanogl-gltf/lib/renderer/MeshRenderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -29,7 +29,7 @@ export default class Scene implements IGLContextProvider {
     // this.gltfSample = new GltfScene( AssetsPath("webgl/black_honey_robotic_arm/scene.gltf"), this )
     this.gltfSample = new GltfScene( AssetsPath("webgl/suzanne/Suzanne.gltf"), this )
 
-    this.meetmats = new Meetmats(this)
+    // this.meetmats = new Meetmats(this)
   }
 
   preRender():void {
@@ -57,19 +57,20 @@ export default class Scene implements IGLContextProvider {
   }
 
   rttPass():void {
+    this.lighting.lightSetup.prepare(this.gl);
     0
   }
 
-  render( context: IRenderContext ):void {
+  render( context: RenderContext ):void {
     this.gltfSample.render( context )
-    this.meetmats.render( context )
+    this.meetmats?.render( context )
 
   }
 
   async load() :Promise<void> {
     await this.lighting.load()
     await this.gltfSample.load()
-    await this.meetmats.load()
+    // await this.meetmats.load()
 
     if( this.gltfSample.gltf.animations[0] ){
       this.gltfSample.playAnimation(  this.gltfSample.gltf.animations[0].name )

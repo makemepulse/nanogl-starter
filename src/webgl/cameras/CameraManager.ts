@@ -8,17 +8,13 @@ export default class CameraManager<T extends ICameraLens = ICameraLens> {
 
   private _controler: ICameraController
 
-  constructor( readonly camera: Camera<T> ){
-
-  }
-
+  constructor( readonly camera: Camera<T> ){}
 
   setControler( ctrl:ICameraController ):void {
     this._controler?.stop()
     this._controler = ctrl;
     ctrl?.start( this.camera );
   }
-
 
   preRender():void {
     this._controler?.update( Time.dt );

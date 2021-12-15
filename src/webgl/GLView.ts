@@ -29,6 +29,7 @@ class GLView {
 
   /**
    * use window.innerXXX to infer canvas size and avoid coslty "compute layout". otherwise use canvas clientWidth/clientHeight
+   * set to true if canvas is always fullscreen
    */
   useWindowSize = true
 
