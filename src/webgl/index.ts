@@ -39,12 +39,11 @@ export default class GLApp {
 
     this.glview = new GLView(canvas);
     this.renderer  = new Renderer( this.glview );
-    
   }
 
   
   load(): Promise<void> {
-    return this.renderer.load();
+    return Promise.resolve()
   }
 
   start():void {

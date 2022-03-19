@@ -6,42 +6,42 @@ import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import { vec3 } from "gl-matrix"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
-import { GltfScene } from "./GltfScene"
-import Lighting from "./Lighting"
-import Meetmats from "./Meetmats"
+import FloorPlane from "../FloorPlane"
+import { GltfScene } from "../GltfScene"
+import { IScene } from "../IScene"
+import Lighting from "../Lighting"
 
 
-export default class Scene implements IGLContextProvider {
+export default class RobotScene implements IGLContextProvider, IScene {
 
   readonly gl : GLContext
   gltfSample : GltfScene
   lighting   : Lighting
   root       : Node
-  meetmats: Meetmats
+  floor: FloorPlane
   
-  constructor( glp : IGLContextProvider ){
-    this.gl = glp.gl
+  constructor( gl : GLContext ){
+    this.gl = gl
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
+    this.gltfSample = new GltfScene( AssetsPath("webgl/black_honey_robotic_arm/scene.gltf"), gl, this.lighting, this.root )
 
-    // this.gltfSample = new GltfScene( AssetsPath("webgl/Lu_Scene.gltf"), this )
-    // this.gltfSample = new GltfScene( AssetsPath("webgl/Lu_Scene_recorded.gltf"), this )
-    // this.gltfSample = new GltfScene( AssetsPath("webgl/black_honey_robotic_arm/scene.gltf"), this )
-    this.gltfSample = new GltfScene( AssetsPath("webgl/suzanne/Suzanne.gltf"), this )
-
-    // this.meetmats = new Meetmats(this)
+    this.floor = new FloorPlane( gl )
+    this.lighting.setupMaterial(this.floor.material)
+    this.root.add( this.floor.node )
   }
 
   preRender():void {
+
     this.gltfSample.preRender()
     
-    return
+
     for (const node of this.gltfSample.gltf.nodes ) {
       if( node.renderable )
-        DebugDraw.drawText( node.name, node._wposition as vec3 )
-        DebugDraw.drawGuizmo( node._wmatrix )
+      DebugDraw.drawText( node.name, node._wposition as vec3 )
+      DebugDraw.drawGuizmo( node._wmatrix )
     }
-
+    
     const n = this.gltfSample.gltf.getNode( "Object_92" )
     const meshr = n.renderable as MeshRenderer
     const posAttrib = meshr.mesh.primitives[0].attributes.getSemantic( 'POSITION' )
@@ -54,27 +54,33 @@ export default class Scene implements IGLContextProvider {
       vec3.transformMat4( V3, V3, n._wmatrix )
       DebugDraw.drawText( i+"", V3 )
     }
+      
+
+    this.root.updateWorldMatrix()
   }
 
   rttPass():void {
     this.lighting.lightSetup.prepare(this.gl);
-    0
+    
+    
   }
 
   render( context: RenderContext ):void {
+    this.floor.render( context )
     this.gltfSample.render( context )
-    this.meetmats?.render( context )
-
   }
 
   async load() :Promise<void> {
     await this.lighting.load()
     await this.gltfSample.load()
-    // await this.meetmats.load()
 
     if( this.gltfSample.gltf.animations[0] ){
       this.gltfSample.playAnimation(  this.gltfSample.gltf.animations[0].name )
     }
+  }
+
+  unload(): void {
+    0
   }
 
 }

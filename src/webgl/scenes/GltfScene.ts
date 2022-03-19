@@ -3,9 +3,11 @@ import Gltf from "@webgl/lib/nanogl-gltf/lib";
 import Animation from "@webgl/lib/nanogl-gltf/lib/elements/Animation";
 import MaterialOverrideExtension from "@webgl/lib/nanogl-gltf/lib/extensions/MaterialOverrideExtension";
 import GLTFResource from "@webgl/resources/GltfResource";
+import Node from "nanogl-node";
 import BaseMaterial from "nanogl-pbr/BaseMaterial";
-import Scene from ".";
+import { GLContext } from "nanogl/types";
 import { materialIsStandard } from "./GltfUtils";
+import Lighting from "./Lighting";
 
 
 export class GltfScene extends GLTFResource {
@@ -13,8 +15,8 @@ export class GltfScene extends GLTFResource {
 
   private _materialOverride: MaterialOverrideExtension;
   
-  constructor( request: string, private scene: Scene) {
-    super(request, scene )
+  constructor( request: string, gl:GLContext, private lighting?: Lighting, private parent?:Node ) {
+    super(request, {gl} )
     
     this._materialOverride = new MaterialOverrideExtension()
 
@@ -27,12 +29,16 @@ export class GltfScene extends GLTFResource {
 
   async doLoad(): Promise<Gltf> {
     const gltf = await super.doLoad()
-    for (const material of gltf.materials) {
-      if( materialIsStandard(material)){
-        this.scene.lighting.setupStandardPass(material.materialPass);
+
+    if (this.lighting){
+      for (const material of gltf.materials) {
+        if( materialIsStandard(material)){
+          this.lighting.setupStandardPass(material.materialPass);
+        }
       }
     }
-    this.scene.root.add( gltf.root )
+    this.parent?.add( gltf.root )
+
     return gltf
   }
   

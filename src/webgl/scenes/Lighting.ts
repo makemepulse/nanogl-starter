@@ -7,6 +7,9 @@ import Input, { Uniform } from "nanogl-pbr/Input";
 import { StandardPass } from "nanogl-pbr/StandardPass";
 import addDevIbls from "@webgl/dev/addDevIbls";
 import gui from "@webgl/dev/gui";
+import BaseMaterial from "nanogl-pbr/BaseMaterial";
+import RenderPass from "@webgl/core/RenderPass";
+import Node from "nanogl-node";
 
 
 const EXPO = 1.0
@@ -14,9 +17,10 @@ const GAMMA = 2.2
 
 export default class Lighting {
   
+  root: Node;
+
   lightSetup: LightSetup;
   ibl: IblLight
-
 
   gammaMode: Enum<readonly ["GAMMA_NONE", "GAMMA_STD", "GAMMA_2_2", "GAMMA_TB"]>;
   
@@ -57,10 +61,12 @@ export default class Lighting {
 
 
   constructor( gl: GLContext ){
-
+    this.root = new Node()
     this.ibl = new IblLight( gl )
+    this.ibl.enableRotation = true
     this.lightSetup = new LightSetup()
     this.lightSetup.add( this.ibl )
+    this.root.add( this.ibl )
 
 
     this.gammaMode  = new Enum( 'gammaMode', GammaModes);
@@ -72,19 +78,29 @@ export default class Lighting {
     this.gammaMode.set( 'GAMMA_STD' )
 
     
-    
+    /// #if DEBUG
     const f = gui.folder('lighting')
     f.add(this, 'exposure', 0, 3)
     f.add(this, 'gamma', .8, 4)
     f.add(this.ibl, 'ambientExposure', 0, 3).setLabel('ambient')
+    f.add(this.ibl, 'enableRotation').setLabel('enable ibl rotation')
+    // f.add({iblRotation:0}, 'iblRotation', 0, Math.PI*2).onChange(v=>{quat.identity(this.ibl.rotation) ; this.ibl.rotateY(v); console.log(v)})
+    f.addRotation( this.ibl, 'rotation').onChange(()=>this.ibl.invalidate())
+    /// #endif
 
     addDevIbls( this )
     
   }
 
+  setupMaterial( material : BaseMaterial ):void{
+    const pass = material.getPass(RenderPass.COLOR).pass
+    if( pass instanceof StandardPass ){
+      this.setupStandardPass(pass)
+    }
+  }
+  
   setupStandardPass( standardPass : StandardPass ):void{
     standardPass.setLightSetup( this.lightSetup )
-    
     standardPass.iGamma   .proxy( this.gammaInput )
     standardPass.iExposure.proxy( this.exposureInput )
     standardPass.gammaMode.proxy( this.gammaMode )
@@ -96,6 +112,10 @@ export default class Lighting {
       require( "@/assets/webgl/ibl/Helipad/env.png"),
       require( "@/assets/webgl/ibl/Helipad/sh.bin")
     )
+  }
+
+  dispose(): void {
+    gui.clearFolder('lighting')
   }
 
 

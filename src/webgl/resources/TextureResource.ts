@@ -2,7 +2,7 @@ import { Texture } from "nanogl/texture-base";
 import { Resource } from "./Resource";
 import Texture2D from "nanogl/texture-2d";
 import TextureCube from "nanogl/texture-cube";
-import { ITextureRequest, ITextureRequestLod } from "./TextureRequest";
+import { ITextureRequest, ITextureRequestLod, ITextureRequestOptions, resolveTextureOptions } from "./TextureRequest";
 import { BytesResource } from "./Net";
 import { TextureCodecs } from "./TextureCodec";
 import { IGLContextProvider } from "./IGLContextProvider";
@@ -12,55 +12,6 @@ import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
 import Capabilities from "@webgl/core/Capabilities";
 
 
-export enum TextureWrap {
-  CLAMP,
-  REPEAT,
-  MIRROR,
-}
-
-// class TextureFiltering {
-//   smooth: boolean = false
-//   mip: boolean = false
-//   mipl: boolean = false
-
-//   wrap: TextureWrap = TextureWrap.REPEAT
-
-//   setFilter(smooth: boolean = false, mip: boolean = false, mipl: boolean = false) {
-//     this.smooth = smooth;
-//     this.mip = mip;
-//     this.mipl = mipl;
-//   }
-
-// }
-
-// class TextureOptions {
-//   bbc: boolean = true
-//   flipY: boolean = false
-//   genMips: boolean = false
-//   filtering: TextureFiltering = new TextureFiltering();
-// }
-
-
-export type TextureOptions = {
-  smooth     : boolean
-  mipmap     : boolean
-  miplinear  : boolean
-  genmipmaps : boolean
-  aniso: 0|2|4|8|16
-  wrap: 'repeat'|'clamp'|'mirror'
-}
-
-const _DEFAULT_OPTS : TextureOptions = {
-
-  smooth: true,
-  mipmap: false,
-  miplinear: false,
-
-  genmipmaps: false,
-
-  aniso: 0,
-  wrap: 'repeat',
-}
 
 
 export abstract class BaseTextureResource<T extends Texture = Texture> extends Resource<T> {
@@ -72,7 +23,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   protected _request: ITextureRequest;
   private _sourceGroup : ResourceGroup<ArrayBuffer> 
 
-  readonly options : TextureOptions
+  // readonly options : TextureOptions
 
 
 
@@ -87,9 +38,8 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
 
-  constructor(request: ITextureRequest, glp: IGLContextProvider, opts: Partial<TextureOptions> = {}) {
+  constructor(request: ITextureRequest, glp: IGLContextProvider) {
     super();
-    this.options = Object.assign( {}, _DEFAULT_OPTS, opts)
     this.glp = glp;
     this._request = request;
   }
@@ -108,7 +58,6 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       this.texture = this.createTexture()
     }
     await this.loadLevelAsync( 0 );
-    this.setupOptions()
     return this.texture
   }
 
@@ -119,35 +68,15 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     this._sourceGroup?.unload()
   }
 
-  setupOptions():void {
 
-    const gl = this.texture.gl
-    this.texture.setFilter( this.options.smooth, this.options.mipmap, this.options.miplinear )
-
-    if( this.options.genmipmaps ){
-      this.texture.bind()
-      gl.generateMipmap(this.texture._target)
-    }
-
-    const aniso = Math.min( Capabilities(gl).maxAnisotropy , this.options.aniso )
-    if( aniso > 0 ){
-      gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, aniso );
-    }
-
-    switch( this.options.wrap ){
-      case 'clamp': this.texture.clamp(); break;
-      case 'repeat': this.texture.repeat(); break;
-      case 'mirror': this.texture.mirror(); break;
-    }
-
-  }
 
   async loadLevelAsync(level: number): Promise<T> {
     const gl = this.glp.gl 
     const loader = BaseTextureResource.getTextureLoader( gl );
+    const options = resolveTextureOptions( this._request.options )
 
     // find which source is available based on codecs and extensions
-    // TODO: test if null
+    //
     const cres = await TextureCodecs.getCodecForRequest(this._request, gl );
     if( cres === null ){
       throw `can't find codecs for request ${JSON.stringify(this._request) }`
@@ -158,20 +87,39 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     await this.loadSourceLod(source.lods[level]);
     // run codec to create or setup TextureData
     try {
-      await codec.decodeLod(source, level, gl);
+      await codec.decodeLod(source, level, options, gl);
     } catch(e){
       console.error( `can't decode `, source );
-      
       throw e
     }
     // use texture loader to upload data to texture
     loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
+    this._configureTexture( options )
 
-    // for (let i = 0; i < source.lods[level].files.length; i++) {
-    //   this.group.removeResourceByName(source.lods[level].files[i]);
-    // }
-
+    
     return this.texture;
+
+  }
+
+  private _configureTexture( options : ITextureRequestOptions ):void {
+    
+    const gl = this.texture.gl
+    this.texture.setFilter( options.smooth, options.mipmap, options.miplinear )
+
+    if( options.mipmap ){
+      gl.generateMipmap(this.texture._target)
+    }
+
+    const aniso = Math.min( Capabilities(gl).maxAnisotropy , options.aniso )
+    if( aniso > 0 ){
+      gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, aniso );
+    }
+
+    switch( options.wrap ){
+      case 'clamp': this.texture.clamp(); break;
+      case 'repeat': this.texture.repeat(); break;
+      case 'mirror': this.texture.mirror(); break;
+    }
 
   }
 
@@ -217,6 +165,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
   async loadLevelAsync(): Promise<TextureCube> {
 
     const gl = this.glp.gl 
+    const options = resolveTextureOptions( this._request.options )
     const loader = BaseTextureResource.getTextureLoader( gl );
     // find which source is available based on codecs and extensions
     // TODO: test if null
@@ -228,7 +177,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
       // console.log(source.datas);
     }
     // run codec to create or setup TextureData
-    await codec.decodeCube(source, gl);
+    await codec.decodeCube(source, options, gl);
     // use texture loader to upload data to texture
     loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
 

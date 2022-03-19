@@ -38,6 +38,8 @@ export default class Grid {
       .enableDepthTest()
       .enableBlend()
       .blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
+      .enablePolygonOffset()
+      .polygonOffset(1, 1)
 
     this.prg = Programs(gl).get('debug-grid')
   }

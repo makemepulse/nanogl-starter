@@ -179,18 +179,18 @@ export default class MeshRenderer implements IRenderable {
 
   render( gl:GLContext, camera:Camera, mask:number, passId : string,  glconfig?:GLConfig ) : void {
 
-    const glstate = GLState.get(gl)
-
+    
     const primitives = this.mesh.primitives;
     
     if( this._skin ){
       this.node.skin.computeJoints( this.node, this._skin.jointMatrices );
     }
-
+    
     if (this._morph ){
       this.setupMorphWeights();
     }
-
+    
+    const glstate = GLState.get(gl)
 
     for (let i = 0; i < primitives.length; i++) {
 

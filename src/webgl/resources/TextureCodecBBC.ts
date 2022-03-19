@@ -1,7 +1,7 @@
 import { ITextureCodec } from "./TextureCodec";
 import { ITextureRequestSource } from "./TextureRequest";
 import KTXParser from "./KTXParser";
-import TextureData, { TextureDataType, TextureMip } from "./TextureData";
+import { CompressedTextureData, TextureDataType, TextureMip } from "./TextureData";
 import { TextureType } from "nanogl/texture-base";
 import { GLContext } from "nanogl/types";
 import Capabilities from "@webgl/core/Capabilities";
@@ -17,7 +17,7 @@ export abstract class TextureCodecBBC implements ITextureCodec {
 
   abstract isSupported(gl:GLContext): Promise<boolean>;
 
-  decodeLod(source: ITextureRequestSource, lod: number): Promise<void> {
+  decodeLod(source: ITextureRequestSource, lod: number ): Promise<void> {
 
     const requestLod = source.lods[lod];
     const image = this.parser.parse(requestLod.buffers[0]);
@@ -29,8 +29,7 @@ export abstract class TextureCodecBBC implements ITextureCodec {
       }
     });
 
-    const datas: TextureData = {
-
+    const datas: CompressedTextureData = {
       datatype: TextureDataType.RAW_COMPRESSED,
       textureType: TextureType.TEXTURE_2D,
       width: image.width,
@@ -38,6 +37,7 @@ export abstract class TextureCodecBBC implements ITextureCodec {
       internalformat: image.internalFormat,
       format: image.format,
       type: image.type,
+      requireMipmapGen :false,
 
       sources: [{
         surfaces: [mips]

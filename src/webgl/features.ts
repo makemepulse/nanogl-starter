@@ -16,6 +16,8 @@ Program.debug = true;
 Program.debug = false;
 /// #endif
 
+console.log( "Program.debug", Program.debug );
+
 
 TextureCodecs.registerCodec( new TextureCodecStd() );
 TextureCodecs.registerCodec( new TextureCodecWebp() );

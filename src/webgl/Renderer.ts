@@ -8,9 +8,9 @@ import Viewport from "./core/Viewport";
 import DebugDraw from "./dev/debugDraw/DebugDraw";
 import { ColorGui } from "./dev/gui/decorators";
 import GLView from "./GLView";
-import Scene from "./scene";
+import { IScene } from "./scenes/IScene";
+import SceneSelector from "./scenes/SceneSelector";
 import Tests from "./tests";
-
 
 export default class Renderer {
 
@@ -18,21 +18,18 @@ export default class Renderer {
   ilayer    : HTMLElement
   cameras   : Cameras
 
-  @ColorGui
+  @ColorGui({folder:'Misc'})
   clearColor = vec4.fromValues(.95, .95, .95, 1)
   
-  tests: Tests;
-  scene: Scene;
+  tests: Tests
+  scenes: SceneSelector
 
   /**
    * main backbuffer viewport
    */
   readonly viewport = new Viewport()
   
-  
   readonly context: MainRenderContext;
-
-  
 
   
 
@@ -44,14 +41,11 @@ export default class Renderer {
 
     DebugDraw.init( glview.gl )
 
-    
-    this.tests = new Tests( this.gl )
-    this.scene = new Scene( this )
+    this.tests  = new Tests( this.gl )
+    this.scenes = new SceneSelector( this.gl )
     this.cameras = new Cameras(this)
     this.context = new MainRenderContext( this.gl, this.viewport )
-
   }
-
 
   get gl(): GLContext{
     return this.glview.gl
@@ -70,9 +64,10 @@ export default class Renderer {
   }
 
 
-  load(): Promise<void>{
-    return this.scene.load()
-  }
+
+  // load(): Promise<void>{
+  //   return this.scenes.load()
+  // }
 
 
   private _onViewRender = (dt:number)=>{
@@ -87,25 +82,25 @@ export default class Renderer {
     const c = this.clearColor
     gl.clearColor(c[0], c[1], c[2], c[3])
     gl.clear( this.gl.COLOR_BUFFER_BIT );
-
-    this.renderScene()
+    
+    this.renderScene( this.scenes.current )
+    
     DebugDraw.render(this.context)
   }
 
-  private renderScene( ){
-
+  private renderScene( scene : IScene ){
+    if( !scene ) return
 
     this.cameras.preRender()
-    this.scene.preRender()
+    scene.preRender()
 
-    this.scene.root.updateWorldMatrix()
+    this.camera.updateViewProjectionMatrix(this.viewport.width, this.viewport.height);
 
-    this.camera.updateViewProjectionMatrix(this.width, this.height);
+    scene.rttPass()
+    scene.render(this.context.withMask(RenderMask.OPAQUE))
+    scene.render(this.context.withMask(RenderMask.BLENDED))
 
-    this.scene.rttPass()
-    this.scene.render(this.context.withMask(RenderMask.OPAQUE))
-    this.scene.render(this.context.withMask(RenderMask.BLENDED))
-    this.tests.render()
+    // this.tests.render()
     
   }
 

@@ -1,13 +1,12 @@
 
 
-import IBL from 'nanogl-pbr/lighting/Ibl'
+import Ibl from 'nanogl-pbr/lighting/Ibl'
 import Texture2D from 'nanogl/texture-2d';
 import { GLContext } from 'nanogl/types';
 import { loadBytes, loadImage } from '@webgl/resources/Net';
-import gui from '@webgl/dev/gui';
 
 
-export default class IblLight extends IBL {
+export default class IblLight extends Ibl {
 
   private _ambientExposure = 1.0
   private _rawSH = new Float32Array(9*3)
@@ -25,8 +24,6 @@ export default class IblLight extends IBL {
 
   constructor( gl:GLContext ){
     super( new Texture2D( gl, gl.RGBA, gl.UNSIGNED_BYTE ), new Float32Array(7*4) )
-    this.envRotation = 3
-    gui.add( this, 'envRotation', 0, Math.PI*2 )
   }
 
 
@@ -42,7 +39,7 @@ export default class IblLight extends IBL {
 
 
   private _updateSh():void{
-    this.sh.set( IBL.convert(this._rawSH, this.ambientExposure ) )
+    this.sh.set( Ibl.convert(this._rawSH, this.ambientExposure ) )
   }
 
 }

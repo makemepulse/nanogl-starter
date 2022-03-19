@@ -1,5 +1,6 @@
 
 import Signal from '@/core/Signal';
+import ResizeObserver from 'resize-observer-polyfill';
 import { GLContext } from 'nanogl/types';
 
 /**
@@ -7,7 +8,7 @@ import { GLContext } from 'nanogl/types';
  * @param dt 
  * @returns 
  */
- function clampDt(dt: number): number {
+function clampDt(dt: number): number {
   if (dt > 1 / 5 || dt < 1 / 180) {
     dt = 1 / 60
   }
@@ -15,7 +16,7 @@ import { GLContext } from 'nanogl/types';
 }
 
 
-function now(){
+function now() {
   return performance.now()
 }
 
@@ -25,7 +26,6 @@ class GLView {
 
   pixelRatio: number
   gl: GLContext
-  
 
   /**
    * use window.innerXXX to infer canvas size and avoid coslty "compute layout". otherwise use canvas clientWidth/clientHeight
@@ -33,14 +33,15 @@ class GLView {
    */
   useWindowSize = true
 
-  width       : number
-  height      : number
-  canvasWidth : number
+  width: number
+  height: number
+  canvasWidth: number
   canvasHeight: number
   previousTime: number
 
-  _rafId      : number
-  _playing: boolean
+  private _rafId: number
+  private _playing: boolean
+  private _resizeObs: ResizeObserver;
 
   onRender = new Signal<number>()
   onResize = new Signal<void>()
@@ -97,18 +98,18 @@ class GLView {
     this._rafId = 0;
     this._playing = false;
 
+    this._resizeObs = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      this._handleResize(width, height);
+    })
 
   }
 
 
 
 
-  onWindowResize = ():void=>{
-    this._checkSize()
-  }
 
-
-  updateSize():void {
+  updateSize(): void {
     const pr = this.pixelRatio;
 
     this.canvas.width = Math.ceil(pr * this.canvasWidth / 4.0) * 4.0;
@@ -120,18 +121,7 @@ class GLView {
 
 
 
-  _checkSize():boolean {
-    let w : number
-    let h : number
-
-    if( this.useWindowSize ){
-      w = window.innerWidth;
-      h = window.innerHeight;
-    } else {
-      w = this.canvas.clientWidth;
-      h = this.canvas.clientHeight;
-    }
-
+  _handleResize(w: number, h: number): boolean {
 
     if (isNaN(w) || isNaN(h) || w === 0 || h === 0) {
       return false;
@@ -145,29 +135,28 @@ class GLView {
     return true;
   }
 
-  
-  start():void {
-    window.addEventListener('resize', this.onWindowResize)
-    this.onWindowResize()
+
+  start(): void {
+    this._resizeObs.observe(this.canvas);
     this._playing = true;
-    this.frame( now() );
+    this.frame(now());
     this.previousTime = now();
   }
 
-  stop():void {
-    window.removeEventListener('resize', this.onWindowResize)
+  stop(): void {
+    this._resizeObs.disconnect()
     this._playing = false;
     this._rafId = 0;
   }
 
 
 
-  _requestFrame():void {
+  _requestFrame(): void {
     window.cancelAnimationFrame(this._rafId);
     this._rafId = window.requestAnimationFrame(this.frame);
   }
 
-  frame = (time:number):void => {
+  frame = (time: number): void => {
     if (!this._playing) {
       return
     }
@@ -175,10 +164,10 @@ class GLView {
     let dt = (time - this.previousTime) / 1000
     this.previousTime = time
 
-    dt = clampDt( dt )
+    dt = clampDt(dt)
 
     this.onRender.emit(dt)
-    
+
     if (this._playing) {
       this._requestFrame();
     }

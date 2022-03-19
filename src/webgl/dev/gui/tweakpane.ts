@@ -1,22 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ColorInputParams, FolderApi, ListItem } from "@tweakpane/core";
+import { ColorInputParams, FolderApi, ListItem, MonitorBindingApi } from "@tweakpane/core";
 import { InputBindingApi, ListApi, NumberInputParams, Pane } from "tweakpane";
 import { Color, Control, Gui } from "./api";
 import { VecColorInputPlugin } from "./plugins/tp-color";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
+import {RadioGridBladeParams} from '@tweakpane/plugin-essentials/dist/types/radio-grid/blade-plugin'
+import * as TweakpaneRotationInputPlugin from '@0b5vr/tweakpane-plugin-rotation'
+import { quat } from "gl-matrix";
 // import * as TweakpaneThumbnailListPlugin from 'tweakpane-plugin-thumbnail-list'
 // import { Thumbnail } from "tweakpane-plugin-thumbnail-list/src/controller";
 
+class QuatWrapper {
+  constructor(public q:quat){}
+
+  get x(){return this.q[0]}
+  set x(v:number){this.q[0]=v}
+
+  get y(){return this.q[1]}
+  set y(v:number){this.q[1]=v}
+
+  get z(){return this.q[2]}
+  set z(v:number){this.q[2]=v}
+
+  get w(){return this.q[3]}
+  set w(v:number){this.q[3]=v}
+}
 
 const root = new Pane()
 
 root.registerPlugin( {plugin:VecColorInputPlugin} )
 root.registerPlugin( EssentialsPlugin )
+root.registerPlugin( TweakpaneRotationInputPlugin )
 // root.registerPlugin( TweakpaneThumbnailListPlugin )
 
+const _controlsByTarget = new WeakMap<any, Control<any>[]>()
 
-type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T>
+function registerCtrl( target:any, ctrl:Control<any> ){
+  let l  = _controlsByTarget.get(target)
+  if( !l ){
+    l = []
+    _controlsByTarget.set(target, l)
+  }
+  l.push(ctrl)
+}
+
+type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T> | MonitorBindingApi<T>
 
 class TweakControl<T> implements Control<T>{
 
@@ -28,6 +57,7 @@ class TweakControl<T> implements Control<T>{
     input.on( 'change', (v:any)=>{
       this._listeners.forEach( l=>l(v.value) )
     })
+    
   }
 
   valueOf(): T {
@@ -46,45 +76,114 @@ class TweakControl<T> implements Control<T>{
     this.input.label = s
   }
 
+  remove(): void {
+    this.input.dispose()
+  }
+
+}
+
+type RadioItem<T> = {
+  title:string,value:T
+}
+
+type TPGui = Gui & {
+  _getPane():FolderApi
+  _createFolder(name:string):TPGui
 }
 
 
 function _factory( pane : FolderApi ){
-  const _folders = new Map<string,Gui>()
 
-  const gui : Gui = {
+  const _folders = new Map<string,TPGui>()
+
+  function createFoldersRecursivly( dirs:string[]):TPGui {
+    let cgui = gui;
+    for (const fname of dirs) {
+      if( fname !== '')
+        cgui = cgui._createFolder(fname) as TPGui
+    }
+    return cgui
+  }
+
+
+  function resolvePath( label:string ):{gui:TPGui, label:string }{
+    const a = label.split('/')
+    if( a.length===1){
+      return {gui, label}
+    } else {
+      label = a.pop()
+      const gui = createFoldersRecursivly(a)
+      return {gui, label }
+    }
+  }
+
+
+  const gui : TPGui = {
 
     add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, min?: number, max?: number): Control<O[Key]> {
       const opts: NumberInputParams = { min, max };
-      const ctrl = pane.addInput(tgt, prop, opts);
-      return new TweakControl(ctrl, () => tgt[prop]);
+      const input = pane.addInput(tgt, prop, opts);
+      const ctrl = new TweakControl(input, () => tgt[prop]);
+      registerCtrl( tgt, ctrl )
+      return ctrl
+    },
+
+
+    monitor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
+      const input = pane.addMonitor(tgt, prop);
+      const ctrl = new TweakControl(input, () => tgt[prop]);
+      registerCtrl( tgt, ctrl )
+      return ctrl
     },
     
     
     addColor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<Color> {
       const alpha = tgt[prop].length === 4
       const opts: ColorInputParams = {view:'color', alpha, picker: 'inline',};
-      const ctrl = pane.addInput(tgt, prop, opts);
-      return new TweakControl(ctrl, () => tgt[prop]);
+      const input = pane.addInput(tgt, prop, opts);
+      const ctrl = new TweakControl(input, () => tgt[prop]);
+      registerCtrl( tgt, ctrl )
+      return ctrl
+    },
+
+    addRotation<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<quat> {
+      const r = tgt[prop]
+      const o = {[prop]:new QuatWrapper(r)}
+      // const o = {q:{x:r[0],y:r[1],z:r[2],w:r[3]}}
+      const input = pane.addInput(o, prop, {
+        view: 'rotation',
+        rotationMode: 'quaternion', // optional, 'quaternion' by default
+        picker: 'inline', // or 'popup'. optional, 'popup' by default
+        expanded: true, // optional, false by default
+      })
+      const ctrl = new TweakControl<quat>(input, () => tgt[prop]);
+      registerCtrl( tgt, ctrl )
+      return ctrl
     },
     
 
     addSelect<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, options:Record<string, O[Key]> | O[Key][]): Control<O[Key]> {
       const ctrl = gui.select( prop, options )
       ctrl.onChange( v=>tgt[prop]=v)
+      registerCtrl( tgt, ctrl )
       return ctrl
     },
     
     
+    addRadios<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, options:O[Key][]): Control<O[Key]> {
+      const ctrl = gui.radios( prop, options )
+      ctrl.onChange( v=>tgt[prop]=v)
+      registerCtrl( tgt, ctrl )
+      return ctrl
+    },
+
   
     btn(name: string, fn: (name?: string) => void): void {
-      const btn = pane.addButton({
-        title: name,
-      });
-      btn.on( 'click', ()=>{
-        fn(name)
-      })
+      const {label:title, gui} = resolvePath(name)
+      const btn = gui._getPane().addButton({title});
+      btn.on( 'click', ()=>fn(title))
     },
+    
     
     btns( btns:Record<string, (name?:string)=>void> ): void {
 
@@ -103,8 +202,10 @@ function _factory( pane : FolderApi ){
     },
 
 
-    select<T>( label: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>{
+
+    select<T>( name: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>{
       
+      const {label, gui} = resolvePath(name)
       let options : ListItem<T>[]
 
       if( Array.isArray(o)){
@@ -113,23 +214,7 @@ function _factory( pane : FolderApi ){
         options = Object.entries(o).map( e=>({text:e[0], value:e[1] }))
       }
 
-      // const useThumbnail = ( thumbnailResolver !== undefined )
-
-      // if( useThumbnail ){
-      //   options.forEach( o=>{
-      //     (o as any as Thumbnail).src = thumbnailResolver(o.value)
-      //   })
-      // }
-
-      // const target = {
-      //   prop: options[0].value
-      // }
-
-      // const list = pane.addInput(target, 'prop', {
-      //   view: useThumbnail?'thumbnail-list':'list',
-      //   options
-      // }) 
-      const list:ListApi<T> = pane.addBlade({
+      const list:ListApi<T> = gui._getPane().addBlade({
         // view: useThumbnail?'thumbnail-list':'list',
         view: 'list',
         label,
@@ -142,7 +227,60 @@ function _factory( pane : FolderApi ){
     },
   
 
-    folder(name:string): Gui {
+
+
+    radios<T>( name: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>{
+      
+      const {label, gui} = resolvePath(name)
+      let options : RadioItem<T>[]
+
+      if( Array.isArray(o)){
+        options = o.map( v=>({title:String(v), value:v }))
+      } else {
+        options = Object.entries(o).map( e=>({title:e[0], value:e[1] }))
+      }
+
+      const params : RadioGridBladeParams<T> = {
+        view: 'radiogrid',
+        cells: (x:number) => options[x],
+        groupName:label,
+        size: [options.length, 1],
+        label,
+        options,
+        value: options[0].value,
+      }
+      const list:ListApi<T> = gui._getPane().addBlade(params) as ListApi<T>;
+
+      return new TweakControl(list, () => list.value );
+    },
+  
+
+    folder(name:string): TPGui {
+      return createFoldersRecursivly(name.split('/') )
+    },
+
+    clearTarget(tgt:any): void {
+      const ctrls = _controlsByTarget.get(tgt)
+      if( ctrls ){
+        ctrls.forEach( ctrl=>ctrl.remove() )
+        _controlsByTarget.delete(tgt)
+      }
+    },
+
+    clearFolder(name:string): void {
+      const folder = _folders.get( name );
+      folder?.clear()
+    },
+
+    clear():void {
+      for (const c of pane.children) {
+        pane.remove( c )
+      }
+    },
+
+
+    _createFolder(name:string): TPGui {
+
       let folder = _folders.get( name );
       if( !folder ){
         folder = _factory( pane.addFolder({
@@ -154,16 +292,10 @@ function _factory( pane : FolderApi ){
       return folder
     },
 
-    reset():void {
-      for (const c of pane.children) {
-        pane.remove( c )
-      }
-
-      // if( pane !== root ){
-      //   pane.dispose()
-      // }
-    }
-
+    
+    _getPane():FolderApi {
+      return pane
+    },
     
   }
 
@@ -240,6 +372,5 @@ save.on('click', (ev:any) => {
 // setTimeout(LSLoad, 200)
 
 root.addSeparator()
-
 
 export default gui

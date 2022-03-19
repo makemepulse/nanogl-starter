@@ -205,7 +205,9 @@ function scheduleTextureReload(r:TextureResource[]){
 }
 
 function handleTextureUpdate(asset: TextureAsset, fileInfos: FileInfos) {
-  const codec = getTextureCodec( fileInfos )
+  //const codec = getTextureCodec( fileInfos )
+  // reload only jpg
+  const codec = 'std'//getTextureCodec( fileInfos )
   const source = asset.sources.find( s=>s.codec === codec)
   source.lods[0].files[0] = fileInfos.path
   scheduleTextureReload( asset._resources )
@@ -236,7 +238,7 @@ if( module.hot ){
         handleFileUpdate( k,reloadedFiles(k) );
       })
     }
-    );
-  }
+  );
+}
 
   /// #endif

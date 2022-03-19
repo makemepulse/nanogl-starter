@@ -220,11 +220,11 @@ export default class Gltf {
   }
 
 
+  getNode     ( name:string ): Node      { return this.getElementByName( GltfTypes.NODE     , name ) }
   getMesh     ( name:string ): Mesh      { return this.getElementByName( GltfTypes.MESH     , name ) }
   getMaterial ( name:string ): IMaterial { return this.getElementByName( GltfTypes.MATERIAL , name ) }
-  getNode     ( name:string ): Node      { return this.getElementByName( GltfTypes.NODE     , name ) }
   getAnimation( name:string ): Animation { return this.getElementByName( GltfTypes.ANIMATION, name ) }
-  
+
   
   private _getCollection<T extends GltfTypes>(type: T): ElementCollection<ElementOfType<T>> {
     return this._collections.get(type) as ElementCollection<ElementOfType<T>>;

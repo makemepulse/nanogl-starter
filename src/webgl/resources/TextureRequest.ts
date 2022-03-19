@@ -1,28 +1,36 @@
 import TextureData from "./TextureData";
 
 
-export enum TextureWrap {
-  CLAMP,
-  REPEAT,
-  MIRROR,
-}
-
-export enum TextureFiltering {
-  NEAREST                        = 0x2600,
-  LINEAR                         = 0x2601,
-  NEAREST_MIPMAP_NEAREST         = 0x2700,
-  LINEAR_MIPMAP_NEAREST          = 0x2701,
-  NEAREST_MIPMAP_LINEAR          = 0x2702,
-  LINEAR_MIPMAP_LINEAR           = 0x2703,
-}
-
 
 export interface ITextureRequestOptions {
-  bbc       : boolean
-  flipY     : boolean
-  genMips   : boolean
-  wrap      : TextureWrap
-  filtering : TextureFiltering
+  /**
+   * if true, standard texture use RGBA format instead of RGB
+   */
+  alpha      : boolean
+  smooth     : boolean
+  mipmap     : boolean
+  miplinear  : boolean
+  aniso: 0|2|4|8|16
+  wrap: 'repeat'|'clamp'|'mirror'
+}
+
+const _DEFAULT_OPTS : Readonly<ITextureRequestOptions> = {
+  alpha: false,
+  smooth: true,
+  mipmap: false,
+  miplinear: false,
+  aniso: 0,
+  wrap: 'repeat',
+}
+
+/**
+ * Resolve  complete / default texture options from partial or undefined one
+ * @param opts partial options or undefined
+ * @returns 
+ */
+export function resolveTextureOptions( opts?:Partial<ITextureRequestOptions> ): Readonly<ITextureRequestOptions> {
+  if( opts ) return Object.assign( {}, _DEFAULT_OPTS, opts)
+  return _DEFAULT_OPTS
 }
 
 
@@ -40,7 +48,7 @@ export interface ITextureRequestSource {
 
 
 export interface ITextureRequest {
-  options : ITextureRequestOptions;
+  options : Partial<ITextureRequestOptions>;
   sources : ITextureRequestSource[];
 }
 
@@ -106,7 +114,7 @@ export class CubeSrcSet implements ITextureRequest {
             files: [sources[codec][i]],
             buffers: null
           }
-        );
+        )
       }
 
       this.sources.push( {

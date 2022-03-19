@@ -35,6 +35,10 @@ module.exports = {
       .alias
         .set('@webgl', path.resolve( __dirname, 'src/webgl'))
 
+        .set('nanogl', path.resolve( __dirname, '../../nanogl/nanogl'))
+        .set('nanogl-pbr', path.resolve( __dirname, '../../nanogl/nanogl-pbr'))
+
+
 
     config.module.rule('glsl')
       .test(/\.(vert|frag|glsl)$/ )

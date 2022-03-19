@@ -77,6 +77,8 @@ interface BaseTextureData {
   format        : GLenum
   internalformat: GLint
   type          : GLenum
+
+  requireMipmapGen : boolean
   
   /**
    * quality levels or lods
@@ -88,6 +90,7 @@ interface BaseTextureData {
 export interface CompressedTextureData extends BaseTextureData {
   datatype : TextureDataType.RAW_COMPRESSED
   sources : TextureSource<ArrayBufferView>[]
+  requireMipmapGen : false
 }
 
 

@@ -1,102 +1,86 @@
 
+import { createMaxCamera } from '@webgl/dev/cameras';
 import gui         from '@webgl/dev/gui'
+import { Control } from '@webgl/dev/gui/api';
 
 import { DEG2RAD } from "@webgl/math";
 import Renderer from "@webgl/Renderer";
 import { mat4 } from "gl-matrix";
 import Camera from "nanogl-camera";
 import PerspectiveLens from "nanogl-camera/perspective-lens";
-import MaxController from './MaxController';
 
 import CameraManager from './CameraManager';
 
 
+export type CameraName = 'main' | 'dev' | string
+
 
 export default class Cameras {
 
+  private _managers = new Map<CameraName,CameraManager<PerspectiveLens>>()
+
   private _current: CameraManager<PerspectiveLens>;
-
-  public get current(): CameraManager<PerspectiveLens> {
-    return this._current;
-  }
-  
-  public set current(value: CameraManager<PerspectiveLens>) {
-    this._current = value;
-  }
-
-  mainManager    : CameraManager<PerspectiveLens>
-  devManager     : CameraManager<PerspectiveLens>
-
-  maxcam    : MaxController
-  
-  get mainCamera():Camera<PerspectiveLens> {
-    return this.mainManager.camera
-  }
-  
-  get devCamera():Camera<PerspectiveLens> {
-    return this.devManager.camera
-  }
-
-  useMainCam():void {
-    this._current = this.mainManager
-  }
-
-  useDevCam():void {
-    this._current = this.devManager
-  }
-  
-  
   
   constructor( readonly renderer:Renderer ){
-
-
-    // CAMERA
-    // ======
-    this.mainManager   = new CameraManager(this.makeDefaultCamera())
-    this.devManager    = new CameraManager(this.makeDefaultCamera())
-    this._current = this.devManager
-
-    // CONTROLERS
-    // ======
-    this.maxcam    = new MaxController(renderer.ilayer)
-    this.devManager.setControler( this.maxcam )
-
-    // GRAPH
-    // ======
-    renderer.scene.root.add( this.mainCamera )
-    renderer.scene.root.add( this.devCamera  )
-
+    const mainManager   = new CameraManager(Cameras.makeDefaultCamera())
+    this.registerCamera( mainManager, 'main' )
     
-    const g = gui.folder( 'cameras' )
-    g.btns({
-      main:()=>{this.useMainCam()},
-      dev :()=>{this.useDevCam()},
-      log:()=>{console.log( this.camera._matrix )},
-    })
+    
+    /// #if DEBUG
+    /** enable debug cameras */
+    this.registerCamera( createMaxCamera(renderer), 'dev' )
+    // this.registerCamera( createBlenderCamera(renderer), '' )
+    this._gui()
 
-    g.add(this.mainCamera.lens, 'near', .1, 50)
-    g.add(this.mainCamera.lens, 'far', 10, 200)
+    this.use( 'dev' )
+    
+    /// #else
+    this.use( 'main' )
+    /// #endif
 
   }
 
   /**
-   * the rendered camera
+   * the active camera
    */
   get camera()     : Camera<PerspectiveLens>{
     return this._current.camera
   }
 
-  get controler(): CameraManager {
+  get mainCamera():Camera<PerspectiveLens> {
+    return this._managers.get( 'main' ).camera
+  }
+
+  get current(): CameraManager {
     return this._current
+  }
+
+  use( name:CameraName ):void {
+    this._current?.stop()
+    console.assert( this._managers.has(name), `camera manager ${name} doesn't exist` )
+    this._current = this._managers.get( name )
+    this._current?.start()
+    
+    /// #if DEBUG
+    this._updateCurrentGui()
+    /// #endif
+  }
+
+  
+  registerCamera( manager : CameraManager<PerspectiveLens>, name:CameraName ):void {
+    console.assert( !this._managers.has(name), `camera manager ${name} already registered` )
+    this._managers.set( name, manager )
+    // this.renderer.scene.root.add( manager.camera )
   }
 
 
   preRender():void{
-    this.controler.preRender()
+    this.current.preRender()
+    this.camera.updateWorldMatrix()
   }
 
 
-  makeDefaultCamera():Camera<PerspectiveLens> {
+  static makeDefaultCamera():Camera<PerspectiveLens> {
     // const camera = Camera.makePerspectiveCamera()
     const camera = new Camera( new PerspectiveLens() );
     camera.lens.setAutoFov(35.0 * DEG2RAD) //80
@@ -109,5 +93,33 @@ export default class Cameras {
 
     return camera
   }
+
+
+
+
+
+
+  /// #if DEBUG
+  private _gui(){
+    const g = gui.folder( 'cameras' )
+    const names = Array.from(this._managers.keys())
+    g.radios<CameraName>( 'camera', names).onChange( name=>this.use(name) )
+    g.btn( 'log matrix', ()=>console.log( Array.from(this.camera._matrix )))
+    g.btn( 'log position', ()=>console.log( Array.from(this.camera._wposition )))
+    g.btn( 'place devcam to main', ()=>{
+      this._managers.get( 'dev' ).camera.setMatrix( this.mainCamera._matrix )
+    })
+  }
+
+  private _cguiCtrls:Control<unknown>[] = []
+
+  private _updateCurrentGui(){
+    const g = gui.folder( 'cameras' )
+    this._cguiCtrls.forEach( c=>c.remove())
+    this._cguiCtrls.length = 0
+    this._cguiCtrls.push( g.add(this.camera.lens, 'near', .1, 50) )
+    this._cguiCtrls.push( g.add(this.camera.lens, 'far', 10, 200) )
+  }
+  /// #endif
 
 }

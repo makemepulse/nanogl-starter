@@ -24,6 +24,7 @@ export interface RenderContext {
   readonly glConfig?: GLConfig
 }
 
+
 export class MainRenderContext implements RenderContext {
 
   public get gl(): GLContext {

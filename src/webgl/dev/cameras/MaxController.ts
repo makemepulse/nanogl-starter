@@ -1,6 +1,6 @@
+import { ICameraController } from "@webgl/cameras/ICameraController";
 import { quat, vec3, mat4 } from "gl-matrix";
 import Camera from "nanogl-camera";
-import { ICameraController } from "./ICameraController";
 import PerspectiveLens from "nanogl-camera/perspective-lens";
 
 

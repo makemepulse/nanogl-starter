@@ -5,6 +5,7 @@ import { ICameraController } from "./ICameraController";
 
 
 export default class CameraManager<T extends ICameraLens = ICameraLens> {
+  private _active = false
 
   private _controler: ICameraController
 
@@ -13,7 +14,21 @@ export default class CameraManager<T extends ICameraLens = ICameraLens> {
   setControler( ctrl:ICameraController ):void {
     this._controler?.stop()
     this._controler = ctrl;
-    ctrl?.start( this.camera );
+    if( this._active )  ctrl?.start( this.camera );
+  }
+
+  start():void{
+    if( !this._active ){
+      this._active = true;
+      this._controler?.start( this.camera );
+    }
+  }
+
+  stop():void{
+    if( this._active ){
+      this._active = false;
+      this._controler?.stop();
+    }
   }
 
   preRender():void {

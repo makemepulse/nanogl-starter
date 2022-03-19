@@ -1,5 +1,5 @@
 import { ITextureCodec } from "./TextureCodec";
-import { ITextureRequestSource } from "./TextureRequest";
+import { ITextureRequestOptions, ITextureRequestSource } from "./TextureRequest";
 import { TextureType } from "nanogl/texture-base";
 import Deferred from "@/core/Deferred";
 import { TextureDataType, TextureMip } from "./TextureData";
@@ -23,11 +23,8 @@ export default class TextureCodecStd implements ITextureCodec {
   
   name = 'std';
 
-  isPNG: boolean;
-
   decodeImage( bytes:ArrayBuffer ) : Promise<HTMLImageElement|ImageBitmap> {
     const imageType : string = getImageType(bytes);
-    this.isPNG = imageType == 'image/png' ? true : false;
     return TextureCodecStd.decodeImage(bytes, imageType)
   }
   
@@ -65,7 +62,7 @@ export default class TextureCodecStd implements ITextureCodec {
 
 
 
-  async decodeLod(source: ITextureRequestSource, lod: number): Promise<void> {
+  async decodeLod(source: ITextureRequestSource, lod: number, options: ITextureRequestOptions): Promise<void> {
 
 
     const requestLod = source.lods[lod];
@@ -78,10 +75,9 @@ export default class TextureCodecStd implements ITextureCodec {
       data : image
     }
 
-    const fmt = this.isPNG ? 0x1908 : 0x1907;
+    const fmt = options.alpha ? 0x1908 : 0x1907;
 
     source.datas = {
-      
       datatype       : TextureDataType.IMAGE ,
       format         : fmt                   , // RGB || RGBA
       internalformat : fmt                   , // RGB || RGBA
@@ -89,7 +85,8 @@ export default class TextureCodecStd implements ITextureCodec {
       textureType    : TextureType.TEXTURE_2D,
       width          : image.width           ,
       height         : image.height          ,
-
+      requireMipmapGen : options.mipmap,
+      
       sources : [{
         surfaces : [[mip]]
       }]
@@ -99,18 +96,20 @@ export default class TextureCodecStd implements ITextureCodec {
   }
 
 
-  async decodeCube(source: ITextureRequestSource) : Promise<void>{
+  async decodeCube(source: ITextureRequestSource, options: ITextureRequestOptions) : Promise<void>{
 
+    const fmt = options.alpha ? 0x1908 : 0x1907;
 
     source.datas = {
       
-      datatype       : TextureDataType.IMAGE ,
-      format         : 0x1907                , // RGB
-      internalformat : 0x1907                , // RGB
-      type           : 0x1401                , // unsigned byte
-      textureType    : TextureType.TEXTURE_CUBE,
-      width          : 1024                  ,
-      height         : 1024                  ,
+      requireMipmapGen : options.mipmap,
+      datatype         : TextureDataType.IMAGE ,
+      format           : fmt                , // RGB
+      internalformat   : fmt                , // RGB
+      type             : 0x1401                , // unsigned byte
+      textureType      : TextureType.TEXTURE_CUBE,
+      width            : 1024                  ,
+      height           : 1024                  ,
 
       sources : [{
         surfaces : []
