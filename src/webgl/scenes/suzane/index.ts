@@ -26,7 +26,6 @@ export default class SuzanneScene implements IGLContextProvider, IScene {
   preRender():void {
     this.gltfSample.preRender()
     this.root.updateWorldMatrix()
-    console.log( this.lighting.ibl._matrix)
   }
 
   rttPass():void {

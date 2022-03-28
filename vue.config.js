@@ -35,8 +35,8 @@ module.exports = {
       .alias
         .set('@webgl', path.resolve( __dirname, 'src/webgl'))
 
-        .set('nanogl', path.resolve( __dirname, '../../nanogl/nanogl'))
-        .set('nanogl-pbr', path.resolve( __dirname, '../../nanogl/nanogl-pbr'))
+        // .set('nanogl', path.resolve( __dirname, '../../nanogl/nanogl'))
+        // .set('nanogl-pbr', path.resolve( __dirname, '../../nanogl/nanogl-pbr'))
 
 
 
@@ -64,7 +64,8 @@ module.exports = {
       .use( 'file-loader' )
         .loader( 'file-loader' )
           .options({
-            name: 'assets/webgl/[name].[hash:8].[ext]'
+            name: 'assets/webgl/[name].[hash:8].[ext]',
+            esModule: false
           })
   }
 

@@ -11,7 +11,7 @@ export default class IblLight extends Ibl {
   private _ambientExposure = 1.0
   private _rawSH = new Float32Array(9*3)
 
-  sh: Float32Array;
+  declare sh: Float32Array;
 
   public get ambientExposure(): number {
     return this._ambientExposure

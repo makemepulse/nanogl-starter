@@ -2,10 +2,11 @@ import DebugDraw from "@webgl/dev/debugDraw/DebugDraw";
 import { TextureSrcSet } from "@webgl/resources/TextureRequest";
 import { TextureResource } from "@webgl/resources/TextureResource";
 import WebglAssets from "@webgl/resources/WebglAssets";
+import { IScene } from "@webgl/scenes/IScene";
 import { vec3 } from "gl-matrix";
 import { GLContext } from "nanogl/types";
 
-export default class TestDebugDraw{
+export default class DebugDrawScene implements IScene {
 
   textures: TextureResource[]
   ready: boolean;
@@ -27,18 +28,19 @@ export default class TestDebugDraw{
 
   }
 
+  
   async load() : Promise<void>{
     await this.texture1.load()
     await this.texture2.load()
     await Promise.all( this.textures.map( t=>t.load() ) )
     this.ready =true
   }
-
+  
   render(): void {
-
-
+    
+    
     if( ! this.ready ) return
-
+    
     DebugDraw.drawGuizmo( vec3.create() )
     DebugDraw.drawGuizmo( vec3.fromValues(1, 0, 0) )
     
@@ -50,9 +52,23 @@ export default class TestDebugDraw{
       DebugDraw.drawTexture( tex, x )   
       x += tex.width
     }
+    
+    DebugDraw.drawText( 'Hey!?', vec3.fromValues(0, 0, 0) )
+    DebugDraw.drawText( 'ABCDEFGHIJKLMNOPQRSTU', vec3.fromValues(0, 1, 0) )
+    DebugDraw.drawText( '-_,:()[]%#@', vec3.fromValues(0, 1.5, 0) )
 
-    // DebugDraw.drawText( 'Hey! Ca va?', vec3.fromValues(0, 0, 0) )
-    // DebugDraw.drawText( 'ABCDEFGHIJKLMNOPQRSTU', vec3.fromValues(0, 1, 0) )
-    // DebugDraw.drawText( ',:()[]%#@', vec3.fromValues(0, 1.5, 0) )
+    const t = performance.now()/5000
+    const pos = vec3.fromValues(Math.cos(t), 0, Math.sin(t)) 
+    DebugDraw.drawText( `[${pos[0].toPrecision(3)}-${pos[1].toPrecision(3)}]`, pos )
+  }
+
+  unload(): void {
+    0
+  }
+  preRender(): void {
+    0 
+  }
+  rttPass(): void {
+    0
   }
 }

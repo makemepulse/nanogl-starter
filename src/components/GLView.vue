@@ -1,25 +1,22 @@
 
-
 <template>
   <div class="glview">
   </div>
 </template>
 
 
-
 <script lang="ts">
 
-import Vue from 'vue'
-import Component from 'vue-class-component';
+import { Options, Vue } from 'vue-class-component';
 import GLApp from "@webgl/index";
 
-@Component
+@Options({})
 export default class GLView extends Vue {
 
   loaded = false
   isdestroyed = false
 
-  viewer: GLApp
+  viewer!: GLApp
 
 
   mounted(): void {

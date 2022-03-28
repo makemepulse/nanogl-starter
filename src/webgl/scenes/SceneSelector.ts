@@ -5,12 +5,14 @@ import { Monitor } from "@webgl/dev/gui/decorators"
 import Program from "nanogl/program"
 import { GLContext } from "nanogl/types"
 import { IScene } from "./IScene"
+import DebugDrawScene from "./DebugDraw"
 import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 
 const Scenes = {
   robot: RobotScene,
   suzanne: SuzanneScene,
+  debugdraw: DebugDrawScene,
 }
 
 export default class SceneSelector {

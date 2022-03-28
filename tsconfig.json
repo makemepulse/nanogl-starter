@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "module": "ESNext",
+    "module": "esnext",
     "strict": true,
     "jsx": "preserve",
     "importHelpers": true,
@@ -10,12 +10,13 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true,
     "forceConsistentCasingInFileNames": true,
+    "useDefineForClassFields": false,
     "strictPropertyInitialization": false,
     "strictNullChecks": false,
+    "downlevelIteration": true,
+    "sourceMap": true,
     "allowJs": true,
-    
     "baseUrl": ".",
     "types": [
       "webpack-env"
@@ -38,7 +39,9 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

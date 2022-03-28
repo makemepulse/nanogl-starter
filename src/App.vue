@@ -6,11 +6,11 @@
 
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Options, Vue } from 'vue-class-component'
 import GLView from './components/GLView.vue'
 
 
-@Component({
+@Options({
   components: {
     GLView,
   },
