@@ -12,12 +12,12 @@ precision {{@bestPrecision}} float;
 
 uniform vec3 uColor;
 
-const float N = 100.0; // grid ratio
+const float N = 150.0; // grid ratio
 
 float gridTextureGradBox( in vec2 p, in vec2 ddx, in vec2 ddy, float thickness )
 {
 	// filter kernel
-    vec2 w = max(abs(ddx), abs(ddy)) + 0.001;
+    vec2 w = max(abs(ddx), abs(ddy)) + 0.0001;
 
     // float n = N;
     float n = thickness;//.2/(min(length(ddx), length(ddy)));
@@ -41,7 +41,7 @@ void main(void){
   float grid = 
     gridTextureGradBox( vTexCoord, ddx_uv, ddy_uv, N ) *
     gridTextureGradBox( vTexCoord*10.0, ddx_uv*10.0, ddy_uv*10.0, N )*
-    gridTextureGradBox( vTexCoord/10.0, ddx_uv/10.0, ddy_uv/10.0, N*2.0 );
+    gridTextureGradBox( vTexCoord/10.0, ddx_uv/10.0, ddy_uv/10.0, N*3.0 );
     // *gridTextureGradBox( vTexCoord*100.0, ddx_uv*100.0, ddy_uv*100.0 );
 
   FragColor = vec4( uColor, 1.0-grid );
