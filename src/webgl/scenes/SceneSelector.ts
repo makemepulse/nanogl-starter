@@ -8,8 +8,10 @@ import { IScene } from "./IScene"
 import DebugDrawScene from "./DebugDraw"
 import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
+import AdamScene from "./adam"
 
 const Scenes = {
+  adam: AdamScene,
   robot: RobotScene,
   suzanne: SuzanneScene,
   debugdraw: DebugDrawScene,
@@ -26,7 +28,7 @@ export default class SceneSelector {
 
   constructor(private gl:GLContext){
 
-    Program.debug = true;
+    // this._setScene(new AdamScene(gl))
     this._setScene(new SuzanneScene(gl))
     gui.select( 'scene', Scenes ).onChange( v=> this._setScene(new v(gl)) )
     gui.btn( 'memTest', ()=> this.memTest() )

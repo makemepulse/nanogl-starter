@@ -19,7 +19,7 @@ import Texture              from "../elements/Texture"              ;
 import TextureInfo          from "../elements/TextureInfo"          ;
 import Node                 from "../elements/Node"                 ;
 import Image                from "../elements/Image"                ;
-import Gltf from "..";
+import Gltf from "../Gltf";
 import Gltf2 from "../types/Gltf2";
 import { ElementOfType, PropertyType, AnyElement } from "../types/Elements";
 import GltfTypes from "../types/GltfTypes";

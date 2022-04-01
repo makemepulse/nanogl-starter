@@ -1,4 +1,4 @@
-import Gltf from "..";
+import Gltf from "../Gltf";
 import IOInterface from "./IOInterface";
 import GltfLoader from "./GltfLoader";
 import { GltfLoaderOptions } from "./GltfLoaderOptions";

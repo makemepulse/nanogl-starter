@@ -5,7 +5,7 @@ import Gltf2 from "../../types/Gltf2";
 import { IDracoGeometry } from "./DecoderAPI";
 import GLIndexBuffer from 'nanogl/indexbuffer'
 import GLArrayBuffer from 'nanogl/arraybuffer'
-import Gltf from "../..";
+import Gltf from "../../Gltf";
 import GltfTypes from "../../types/GltfTypes";
 
 

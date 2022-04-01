@@ -22,6 +22,7 @@ export class CapabilitiesImpl {
   
   readonly textureExtensions: TextureExtensions
   readonly extAniso: EXT_texture_filter_anisotropic
+  readonly extIndexUint: OES_element_index_uint
   
   readonly maxAnisotropy : number
   
@@ -29,6 +30,9 @@ export class CapabilitiesImpl {
   readonly standardDerivatives: OES_standard_derivatives;
   
   readonly hasStandardDerivatives:boolean
+  
+  readonly support32BitIndices:boolean
+
 
   
   constructor( gl:GLContext ){
@@ -44,6 +48,8 @@ export class CapabilitiesImpl {
       gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
       gl.getExtension("EXT_texture_filter_anisotropic");
 
+    this.extIndexUint = gl.getExtension('OES_element_index_uint');
+
     this.maxAnisotropy = (this.extAniso) ? gl.getParameter(this.extAniso.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
 
     this.instancing = getInstancingImplementation( gl )
@@ -51,12 +57,39 @@ export class CapabilitiesImpl {
     if( !this.isWebgl2 ){
       this.standardDerivatives = gl.getExtension('OES_standard_derivatives');
       this.hasStandardDerivatives = this.standardDerivatives !== null
+      this.support32BitIndices = this.extIndexUint !== null
     } else {
       this.hasStandardDerivatives = true
+      this.support32BitIndices = true;
     }
     
   }
-  
+
+  /// #if DEBUG
+  report():void{
+
+    console.log(`WebGL capabilities`)
+    console.table({
+      ['isWebgl2'              ]: this.isWebgl2                ,
+      ['hasHighpPrecision'     ]: this.hasHighpPrecision       ,
+      ['hasMediumpPrecision'   ]: this.hasMediumpPrecision     ,
+      ['32bit indices'         ]: this.support32BitIndices     ,
+      ['anisotropic filtering' ]: this.extAniso!==null         ,
+      ['maxAnisotropy'         ]: this.maxAnisotropy           ,
+      ['instancing'            ]: this.instancing.isSupported  ,
+      ['hasStandardDerivatives']: this.hasStandardDerivatives  ,
+      ['support32BitIndices'   ]: this.support32BitIndices     ,
+      ['support DXT'           ]: this.textureExtensions.dxt !== null  ,
+      ['support PVR'           ]: this.textureExtensions.pvr !== null  ,
+      ['support ETC'           ]: this.textureExtensions.etc !== null  ,
+      ['support ASTC'          ]: this.textureExtensions.astc !== null ,
+
+
+    })
+  }
+  /// #else
+  // #code report():void{0;}
+  /// #endif
 }
 
 const _instances = new WeakMap<GLContext, CapabilitiesImpl>()

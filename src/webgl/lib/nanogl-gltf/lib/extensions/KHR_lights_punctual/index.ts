@@ -72,7 +72,7 @@ interface LightItemCollection {
   index: number; 
 } 
 
-class LightCollection{
+export class LightCollection{
 
   list: Light[];
 

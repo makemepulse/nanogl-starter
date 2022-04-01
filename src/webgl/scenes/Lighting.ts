@@ -66,6 +66,7 @@ export default class Lighting {
     this.ibl.enableRotation = true
     this.lightSetup = new LightSetup()
     this.lightSetup.add( this.ibl )
+    this.lightSetup.bounds.fromMinMax([-1,-1,-1],[1,1,1])
     this.root.add( this.ibl )
 
 

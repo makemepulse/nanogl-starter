@@ -16,7 +16,7 @@ import BaseMaterial from 'nanogl-pbr/BaseMaterial';
 import Primitive from './Primitive';
 import Node from './Node';
 import { IElement } from '../types/Elements';
-import Gltf from '..';
+import Gltf from '../Gltf';
 import Flag from 'nanogl-pbr/Flag';
 import { isAllZeros } from '../lib/Utils';
 import UnlitPass from 'nanogl-pbr/UnlitPass';
@@ -39,7 +39,7 @@ export interface IPbrInputsData {
 
 export interface IMaterial extends IElement {
   readonly gltftype: GltfTypes.MATERIAL
-  createMaterialForPrimitive( gl : GLContext, node : Node, primitive : Primitive ) : BaseMaterial
+  createMaterialForPrimitive( gltf:Gltf, node : Node, primitive : Primitive ) : BaseMaterial
 }
 
 
@@ -73,11 +73,12 @@ export abstract class GltfBaseMaterial<TPass extends GltfMaterialPass> implement
     return this._materialPass;
   }
 
-  createMaterialForPrimitive( gl : GLContext, node : Node, primitive : Primitive ) : BaseMaterial {
-    
+
+  createMaterialForPrimitive( gltf:Gltf, node : Node, primitive : Primitive ) : BaseMaterial {
+    const gl = gltf.gl
     this._materialPass.version.set( isWebgl2(gl) ? '300 es' : '100' )
 
-    const material = new BaseMaterial( gl, this._materialPass.name );
+    const material = new BaseMaterial( gl, this._materialPass.name )
     material.addPass( this._materialPass, 'color' )
 
     const normal = primitive.attributes.getSemantic( 'NORMAL')
@@ -94,6 +95,8 @@ export abstract class GltfBaseMaterial<TPass extends GltfMaterialPass> implement
       material.inputs.add( vcInput );
     }
 
+    material.addPass( gltf.depthPass, 'depth' );
+    
     return material;
   }
 

@@ -5,7 +5,7 @@ import Texture from './Texture';
 import GltfLoader from '../io/GltfLoader';
 import GltfTypes from '../types/GltfTypes';
 import { IElement } from '../types/Elements';
-import Gltf from '..';
+import Gltf from '../Gltf';
 import { Sampler } from 'nanogl-pbr/Input';
 import TexCoord from 'nanogl-pbr/TexCoord';
 

@@ -23,9 +23,10 @@ import { IExtensionFactory } from './extensions/IExtension';
 import GltfTypes from './types/GltfTypes';
 import { AnyElement, ElementOfType, IElement } from './types/Elements';
 import IRenderable from './renderer/IRenderable';
-import Assert from './lib/assert';
 import IRenderConfig, { DefaultRenderConfig } from './IRenderConfig';
-import Material from './elements/Material';
+import Primitive from './elements/Primitive';
+import Texture from './elements/Texture';
+import DepthPass from 'nanogl-pbr/DepthPass';
 
 
 class ElementCollection<T extends AnyElement = AnyElement>{
@@ -47,6 +48,10 @@ export default class Gltf {
   private static _extensionsRegistry: ExtensionsRegistry = new ExtensionsRegistry();
   private static _semantics    : ISemantics = new DefaultSemantics();
   private static _renderConfig : IRenderConfig = DefaultRenderConfig();
+
+    
+
+
   
   static addExtension(ext: IExtensionFactory) {
     Gltf._extensionsRegistry.addExtension(ext);
@@ -73,11 +78,14 @@ export default class Gltf {
   
   private _elements: AnyElement[];
   private _collections: Map<GltfTypes, ElementCollection>;
-  
-  
+
   readonly root : NanoglNode = new NanoglNode();
+  gl: GLContext
   renderables: IRenderable[];
   cameraInstances: NanoCamera[]
+  depthPass : DepthPass
+
+
   extras : any = {}
 
   constructor( ) {
@@ -115,15 +123,17 @@ export default class Gltf {
   }
 
 
-  async allocateGl(gl: GLContext): Promise<any> {
+  async allocate(gl: GLContext): Promise<void> {
+    this.gl = gl
 
-    const allocPromises: Promise<any>[] = []
-    for (const element of <IElement[]>this._elements) {
-      const p = element.allocateGl?.(gl);
-      p ?? allocPromises.push(p as Promise<any>);
-    }
 
-    await Promise.all(allocPromises);
+    this.depthPass = new DepthPass( gl );
+    this.depthPass.depthFormat.set("D_RGB");
+
+    await Promise.all(this.textures.map(t=>t.allocateGl(gl)))
+    this.primitives.forEach(p=>p.allocateGl(gl))
+    this.nodes.forEach(n=>n.allocateGl(this) )
+
 
     this.renderables = this.nodes
       .map( n=>n.renderable )
@@ -140,8 +150,9 @@ export default class Gltf {
 
   }
 
-  createCameras(){
-    
+
+
+  createCameras() {
     this.cameraInstances = this.nodes
       .filter( n=>n.camera!==undefined )
       .map( n=> {
@@ -153,42 +164,18 @@ export default class Gltf {
   }
 
 
-  get buffers(): Buffer[] {
-    return this._getCollection(GltfTypes.BUFFER).list;
-  }
 
-  get bufferViews(): BufferView[] {
-    return this._getCollection(GltfTypes.BUFFERVIEW).list;
-  }
-
-  get accessors(): Accessor[] {
-    return this._getCollection(GltfTypes.ACCESSOR).list;
-  }
-
-  get animations(): Animation[] {
-    return this._getCollection(GltfTypes.ANIMATION).list;
-  }
-
-  get meshes(): Mesh[] {
-    return this._getCollection(GltfTypes.MESH).list;
-  }
-
-  get nodes(): Node[] {
-    return this._getCollection(GltfTypes.NODE).list;
-  }
-
-  get materials(): IMaterial[] {
-    return this._getCollection(GltfTypes.MATERIAL).list;
-  }
-
-  get cameras(): Camera[] {
-    return this._getCollection(GltfTypes.CAMERA).list;
-  }
-
-  get skins(): Skin[] {
-    return this._getCollection(GltfTypes.SKIN).list;
-  }
-
+  get buffers    (): Buffer    [] {return this._getCollection(GltfTypes.BUFFER    ).list;}
+  get bufferViews(): BufferView[] {return this._getCollection(GltfTypes.BUFFERVIEW).list;}
+  get accessors  (): Accessor  [] {return this._getCollection(GltfTypes.ACCESSOR  ).list;}
+  get animations (): Animation [] {return this._getCollection(GltfTypes.ANIMATION ).list;}
+  get meshes     (): Mesh      [] {return this._getCollection(GltfTypes.MESH      ).list;}
+  get nodes      (): Node      [] {return this._getCollection(GltfTypes.NODE      ).list;}
+  get materials  (): IMaterial [] {return this._getCollection(GltfTypes.MATERIAL  ).list;}
+  get cameras    (): Camera    [] {return this._getCollection(GltfTypes.CAMERA    ).list;}
+  get skins      (): Skin      [] {return this._getCollection(GltfTypes.SKIN      ).list;}
+  get primitives (): Primitive [] {return this._getCollection(GltfTypes.PRIMITIVE ).list;}
+  get textures   (): Texture   [] {return this._getCollection(GltfTypes.TEXTURE   ).list;}
   
   
   

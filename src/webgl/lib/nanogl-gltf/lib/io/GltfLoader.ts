@@ -1,5 +1,5 @@
 
-import Gltf from "..";
+import Gltf from "../Gltf";
 
 import IOInterface from "./IOInterface";
 import { ExtensionList } from "../extensions/Registry";

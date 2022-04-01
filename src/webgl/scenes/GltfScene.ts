@@ -1,7 +1,7 @@
 import { RenderContext } from "@webgl/core/Renderer";
-import Gltf from "@webgl/lib/nanogl-gltf/lib";
 import Animation from "@webgl/lib/nanogl-gltf/lib/elements/Animation";
 import MaterialOverrideExtension from "@webgl/lib/nanogl-gltf/lib/extensions/MaterialOverrideExtension";
+import Gltf from "@webgl/lib/nanogl-gltf/lib/Gltf";
 import GLTFResource from "@webgl/resources/GltfResource";
 import Node from "nanogl-node";
 import BaseMaterial from "nanogl-pbr/BaseMaterial";
@@ -31,6 +31,9 @@ export class GltfScene extends GLTFResource {
     const gltf = await super.doLoad()
 
     if (this.lighting){
+
+      gltf.depthPass.depthFormat.set(this.lighting.lightSetup.depthFormat.value());
+      
       for (const material of gltf.materials) {
         if( materialIsStandard(material)){
           this.lighting.setupStandardPass(material.materialPass);

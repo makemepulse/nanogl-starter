@@ -8,6 +8,7 @@ import BaseMaterial from "nanogl-pbr/BaseMaterial";
 import { GLContext } from "nanogl/types";
 import Primitive from "../elements/Primitive";
 import Node from "../elements/Node";
+import Gltf from "../Gltf";
 
 
 
@@ -23,7 +24,7 @@ class OverrideMaterial implements IMaterial {
     this._material = material;
   }
 
-  createMaterialForPrimitive(gl: GLContext, node: Node, primitive: Primitive ): BaseMaterial {
+  createMaterialForPrimitive(gltf:Gltf, node: Node, primitive: Primitive ): BaseMaterial {
     return this._material;  
   }
 

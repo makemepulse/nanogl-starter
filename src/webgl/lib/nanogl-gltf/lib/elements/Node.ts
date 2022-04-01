@@ -11,6 +11,7 @@ import MeshRenderer from '../renderer/MeshRenderer';
 import IRenderable from '../renderer/IRenderable';
 import { GLContext } from 'nanogl/types';
 import { IElement } from '../types/Elements';
+import Gltf from '../Gltf';
 
 
 
@@ -109,10 +110,10 @@ export default class Node extends NGLNode implements IElement {
     return res;
   }
   
-  allocateGl( gl : GLContext ) : void {
+  allocateGl( gltf : Gltf ) : void {
     
     if( this.mesh ){
-      this.renderable = new MeshRenderer( gl, this );
+      this.renderable = new MeshRenderer( gltf, this );
     }
     
   }

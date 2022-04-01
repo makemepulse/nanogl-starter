@@ -1,6 +1,6 @@
 
 
-import Gltf from '../index'
+import Gltf from '../Gltf'
 import Gltf2 from '../types/Gltf2';
 import GltfLoader from '../io/GltfLoader';
 import GltfTypes from '../types/GltfTypes';

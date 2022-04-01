@@ -9,7 +9,7 @@ import Gltf2 from '../types/Gltf2';
 import GltfLoader from '../io/GltfLoader';
 import GltfTypes from '../types/GltfTypes';
 import BufferView from './BufferView';
-import Gltf from '..';
+import Gltf from '../Gltf';
 import { IElement } from '../types/Elements';
 import Bounds from 'nanogl-pbr/Bounds';
 

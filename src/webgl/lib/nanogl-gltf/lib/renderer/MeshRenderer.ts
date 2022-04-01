@@ -3,7 +3,6 @@ import Mesh from "../elements/Mesh"
 import Primitive from "../elements/Primitive"
 import Camera from 'nanogl-camera'
 import BaseMaterial from 'nanogl-pbr/BaseMaterial'
-import DepthPass from 'nanogl-pbr/DepthPass'
 import MorphDeformer from 'nanogl-pbr/MorphDeformer'
 import SkinDeformer, { SkinAttributeSet } from 'nanogl-pbr/SkinDeformer'
 import { GLContext } from "nanogl/types"
@@ -12,9 +11,9 @@ import Program from "nanogl/program"
 import IRenderable from "./IRenderable"
 import Bounds from "nanogl-pbr/Bounds"
 import { MorphAttributeType, MorphAttribInfos, MorphAttributeName } from "nanogl-pbr/MorphCode"
-import DepthFormat from 'nanogl-pbr/DepthFormatEnum';
 import GLState from "nanogl-state"
 import GLConfig from "nanogl-state/GLConfig"
+import Gltf from "../Gltf"
 
 
 
@@ -46,12 +45,12 @@ export default class MeshRenderer implements IRenderable {
   private _skin : SkinDeformer;
   private _morph : MorphDeformer;
   
-  constructor( gl : GLContext, node: Node) {
+  constructor( gtlf : Gltf, node: Node) {
     Assert.isDefined( node.mesh );
     this.node = node;
     this.mesh = node.mesh;
     
-    this.setupMaterials( gl );
+    this.setupMaterials( gtlf );
     this.computeBounds();
   }
   
@@ -60,12 +59,9 @@ export default class MeshRenderer implements IRenderable {
    * if skin or morph target are present, deformers are set on the created material
    * TODO: if no deformer, a single material instance can be shared between renderers
    */
-  setupMaterials(gl : GLContext) {
+  setupMaterials(gtlf : Gltf) {
     for (const primitive of this.mesh.primitives ) {
-      const material = primitive.material.createMaterialForPrimitive( gl, this.node, primitive );
-      const dp = new DepthPass( gl );
-      dp.depthFormat.set("D_DEPTH");
-      material.addPass( dp, 'depth' );
+      const material = primitive.material.createMaterialForPrimitive( gtlf, this.node, primitive );
       this.configureDeformers( material, primitive );
       this.materials.push( material );
     }

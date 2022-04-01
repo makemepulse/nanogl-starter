@@ -36,6 +36,7 @@ export default class Grid {
 
     this.cfg = GLState.get(gl).config()
       .enableDepthTest()
+      .depthMask(false)
       .enableBlend()
       .blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
       .enablePolygonOffset()

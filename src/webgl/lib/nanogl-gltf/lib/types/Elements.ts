@@ -36,7 +36,6 @@ export interface IElement {
   extras      : any   
   
   parse( gltfLoader : GltfLoader, data : Gltf2.IProperty ) : Promise<any>
-  allocateGl?( gl : GLContext ) : void | Promise<any>
   
 }
 

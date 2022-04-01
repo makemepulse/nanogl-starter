@@ -2,6 +2,7 @@ import { vec4 } from "gl-matrix";
 import Camera from "nanogl-camera";
 import { GLContext } from "nanogl/types";
 import Cameras from "./cameras/Cameras";
+import Capabilities from "./core/Capabilities";
 import { MainRenderContext } from "./core/Renderer";
 import RenderMask from "./core/RenderMask";
 import Viewport from "./core/Viewport";
@@ -45,6 +46,8 @@ export default class Renderer {
     this.scenes = new SceneSelector( this.gl )
     this.cameras = new Cameras(this)
     this.context = new MainRenderContext( this.gl, this.viewport )
+
+    Capabilities(this.gl).report()
   }
 
   get gl(): GLContext{
@@ -72,31 +75,36 @@ export default class Renderer {
 
   private _onViewRender = (dt:number)=>{
     dt;
-    const gl = this.gl
-
+    
     this.context.withCamera( this.camera )
     
     this.viewport.setSize(this.glview.width, this.glview.height)
-    this.viewport.setupGl(gl)
-
-    const c = this.clearColor
-    gl.clearColor(c[0], c[1], c[2], c[3])
-    gl.clear( this.gl.COLOR_BUFFER_BIT );
+    
     
     this.renderScene( this.scenes.current )
     
     DebugDraw.render(this.context)
   }
-
+  
   private renderScene( scene : IScene ){
     if( !scene ) return
-
+    const gl = this.gl
+    
     this.cameras.preRender()
     scene.preRender()
-
+    
     this.camera.updateViewProjectionMatrix(this.viewport.width, this.viewport.height);
-
+    
     scene.rttPass()
+    
+
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    this.viewport.setupGl(gl)
+    const c = this.clearColor
+    gl.clearColor(c[0], c[1], c[2], c[3])
+    gl.clear( this.gl.COLOR_BUFFER_BIT );
+
     scene.render(this.context.withMask(RenderMask.OPAQUE))
     scene.render(this.context.withMask(RenderMask.BLENDED))
 

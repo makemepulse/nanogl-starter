@@ -1,5 +1,5 @@
 import Program from "nanogl/program";
-import Gltf from "./lib/nanogl-gltf/lib";
+import Gltf from "./lib/nanogl-gltf/lib/Gltf";
 import KHR_texture_transform from "./lib/nanogl-gltf/lib/extensions/EXT_texture_webp";
 import KHR_lights_punctual from "./lib/nanogl-gltf/lib/extensions/KHR_lights_punctual";
 import KHR_materials_pbrSpecularGlossiness from "./lib/nanogl-gltf/lib/extensions/KHR_materials_pbrSpecularGlossiness";
