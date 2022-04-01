@@ -8,7 +8,6 @@ import SkinDeformer, { SkinAttributeSet } from 'nanogl-pbr/SkinDeformer'
 import { GLContext } from "nanogl/types"
 import Assert from "../lib/assert"
 import Program from "nanogl/program"
-import IRenderable from "./IRenderable"
 import Bounds from "nanogl-pbr/Bounds"
 import { MorphAttributeType, MorphAttribInfos, MorphAttributeName } from "nanogl-pbr/MorphCode"
 import GLState from "nanogl-state"
@@ -29,7 +28,7 @@ function assertSemanticCanBeMorphed( s : string ) : asserts s is MorphAttributeN
 
 
 
-export default class MeshRenderer implements IRenderable {
+export default class MeshRenderer {
 
   
   readonly node: Node;

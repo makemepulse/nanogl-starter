@@ -3,12 +3,12 @@ import Delay from "@/core/Delay"
 import gui from "@webgl/dev/gui"
 import { Monitor } from "@webgl/dev/gui/decorators"
 import Program from "nanogl/program"
-import { GLContext } from "nanogl/types"
 import { IScene } from "./IScene"
 import DebugDrawScene from "./DebugDraw"
 import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
+import Renderer from "@webgl/Renderer"
 
 const Scenes = {
   adam: AdamScene,
@@ -26,11 +26,12 @@ export default class SceneSelector {
   }
 
 
-  constructor(private gl:GLContext){
+  constructor( private renderer:Renderer ){
 
     // this._setScene(new AdamScene(gl))
-    this._setScene(new SuzanneScene(gl))
-    gui.select( 'scene', Scenes ).onChange( v=> this._setScene(new v(gl)) )
+    this._setScene(new SuzanneScene(renderer))
+
+    gui.select( 'scene', Scenes ).onChange( v=> this._setScene(new v(renderer)) )
     gui.btn( 'memTest', ()=> this.memTest() )
     
   }
@@ -68,7 +69,7 @@ export default class SceneSelector {
         await this._setScene(null)
         if( !this._memTestRunning ) break
       } else {
-        await this._setScene(this.current?null:new SuzanneScene(this.gl))
+        await this._setScene(this.current?null:new SuzanneScene(this.renderer))
         this._memTestCount = this._memTestCount+1
       }
       await Delay(250)

@@ -96,16 +96,16 @@ export default class GltfLoader {
   }
 
 
-  load(): Promise<Gltf> {
-    return this.gltfIO.loadBinaryResource( this.gltfIO.resolvePath( this._url, this._baseUrl ), this.abortSignal )
-    .then( this.unpack )
-    .then( this.parseAll )
-    .then( this.yieldGltf);
+  async load(): Promise<Gltf> {
+    const buffer = await this.gltfIO.loadBinaryResource( this.gltfIO.resolvePath( this._url, this._baseUrl ), this.abortSignal )
+    this.unpack(buffer)
+    await this.parseAll()
+    return this.gltf
   }
 
 
 
-  unpack = (buffer: ArrayBuffer): Promise<any> => {
+  unpack( buffer: ArrayBuffer ): void {
     const magic = new Uint32Array(buffer, 0, 1)[0];
 
     if (magic === MAGIC) {
@@ -116,7 +116,6 @@ export default class GltfLoader {
       this.prepareGltfDatas(this._data);
     }
 
-    return Promise.resolve(true);
 
   }
 
@@ -158,7 +157,7 @@ export default class GltfLoader {
 
   parseCommonGltfProperty<P extends Gltf2.Property>(data: P, element:ElementOfType<PropertyType<P>>){
     if( element.name === undefined ) {
-      element.name = (data as any).name;
+      element.name = (data as Gltf2.IChildRootProperty).name;
     }
     if( element.extras === undefined ) {
       element.extras = data.extras;
@@ -239,7 +238,7 @@ export default class GltfLoader {
 
 
 
-  parseAll = async () => {
+  async parseAll(): Promise<void>{
 
     this._extensions.validate(this._data.extensionsUsed, this._data.extensionsRequired);
 
@@ -255,10 +254,10 @@ export default class GltfLoader {
   }
   
 
-  private _loadElements<T extends Gltf2.Property>( dataList? : T[] ) : Promise<any> {
+  private _loadElements<T extends Gltf2.Property>( dataList? : T[] ) : Promise<void> {
     if (dataList !== undefined) {
       const promises = dataList.map( (data)=>this._loadElement(data))
-      return Promise.all( promises );
+      return Promise.all( promises ).then();
     }
   }
 
@@ -279,11 +278,6 @@ export default class GltfLoader {
       }
     }
 
-  }
-
-
-  yieldGltf = (): Promise<Gltf> => {
-    return Promise.resolve(this.gltf);
   }
 
 
@@ -367,7 +361,9 @@ export default class GltfLoader {
 
   prepareGltfProperty( element: Gltf2.Property, type: GltfTypes, index : number, parent : Gltf2.Property ) {
     if( element === undefined ) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (element as any).gltftype = type;
+
     element.uuid = getUUID();
     element.elementIndex  = index;
     element.elementParent = parent;

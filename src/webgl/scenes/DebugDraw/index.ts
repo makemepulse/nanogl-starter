@@ -1,10 +1,10 @@
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw";
+import Renderer from "@webgl/Renderer";
 import { TextureSrcSet } from "@webgl/resources/TextureRequest";
 import { TextureResource } from "@webgl/resources/TextureResource";
 import WebglAssets from "@webgl/resources/WebglAssets";
 import { IScene } from "@webgl/scenes/IScene";
 import { vec3 } from "gl-matrix";
-import { GLContext } from "nanogl/types";
 
 export default class DebugDrawScene implements IScene {
 
@@ -13,7 +13,8 @@ export default class DebugDrawScene implements IScene {
   texture1: TextureResource;
   texture2: TextureResource;
 
-  constructor( private gl : GLContext ){
+  constructor( private renderer:Renderer ){
+    const gl = this.renderer.gl
 
     this.textures = []
     this.texture1 = WebglAssets.getTexture( 'texture1', gl )

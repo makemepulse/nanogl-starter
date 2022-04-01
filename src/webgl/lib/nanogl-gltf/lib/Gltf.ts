@@ -21,12 +21,13 @@ import NanoglNode from 'nanogl-node';
 import { ISemantics, DefaultSemantics } from './Semantics';
 import { IExtensionFactory } from './extensions/IExtension';
 import GltfTypes from './types/GltfTypes';
-import { AnyElement, ElementOfType, IElement } from './types/Elements';
-import IRenderable from './renderer/IRenderable';
+import { AnyElement, ElementOfType } from './types/Elements';
 import IRenderConfig, { DefaultRenderConfig } from './IRenderConfig';
 import Primitive from './elements/Primitive';
 import Texture from './elements/Texture';
 import DepthPass from 'nanogl-pbr/DepthPass';
+import MeshRenderer from './renderer/MeshRenderer';
+import { LightCollection } from './extensions/KHR_lights_punctual';
 
 
 class ElementCollection<T extends AnyElement = AnyElement>{
@@ -39,6 +40,12 @@ class ElementCollection<T extends AnyElement = AnyElement>{
     if(index>-1) this.indexed[index] = element  ;
     this.list.push( element);
   }
+}
+
+type GltfExtras = {
+  [key: string]: any;
+} & {
+  lights?: LightCollection
 }
 
 /** Gltf file representation */
@@ -81,12 +88,12 @@ export default class Gltf {
 
   readonly root : NanoglNode = new NanoglNode();
   gl: GLContext
-  renderables: IRenderable[];
+  renderables: MeshRenderer[];
   cameraInstances: NanoCamera[]
   depthPass : DepthPass
 
 
-  extras : any = {}
+  extras : GltfExtras = {}
 
   constructor( ) {
 

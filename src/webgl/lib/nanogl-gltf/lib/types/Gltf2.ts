@@ -3,6 +3,7 @@ import GltfTypes from "./GltfTypes";
 /**
  * Module for glTF 2.0 Interface
  */
+// eslint-disable-next-line @typescript-eslint/no-namespace
 namespace Gltf2 {
 
 

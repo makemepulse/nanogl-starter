@@ -43,7 +43,7 @@ export default class Renderer {
     DebugDraw.init( glview.gl )
 
     this.tests  = new Tests( this.gl )
-    this.scenes = new SceneSelector( this.gl )
+    this.scenes = new SceneSelector( this )
     this.cameras = new Cameras(this)
     this.context = new MainRenderContext( this.gl, this.viewport )
 

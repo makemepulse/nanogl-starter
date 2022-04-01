@@ -1,5 +1,6 @@
 import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
+import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
@@ -15,12 +16,12 @@ export default class SuzanneScene implements IGLContextProvider, IScene {
   lighting   : Lighting
   root       : Node
   
-  constructor( gl : GLContext ){
-    this.gl = gl
+  constructor( renderer:Renderer ){
+    this.gl = renderer.gl
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
     this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( AssetsPath("webgl/suzanne/Suzanne.gltf"), gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( AssetsPath("webgl/suzanne/Suzanne.gltf"), this.gl, this.lighting, this.root )
   }
 
   preRender():void {
