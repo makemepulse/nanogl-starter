@@ -9,12 +9,14 @@ import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
+import ResourcesScene from "./resources"
 
 const Scenes = {
   adam: AdamScene,
   robot: RobotScene,
   suzanne: SuzanneScene,
   debugdraw: DebugDrawScene,
+  resources: ResourcesScene,
 }
 
 export default class SceneSelector {

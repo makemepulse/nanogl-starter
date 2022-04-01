@@ -28,6 +28,8 @@ import Texture from './elements/Texture';
 import DepthPass from 'nanogl-pbr/DepthPass';
 import MeshRenderer from './renderer/MeshRenderer';
 import { LightCollection } from './extensions/KHR_lights_punctual';
+import { AbortSignal } from '@azure/abort-controller';
+import { throwIfAborted } from '@/core/AbortSignalUtils';
 
 
 class ElementCollection<T extends AnyElement = AnyElement>{
@@ -130,14 +132,18 @@ export default class Gltf {
   }
 
 
-  async allocate(gl: GLContext): Promise<void> {
+  async allocate(gl: GLContext, abortSignal:AbortSignal = AbortSignal.none ): Promise<void> {
     this.gl = gl
 
 
     this.depthPass = new DepthPass( gl );
     this.depthPass.depthFormat.set("D_RGB");
 
-    await Promise.all(this.textures.map(t=>t.allocateGl(gl)))
+    for(const tex of this.textures) {
+      await tex.allocateGl(gl)
+      throwIfAborted(abortSignal)
+    }
+
     this.primitives.forEach(p=>p.allocateGl(gl))
     this.nodes.forEach(n=>n.allocateGl(this) )
 

@@ -27,6 +27,8 @@ export default class TextureImport {
 
 
   /// #if DEBUG
+
+
   hotReload():void{
 
     // this is a brand new instance with resources copied from old one
@@ -44,6 +46,8 @@ export default class TextureImport {
       
       // def.flipY();
       // def.nobbc();
+      
+      resource.unload();
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (resource as any)._request = this._request;

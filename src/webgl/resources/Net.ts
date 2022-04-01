@@ -1,3 +1,4 @@
+import nativeAbortSignal from "@/core/AbortSignalUtils";
 import Deferred from "@/core/Deferred";
 import { Resource } from "./Resource";
 
@@ -47,7 +48,7 @@ abstract class AbstractFetchResource<T=unknown> extends Resource<T> {
   
   
   async doLoad() : Promise<T> {
-    const init = Object.assign( {}, this.init, {signal : this._abortCtrl.signal });
+    const init = Object.assign( {}, this.init, {signal : nativeAbortSignal(this.abortSignal) });
     const response = await fetchSafe(this.url, init);
     return this.parseResponse( response );
   }

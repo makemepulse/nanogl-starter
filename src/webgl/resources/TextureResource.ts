@@ -2,7 +2,7 @@ import { Texture } from "nanogl/texture-base";
 import { Resource } from "./Resource";
 import Texture2D from "nanogl/texture-2d";
 import TextureCube from "nanogl/texture-cube";
-import { ITextureRequest, ITextureRequestLod, ITextureRequestOptions, resolveTextureOptions } from "./TextureRequest";
+import { ITextureRequest, ITextureRequestLod, ITextureRequestOptions, resolveTextureOptions, TextureSrcSet } from "./TextureRequest";
 import { BytesResource } from "./Net";
 import { TextureCodecs } from "./TextureCodec";
 import { IGLContextProvider } from "./IGLContextProvider";
@@ -38,9 +38,12 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
 
-  constructor(request: ITextureRequest, glp: IGLContextProvider) {
+  constructor(request: ITextureRequest | string, glp: IGLContextProvider) {
     super();
     this.glp = glp;
+    if( typeof request === 'string' ){
+      request = new TextureSrcSet( request )
+    }
     this._request = request;
   }
 
@@ -135,7 +138,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       this._sourceGroup.add( res as ResourceOrGroup<ArrayBuffer>)
     }
 
-    const buffers = await this._sourceGroup.load();
+    const buffers = await this._sourceGroup.load( this.abortSignal );
     lod.buffers = buffers;
     return buffers;
   }

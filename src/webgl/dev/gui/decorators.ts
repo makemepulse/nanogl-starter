@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NumberInputParams } from "tweakpane";
 import gui from "."
 import { Gui } from "./api";
 
@@ -75,9 +76,9 @@ function ArglessPropertyDecorator(fn: PropertyDecoratorFunction, targetOrOpts?:a
 }
 
 
-export function RangeGui( min:number, max: number, opts?:GuiOpts ){
+export function RangeGui( min:number, max: number, opts?:GuiOpts & NumberInputParams ){
   return createDecoratorWithInitFunction( (target:any, propertyKey:string):void=>{
-    const ctrl = getFolder(target, opts).add(target, propertyKey, min, max )
+    const ctrl = getFolder(target, opts).add(target, propertyKey, {min, max , ...opts} )
     if( opts?.label ) ctrl.setLabel( opts.label )
   })
 }
@@ -112,9 +113,7 @@ export function Gui(opts?:GuiOpts): PropertyDecoratorFunction;
 
 export function Gui(targetOrOpts?:any, name?:any): PropertyDecoratorFunction|void {
   return ArglessPropertyDecorator( (_target:any, _propertyKey:string, opts?:GuiOpts):void=>{
-    const ctrl = getFolder(_target, opts).add(_target, _propertyKey )
-    if( opts?.label ) ctrl.setLabel( opts.label )
-
+    getFolder(_target, opts).add(_target, _propertyKey, opts )
   }, targetOrOpts, name )
 }
 

@@ -117,8 +117,8 @@ export default class Cameras {
     const g = gui.folder( 'cameras' )
     this._cguiCtrls.forEach( c=>c.remove())
     this._cguiCtrls.length = 0
-    this._cguiCtrls.push( g.add(this.camera.lens, 'near', .1, 50) )
-    this._cguiCtrls.push( g.add(this.camera.lens, 'far', 10, 200) )
+    this._cguiCtrls.push( g.range(this.camera.lens, 'near', .1, 50) )
+    this._cguiCtrls.push( g.range(this.camera.lens, 'far', 10, 200) )
   }
   /// #endif
 

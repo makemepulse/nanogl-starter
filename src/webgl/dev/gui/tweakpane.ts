@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ColorInputParams, FolderApi, ListItem, MonitorBindingApi } from "@tweakpane/core";
-import { InputBindingApi, ListApi, NumberInputParams, Pane } from "tweakpane";
+import { InputBindingApi, ListApi, Pane, InputParams } from "tweakpane";
 import { Color, Control, Gui } from "./api";
 import { VecColorInputPlugin } from "./plugins/tp-color";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
@@ -120,14 +120,18 @@ function _factory( pane : FolderApi ){
 
   const gui : TPGui = {
 
-    add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, min?: number, max?: number): Control<O[Key]> {
-      const opts: NumberInputParams = { min, max };
+    
+    
+    add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, opts?: InputParams ): Control<O[Key]> {
       const input = pane.addInput(tgt, prop, opts);
       const ctrl = new TweakControl(input, () => tgt[prop]);
       registerCtrl( tgt, ctrl )
       return ctrl
     },
-
+    
+    range<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, min:number, max:number, opts?: InputParams ):Control<O[Key]> {
+      return this.add( tgt, prop, {...opts, min, max }) 
+    },
 
     monitor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
       const input = pane.addMonitor(tgt, prop);
@@ -276,6 +280,16 @@ function _factory( pane : FolderApi ){
       for (const c of pane.children) {
         pane.remove( c )
       }
+    },
+
+    open():TPGui {
+      pane.expanded = true;
+      return this
+    },
+    
+    close():TPGui {
+      pane.expanded = false;
+      return this
     },
 
 

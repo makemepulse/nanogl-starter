@@ -33,6 +33,10 @@ function _factory(){
     add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
       return new DummyControl(tgt[prop]);
     },
+
+    range<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
+      return new DummyControl(tgt[prop]);
+    },
   
     monitor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
       return new DummyControl(tgt[prop]);
@@ -54,29 +58,18 @@ function _factory(){
       return new DummyControl(tgt[prop]);
     },
 
-    btn(): void {
-      0;
-    },
     
-    btns(): void {
-      0;
-    },
-
     folder(): Gui {
       return gui;
     },
-
-    clear() {
-      0;
-    },
-
-    clearTarget(): void {
-      0;
-    },
     
-    clearFolder(): void {
-      0;
-    },
+    btn(): void {0},
+    btns(): void {0},
+    clear() {0},
+    clearTarget(): void {0},
+    clearFolder(): void {0},
+    open():Gui {return this},
+    close():Gui {return this},
 
     select: function <T>(): Control<T> {
       return new DummyControl(null);
@@ -84,7 +77,9 @@ function _factory(){
 
     radios: function <T>(): Control<T> {
       return new DummyControl(null);
-    }
+    },
+
+
     
   }
 

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { catchAbortError } from "@/core/AbortSignalUtils";
 import Deferred from "@/core/Deferred";
-import { CreateAbortController, AbortControllerShim } from "./AbortController";
+import { AbortController, AbortError, AbortSignal } from "@azure/abort-controller";
 
 
 export enum ResourceState {
@@ -19,7 +20,7 @@ export abstract class Resource<T = any>{
 
   private _deferred: Deferred<T>;
   
-  protected _abortCtrl: AbortControllerShim;
+  protected _abortCtrl: AbortController;
 
   private _state : ResourceState = ResourceState.PENDING;
 
@@ -42,23 +43,28 @@ export abstract class Resource<T = any>{
     this._state = ResourceState.PENDING;
     this._value = null;
     this._deferred = new Deferred<T>();
-    this._abortCtrl = CreateAbortController();
+    catchAbortError( this._deferred.promise );
   }
-
-
+  
+  
   get value(): T|null {
     return this._value;
   }
 
   get state():ResourceState { return this._state }
-
+  
   get isLoaded ():boolean { return this._state === ResourceState.LOADED  }
   get isErrored():boolean { return this._state === ResourceState.ERRORED }
   get isPending():boolean { return this._state === ResourceState.PENDING }
   get isLoading():boolean { return this._state === ResourceState.LOADING }
-
+  
   get isComplete() : boolean {
     return this.isErrored || this.isLoaded;
+  }
+
+
+  protected get abortSignal(): AbortSignal {
+    return this._abortCtrl.signal
   }
 
 
@@ -67,15 +73,16 @@ export abstract class Resource<T = any>{
   }
 
 
-
-  public load(): Promise<T>{
+  
+  public load( abortSignal: AbortSignal = AbortSignal.none ): Promise<T>{
+    
     if( this.isControlled ){
       throw new Error(`Can't call load() on a controlled Resource`)
     }
-    return this._load();
+    return this._load(abortSignal);
   }
 
-
+  
   public unload(): void {
     if( this.isControlled ){
       throw new Error(`Can't call unload() on a controlled Resource`)
@@ -83,10 +90,15 @@ export abstract class Resource<T = any>{
     this._unload();
   }
 
-
-  private _load(): Promise<T> {
+  
+  private _load( abortSignal: AbortSignal ): Promise<T> {
+    
     if( this.isPending ){
       this._state = ResourceState.LOADING;
+
+      this._abortCtrl?.signal.removeEventListener('abort', this._onAborted )
+      this._abortCtrl = new AbortController(abortSignal);
+      this._abortCtrl.signal.addEventListener('abort', this._onAborted )
 
       const deferred = this._deferred;
       
@@ -110,20 +122,22 @@ export abstract class Resource<T = any>{
           }
         }
 
-      );
+      )
 
     }
     return this.response();
   }
   
-
+  private _onAborted = ()=>{
+    this._unload();
+  }
 
   private _unload(): void {
     if( !this.isPending ){
-      this._abortCtrl.abort();
       this.doUnload();
-      this._deferred.reject('cancelled');
+      this._deferred.reject(new AbortError());
       this._reset();
+      this._abortCtrl.abort();
     }
   }
 
@@ -175,8 +189,8 @@ export class LambdaResource<T = any> extends Resource<T>{
  */
 export class InternalResourceHelper {
 
-  static loadResource<T>( r:Resource<T> ) : Promise<T> {
-    return (r as any)._load()
+  static loadResource<T>( r:Resource<T>, abortSignal: AbortSignal ) : Promise<T> {
+    return (r as any)._load( abortSignal )
   }
 
   static unloadResource( r:Resource ): void {

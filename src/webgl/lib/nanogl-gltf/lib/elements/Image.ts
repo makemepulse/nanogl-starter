@@ -6,7 +6,7 @@ import Gltf2 from '../types/Gltf2';
 import GltfLoader from '../io/GltfLoader';
 import GltfTypes from '../types/GltfTypes';
 import { IElement } from '../types/Elements';
-import { AbortSignalLike } from '@azure/abort-controller';
+import { AbortSignal, AbortSignalLike } from '@azure/abort-controller';
 import { createNativeSignal } from '../lib/cancellation';
 import Texture2D from 'nanogl/texture-2d';
 import { GLContext } from 'nanogl/types';
@@ -131,7 +131,7 @@ export default class Image implements IElement {
     canvas.height = nearestPowerOf2( source.height );
     
     if( source instanceof ImageData ){
-      const imageBitmap = await  createImageBitmap( source, 0, 0, canvas.width, canvas.height );
+      const imageBitmap = await  createImageBitmap( source, 0, 0, canvas.width, canvas.height, {} );
       context.drawImage(imageBitmap, 0, 0, canvas.width, canvas.height);
     } else {
       context.drawImage(source, 0, 0, canvas.width, canvas.height);
