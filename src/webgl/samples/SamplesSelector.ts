@@ -3,23 +3,25 @@ import Delay from "@/core/Delay"
 import gui from "@webgl/dev/gui"
 import { Monitor } from "@webgl/dev/gui/decorators"
 import Program from "nanogl/program"
-import { IScene } from "./IScene"
-import DebugDrawScene from "./DebugDraw"
+import { IScene } from "../engine/IScene"
 import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
 import ResourcesScene from "./resources"
+import DevtoolsScene from "./devtools"
+import TexturesScene from "./textures"
 
 const Scenes = {
   adam: AdamScene,
   robot: RobotScene,
   suzanne: SuzanneScene,
-  debugdraw: DebugDrawScene,
+  devtools: DevtoolsScene,
   resources: ResourcesScene,
+  textures: TexturesScene
 }
 
-export default class SceneSelector {
+export default class SamplesSelector {
 
   private _current: IScene | null
 
@@ -31,10 +33,17 @@ export default class SceneSelector {
   constructor( private renderer:Renderer ){
 
     // this._setScene(new AdamScene(gl))
-    this._setScene(new SuzanneScene(renderer))
+    // this._setScene(new SuzanneScene(renderer))
+    this._setScene(new TexturesScene(renderer))
 
-    gui.select( 'scene', Scenes ).onChange( v=> this._setScene(new v(renderer)) )
-    gui.btn( 'memTest', ()=> this.memTest() )
+    const f = gui.folder("Scenes")
+    f.select( 'scene', Scenes ).onChange( v=>{
+      this._current?.unload()
+      this._current = null
+      this._setScene(new v(renderer)) 
+    })
+    
+    f.btn( 'memTest', ()=> this.memTest() )
     
   }
   
@@ -53,10 +62,9 @@ export default class SceneSelector {
   private _memTestRunning = false
 
 
-  @Monitor
+  @Monitor({folder:'Scenes'})
   private _memTestCount = 0
   
-
   async memTest():Promise<void>{
     
     if( this._memTestRunning ) {

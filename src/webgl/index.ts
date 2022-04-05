@@ -2,22 +2,6 @@ import './features'
 import GLView from './GLView';
 import Renderer from './Renderer';
 
-
-/**
-  @opts :
-
-    REQUIRED:
-    'canvas'    {HTMLCanvasElement}   :  context free canvas element in which scene will be rendered
-    'subtitles' {HTMLElement}         :  a dom element in which subtitles will be innerHTML-ed
-    'config'    {string}              :  url to the xml config file 
-    'assetsUrl' {string}              :  3D assets base url without trailing slash
-    'model'     {Model}               :  Model instance shared with the page
-
-    OPTIONAL:
-    'ilayer'    {HTMLElement}         :  dom elemnt on which touch/mouse event are listened, default to canvas element 
-    'quality'   {string}              :  enum 'auto', 'hi' or 'low'
-
-**/
 export default class GLApp {
 
   private static _instance: GLApp | null = null
@@ -63,9 +47,6 @@ export default class GLApp {
 
 if (module.hot) {
   module.hot.decline()
-  // module.hot.dispose(data => {
-  //   gui.reset()
-  // });
 }
 
 /// #endif

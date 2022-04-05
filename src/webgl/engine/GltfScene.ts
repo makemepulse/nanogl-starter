@@ -31,7 +31,7 @@ export class GltfScene extends GLTFResource {
     const gltf = await super.doLoad()
 
     if (this.lighting){
-
+      
       gltf.depthPass.depthFormat.set(this.lighting.lightSetup.depthFormat.value());
       
       for (const material of gltf.materials) {

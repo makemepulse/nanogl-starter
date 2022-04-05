@@ -1,3 +1,4 @@
+import Lighting from "@webgl/engine/Lighting";
 
 
 /// #if DEBUG
@@ -5,18 +6,14 @@
 
 const DevIblDir = "https://mmp-labs.s3.eu-west-1.amazonaws.com/resources/ibls"
 import { loadJson } from "@webgl/resources/Net";
-import Lighting from "@webgl/scenes/Lighting";
 import gui from "./gui";
 
-// function thumbnailResolver( dir:string ) : string {
-//   return `${DevIblDir}/${dir}/thumb.jpg`
-// }
 
 async function _addDevIbls( lighting : Lighting ):Promise<void> {
   
   const list = await loadJson( DevIblDir + '/list.json' )
 
-  gui.folder('lighting').select( 'ibls', list ).onChange( ibl=>{
+  gui.folder('Lighting').select( 'ibls', list ).onChange( ibl=>{
     const env = `${DevIblDir}/${ibl}/env.png`
     const sh = `${DevIblDir}/${ibl}/sh.bin`
     lighting.ibl.load( env, sh )

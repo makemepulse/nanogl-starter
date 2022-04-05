@@ -10,6 +10,7 @@ import gui from "@webgl/dev/gui";
 import BaseMaterial from "nanogl-pbr/BaseMaterial";
 import RenderPass from "@webgl/core/RenderPass";
 import Node from "nanogl-node";
+import LightmapRenderer, { LightmapRenderFunction } from "@webgl/core/LightmapRenderer";
 
 
 const EXPO = 1.0
@@ -60,7 +61,7 @@ export default class Lighting {
 
 
 
-  constructor( gl: GLContext ){
+  constructor( private gl: GLContext ){
     this.root = new Node()
     this.ibl = new IblLight( gl )
     this.ibl.enableRotation = true
@@ -80,7 +81,7 @@ export default class Lighting {
 
     
     /// #if DEBUG
-    const f = gui.folder('lighting')
+    const f = gui.folder('Lighting')
     f.range(this, 'exposure', 0, 3)
     f.range(this, 'gamma', .8, 4)
     f.range(this.ibl, 'ambientExposure', 0, 3).setLabel('ambient')
@@ -91,6 +92,11 @@ export default class Lighting {
 
     addDevIbls( this )
     
+  }
+
+
+  renderLightmaps( renderFunction: LightmapRenderFunction ): void {
+    LightmapRenderer.render( this.gl, this.lightSetup, renderFunction)
   }
 
   setupMaterial( material : BaseMaterial ):void{
@@ -116,7 +122,7 @@ export default class Lighting {
   }
 
   dispose(): void {
-    gui.clearFolder('lighting')
+    gui.clearFolder('Lighting')
   }
 
 

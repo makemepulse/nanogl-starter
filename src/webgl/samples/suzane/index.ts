@@ -4,10 +4,13 @@ import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
-import { GltfScene } from "../GltfScene"
-import { IScene } from "../IScene"
-import Lighting from "../Lighting"
+import { GltfScene } from "@webgl/engine/GltfScene"
+import { IScene } from "@webgl/engine/IScene"
+import Lighting from "@webgl/engine/Lighting"
 
+// const GltfPath = "webgl/suzanne/Suzanne.gltf"
+// const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
+const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
 
 export default class SuzanneScene implements IGLContextProvider, IScene {
 
@@ -21,7 +24,7 @@ export default class SuzanneScene implements IGLContextProvider, IScene {
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
     this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( AssetsPath("webgl/suzanne/Suzanne.gltf"), this.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
   }
 
   preRender():void {

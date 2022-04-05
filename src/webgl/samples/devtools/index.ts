@@ -3,34 +3,40 @@ import Renderer from "@webgl/Renderer";
 import { TextureSrcSet } from "@webgl/resources/TextureRequest";
 import { TextureResource } from "@webgl/resources/TextureResource";
 import WebglAssets from "@webgl/resources/WebglAssets";
-import { IScene } from "@webgl/scenes/IScene";
+import { IScene } from "@webgl/engine/IScene";
 import { vec3 } from "gl-matrix";
+import TestGui from "./testGui";
 
-export default class DebugDrawScene implements IScene {
+export default class DevtoolsScene implements IScene {
 
   textures: TextureResource[]
   ready: boolean;
   texture1: TextureResource;
   texture2: TextureResource;
 
+  testGui: TestGui;
+
+
+  
   constructor( private renderer:Renderer ){
     const gl = this.renderer.gl
-
+    
     this.textures = []
     this.texture1 = WebglAssets.getTexture( 'texture1', gl )
     this.texture2 = WebglAssets.getTexture( 'texture2', gl )
-
+    
     for (let index = 0; index < 0; index++) {
       const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/512/512' ), {gl} )
       this.textures.push( texRes )
     }
-
-    this.load()
-
+    
   }
-
+  
   
   async load() : Promise<void>{
+    
+    this.testGui = new TestGui()
+
     await this.texture1.load()
     await this.texture2.load()
     await Promise.all( this.textures.map( t=>t.load() ) )
@@ -64,7 +70,11 @@ export default class DebugDrawScene implements IScene {
   }
 
   unload(): void {
-    0
+    this.testGui.dispose()
+
+    this.texture1.unload()
+    this.texture2.unload()
+    this.textures.map( t=>t.unload() )
   }
   preRender(): void {
     0 

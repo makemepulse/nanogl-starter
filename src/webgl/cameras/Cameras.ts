@@ -31,7 +31,6 @@ export default class Cameras {
     this.registerCamera( createMaxCamera(renderer), 'dev' )
     // this.registerCamera( createBlenderCamera(renderer), '' )
     this._gui()
-
     this.use( 'dev' )
     
     /// #else
@@ -101,7 +100,7 @@ export default class Cameras {
 
   /// #if DEBUG
   private _gui(){
-    const g = gui.folder( 'cameras' )
+    const g = gui.folder( 'Cameras' )
     const names = Array.from(this._managers.keys())
     g.radios<CameraName>( 'camera', names).onChange( name=>this.use(name) )
     g.btn( 'log matrix', ()=>console.log( Array.from(this.camera._matrix )))
@@ -114,7 +113,7 @@ export default class Cameras {
   private _cguiCtrls:Control<unknown>[] = []
 
   private _updateCurrentGui(){
-    const g = gui.folder( 'cameras' )
+    const g = gui.folder( 'Cameras' )
     this._cguiCtrls.forEach( c=>c.remove())
     this._cguiCtrls.length = 0
     this._cguiCtrls.push( g.range(this.camera.lens, 'near', .1, 50) )

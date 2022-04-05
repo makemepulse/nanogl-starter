@@ -260,6 +260,8 @@ function _factory( pane : FolderApi ){
   
 
     folder(name:string): TPGui {
+      console.log('folder', name);
+      
       return createFoldersRecursivly(name.split('/') )
     },
 
@@ -272,7 +274,10 @@ function _factory( pane : FolderApi ){
     },
 
     clearFolder(name:string): void {
+      console.log('clearFolder', name);
+      
       const folder = _folders.get( name );
+      _folders.delete( name );
       folder?.clear()
     },
 
@@ -280,6 +285,7 @@ function _factory( pane : FolderApi ){
       for (const c of pane.children) {
         pane.remove( c )
       }
+      pane.dispose()
     },
 
     open():TPGui {

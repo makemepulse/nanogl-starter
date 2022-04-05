@@ -80,7 +80,7 @@ class GLView {
      * @type {WebGLRenderingContext}
      */
     this.gl = (
-      canvas.getContext('webgl2', opts) ||
+      // canvas.getContext('webgl2', opts) ||
       canvas.getContext('webgl', opts) ||
       canvas.getContext('experimental-webgl', opts) ||
       canvas.getContext('webgl')) as GLContext;

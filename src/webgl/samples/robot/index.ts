@@ -7,10 +7,10 @@ import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import { vec3 } from "gl-matrix"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
-import FloorPlane from "../FloorPlane"
-import { GltfScene } from "../GltfScene"
-import { IScene } from "../IScene"
-import Lighting from "../Lighting"
+import FloorPlane from "@webgl/engine/FloorPlane"
+import { GltfScene } from "@webgl/engine/GltfScene"
+import { IScene } from "@webgl/engine/IScene"
+import Lighting from "@webgl/engine/Lighting"
 
 
 export default class RobotScene implements IGLContextProvider, IScene {

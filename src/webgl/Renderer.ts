@@ -9,9 +9,8 @@ import Viewport from "./core/Viewport";
 import DebugDraw from "./dev/debugDraw/DebugDraw";
 import { ColorGui } from "./dev/gui/decorators";
 import GLView from "./GLView";
-import { IScene } from "./scenes/IScene";
-import SceneSelector from "./scenes/SceneSelector";
-import Tests from "./tests";
+import { IScene } from "./engine/IScene";
+import SamplesSelector from "./samples/SamplesSelector";
 
 export default class Renderer {
 
@@ -19,11 +18,10 @@ export default class Renderer {
   ilayer    : HTMLElement
   cameras   : Cameras
 
-  @ColorGui({folder:'Misc'})
+  @ColorGui({folder:'General'})
   clearColor = vec4.fromValues(.95, .95, .95, 1)
   
-  tests: Tests
-  scenes: SceneSelector
+  samples: SamplesSelector
 
   /**
    * main backbuffer viewport
@@ -42,8 +40,7 @@ export default class Renderer {
 
     DebugDraw.init( glview.gl )
 
-    this.tests  = new Tests( this.gl )
-    this.scenes = new SceneSelector( this )
+    this.samples = new SamplesSelector( this )
     this.cameras = new Cameras(this)
     this.context = new MainRenderContext( this.gl, this.viewport )
 
@@ -81,7 +78,7 @@ export default class Renderer {
     this.viewport.setSize(this.glview.width, this.glview.height)
     
     
-    this.renderScene( this.scenes.current )
+    this.renderScene( this.samples.current )
     
     DebugDraw.render(this.context)
   }

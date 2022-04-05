@@ -8,10 +8,8 @@ import { Resource } from "@webgl/resources/Resource"
 import ResourceGroup from "@webgl/resources/ResourceGroup"
 import { TextureResource } from "@webgl/resources/TextureResource"
 import WebglAssets from "@webgl/resources/WebglAssets"
-import { GltfScene } from "../GltfScene"
-import { IScene } from "../IScene"
-
-
+import { GltfScene } from "@webgl/engine/GltfScene"
+import { IScene } from "@webgl/engine/IScene"
 
 type ResourecFactory = () => Resource
 
@@ -58,8 +56,9 @@ class ResourceTester {
     await Delay(Math.random() * this.abortDelay)
 
     abortCtrl.abort()
+    res.unload()
 
-    await Delay(100)
+    await Delay(50)
 
     if (this.running)
       this.doLoadUnload()

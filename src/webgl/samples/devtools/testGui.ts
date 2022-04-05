@@ -1,6 +1,6 @@
 import { vec4 } from "gl-matrix"
-import gui from "../dev/gui"
-import { Gui, RangeGui, GuiBtn, GuiFolder, ColorGui } from "../dev/gui/decorators"
+import gui from "../../dev/gui"
+import { Gui, RangeGui, GuiFolder, ColorGui } from "../../dev/gui/decorators"
 
 @GuiFolder('Tests GUI')
 export default class TestGui{
@@ -24,16 +24,11 @@ export default class TestGui{
   someColor = vec4.fromValues(1, 0, 0, 1)
   
   
-  @GuiBtn
-  testButton():void{
-    console.log('youhou');
-  }
-  
   
   
   @RangeGui(0, 20, {folder:'subfolder', label:"custom label"})
   p0 = 0
-
+  
   @Gui({folder:'subfolder'})
   p1 = true
   
@@ -41,10 +36,26 @@ export default class TestGui{
   p2 = vec4.fromValues(1, 0, 0, 1)
   
   
-
+  
   constructor(){
-    gui.folder('Tests').add( this, 'skipRender' )
+    const f = gui.folder('Tests GUI')
+    f.add( this, 'skipRender' )
+    f.btn( 'testButton1', ()=>{ this.testButton1() } )
+    f.btn( 'testButton2', ()=>{ this.testButton2() } )
   }
-
+  
+  dispose():void {
+    gui.clearTarget(this)
+    gui.clearFolder('Tests GUI')
+  }
+  
+  testButton1():void{
+    console.log('btn 1');
+  }
+  
+  testButton2():void{
+    console.log('btn 2');
+  }
+  
 
 }

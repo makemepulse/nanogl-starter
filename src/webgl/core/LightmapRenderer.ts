@@ -1,8 +1,5 @@
-import DebugDraw from "@webgl/dev/debugDraw/DebugDraw";
-import Light from "nanogl-pbr/lighting/Light";
+import { lightIsShadowMappedLight } from "nanogl-pbr/lighting/Light";
 import LightSetup from "nanogl-pbr/lighting/LightSetup";
-import LightType from "nanogl-pbr/lighting/LightType";
-import PunctualLight from "nanogl-pbr/lighting/PunctualLight";
 import GLState from "nanogl-state";
 import GLConfig from "nanogl-state/GLConfig";
 import { GLContext } from "nanogl/types";
@@ -14,19 +11,19 @@ import Viewport from "./Viewport";
 
 
 
-function isPunctualLight(light: Light): light is PunctualLight {
-  return (light._type === LightType.SPOT);
-}
-
-
-export type RenderFunction = (ctx:RenderContext)=>void
+export type LightmapRenderFunction = (ctx:RenderContext)=>void
 
 export default class LightmapRenderer {
 
 
 
-
-  static render( gl: GLContext, lightSetup: LightSetup ,renderFunction: RenderFunction ) {
+  /**
+   * Render shadowmaps for each lights in the given light setup.
+   * @param gl 
+   * @param lightSetup 
+   * @param renderFunction 
+   */
+  static render( gl: GLContext, lightSetup: LightSetup ,renderFunction: LightmapRenderFunction ) {
 
     const lights = lightSetup._lights;
     // const depthpass = this.matlib.depthPass;
@@ -41,40 +38,32 @@ export default class LightmapRenderer {
       .depthMask(true)
       .colorMask(isRgb, isRgb, isRgb, isRgb);
 
-      let i = 0
 
     glstate.push(config);
     glstate.apply();
 
     for (const l of lights) {
 
+      if (lightIsShadowMappedLight(l) && l.castShadows ) {
+        l.bindShadowmap()
+        // console.log( "has depth tex", PixelFormats.getInstance(gl).hasDepthTexture())
+        
+        // fbodebug.debug( l._fbo );
+        
+        gl.clearColor(1, 1, 1, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      if (isPunctualLight(l)) {
-        if (l._castShadows) {
-          l.bindShadowmap()
-          // console.log( "has depth tex", PixelFormats.getInstance(gl).hasDepthTexture())
-          
-          // fbodebug.debug( l._fbo );
-          
-          gl.clearColor(1, 1, 1, 1);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-          DebugDraw.drawTexture( l._fbo.getColorTexture(), i * 550, 0 )  
-          DebugDraw.drawFrustum( l._camera._viewProj )
-          
-          renderFunction({
-            gl,
-            viewport: new Viewport(0, 0, l._fbo.width, l._fbo.height ),
-            glConfig: config,
-            camera: l._camera,
-            mask: RenderMask.OPAQUE,
-            pass: RenderPass.DEPTH,
-          })
-          
-
-          
-          i++
-        }
+        // DebugDraw.drawTexture( l._fbo.getColorTexture(), i * 550, 0 )  
+        // DebugDraw.drawFrustum( l._camera._viewProj )
+        
+        renderFunction({
+          gl,
+          viewport: new Viewport(0, 0, l.shadowmapSize, l.shadowmapSize ),
+          glConfig: config,
+          camera: l.getCamera(),
+          mask: RenderMask.OPAQUE,
+          pass: RenderPass.DEPTH,
+        })
         
       }
     }

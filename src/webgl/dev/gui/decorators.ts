@@ -10,6 +10,7 @@ type GuiOpts = {
 }
 
 type PropertyDecoratorFunction = (target:any, propertyKey:string, opts?:GuiOpts)=>void
+// type MethodDecoratorFunction = (target:any, propertyKey:string, descriptor:any, opts?:GuiOpts)=>void
 
 
 
@@ -118,11 +119,30 @@ export function Gui(targetOrOpts?:any, name?:any): PropertyDecoratorFunction|voi
 }
 
 
-export function GuiBtn(target:any, name:any, descriptor:any){
-  gui.btn( name, ()=>{
-    descriptor.value.apply(target)
-  } )
-}
+// export function GuiBtn(target:any, name:any, descriptor:any):void;
+// export function GuiBtn(opts?:GuiOpts): MethodDecoratorFunction;
+
+// export function GuiBtn(targetOrOpts?:any, name?:any, descriptor?:any){
+//   console.log( "GuiBtn",  targetOrOpts )
+//   const f = (_target:any, _name:any, _descriptor:any):void=>{
+//     let opts : GuiOpts
+//     if( targetOrOpts !== _target ){
+//       opts = targetOrOpts
+//     }
+//     let name = _name
+//     if( opts?.label ) name = opts.label
+//     getFolder(_target, opts).btn( name, ()=>{
+//       _descriptor.value.apply(_target)
+//     })
+//   }
+
+//   if( targetOrOpts !== undefined && name !== undefined )
+//     f(targetOrOpts, name, descriptor)
+//   else 
+//     return f
+
+// }
+
 
 export function GuiFolder(name:string) {
   // eslint-disable-next-line @typescript-eslint/ban-types

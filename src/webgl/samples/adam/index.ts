@@ -1,24 +1,45 @@
 import { AssetsPath } from "@/core/PublicPath"
-import LightmapRenderer from "@webgl/core/LightmapRenderer"
+import Quality from "@webgl/core/Quality"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import DepthPass from "nanogl-pbr/DepthPass"
-import Light from "nanogl-pbr/lighting/Light"
 import LightType from "nanogl-pbr/lighting/LightType"
-import PunctualLight from "nanogl-pbr/lighting/PunctualLight"
 import SpotLight from "nanogl-pbr/lighting/SpotLight"
 import { GLContext } from "nanogl/types"
-import { GltfScene } from "../GltfScene"
-import { IScene } from "../IScene"
-import Lighting from "../Lighting"
+import { GltfScene } from "@webgl/engine/GltfScene"
+import { IScene } from "@webgl/engine/IScene"
+import Lighting from "@webgl/engine/Lighting"
 
 
 
-function isPunctualLight(light: Light): light is PunctualLight {
-  return (light._type === LightType.SPOT);
+
+type QualityLevel = {
+  enableShadows: boolean,
+  shadowmapSize: number,
 }
+
+const QualityLevels:QualityLevel[]  = [
+  {
+    enableShadows: false,
+    shadowmapSize: 512,
+  },
+  {
+    enableShadows: true,
+    shadowmapSize: 512,
+  },
+  {
+    enableShadows: true,
+    shadowmapSize: 1024,
+  },
+  {
+    enableShadows: true,
+    shadowmapSize: 2048,
+  },
+]
+
+
 
 export default class AdamScene implements IGLContextProvider, IScene {
 
@@ -27,6 +48,9 @@ export default class AdamScene implements IGLContextProvider, IScene {
   lighting: Lighting
   root: Node
   depthPass: DepthPass
+  quality = new Quality(QualityLevels)
+  abortCtrl: AbortController
+  mainSpot: SpotLight
 
   constructor(renderer: Renderer ) {
     this.gl = renderer.gl
@@ -43,8 +67,7 @@ export default class AdamScene implements IGLContextProvider, IScene {
 
   rttPass(): void {
     this.lighting.lightSetup.prepare(this.gl);
-
-    LightmapRenderer.render( this.gl, this.lighting.lightSetup, ( ctx:RenderContext )=>{
+    this.lighting.renderLightmaps( ( ctx:RenderContext )=>{
       this.gltfSample.render(ctx)
     })
 
@@ -55,29 +78,42 @@ export default class AdamScene implements IGLContextProvider, IScene {
   }
 
   async load(): Promise<void> {
+
+    this.abortCtrl = new AbortController()
+    
     await this.lighting.load()
-    await this.gltfSample.load()
+    await this.gltfSample.load( this.abortCtrl.signal )
+
     const lights = this.gltfSample.gltf.extras.lights
     for (const l of lights.list) {
       this.lighting.lightSetup.add(l)
     }
     
-    const mainSpot = lights.getLightByName("SpotMain") as SpotLight
-    if( isPunctualLight(mainSpot ) ){
-      mainSpot.castShadows(true)
-    }
+    this.mainSpot = lights.getLightByName("SpotMain") as SpotLight
+    console.assert( this.mainSpot._type === LightType.SPOT ) 
+    this.mainSpot.castShadows = true
+    
 
     if (this.gltfSample.gltf.animations[0]) {
       this.gltfSample.playAnimation(this.gltfSample.gltf.animations[0].name)
     }
 
+    this.quality.onChange.on( this.setQuality )
+    this.quality.startAutoLevel( this.abortCtrl.signal )
+    
+    
+  }
+  
 
-
+  setQuality = (level: QualityLevel )=>{
+    this.mainSpot.castShadows = level.enableShadows
+    this.mainSpot.shadowmapSize = level.shadowmapSize
   }
 
-
-
+  
   unload(): void {
+    this.quality.onChange.off( this.setQuality )
+    this.abortCtrl.abort()
     this.lighting.dispose()
   }
 
