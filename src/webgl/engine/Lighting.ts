@@ -87,7 +87,7 @@ export default class Lighting {
     f.range(this.ibl, 'ambientExposure', 0, 3).setLabel('ambient')
     f.add(this.ibl, 'enableRotation').setLabel('enable ibl rotation')
     // f.add({iblRotation:0}, 'iblRotation', 0, Math.PI*2).onChange(v=>{quat.identity(this.ibl.rotation) ; this.ibl.rotateY(v); console.log(v)})
-    f.addRotation( this.ibl, 'rotation').onChange(()=>this.ibl.invalidate())
+    f.addRotation( this.root, 'rotation').onChange(()=>this.root.invalidate())
     /// #endif
 
     addDevIbls( this )

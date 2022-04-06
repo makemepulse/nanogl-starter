@@ -11,14 +11,16 @@ import Renderer from "@webgl/Renderer"
 import ResourcesScene from "./resources"
 import DevtoolsScene from "./devtools"
 import TexturesScene from "./textures"
+import LightsScene from "./lights"
 
 const Scenes = {
-  adam: AdamScene,
-  robot: RobotScene,
-  suzanne: SuzanneScene,
-  devtools: DevtoolsScene,
+  adam     : AdamScene     ,
+  robot    : RobotScene    ,
+  suzanne  : SuzanneScene  ,
+  devtools : DevtoolsScene ,
   resources: ResourcesScene,
-  textures: TexturesScene
+  textures : TexturesScene ,
+  lights   : LightsScene   ,
 }
 
 export default class SamplesSelector {
@@ -34,7 +36,8 @@ export default class SamplesSelector {
 
     // this._setScene(new AdamScene(gl))
     // this._setScene(new SuzanneScene(renderer))
-    this._setScene(new TexturesScene(renderer))
+    // this._setScene(new TexturesScene(renderer))
+    this._setScene(new LightsScene(renderer))
 
     const f = gui.folder("Scenes")
     f.select( 'scene', Scenes ).onChange( v=>{

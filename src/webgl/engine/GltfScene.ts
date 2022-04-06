@@ -5,6 +5,7 @@ import Gltf from "@webgl/lib/nanogl-gltf/lib/Gltf";
 import GLTFResource from "@webgl/resources/GltfResource";
 import Node from "nanogl-node";
 import BaseMaterial from "nanogl-pbr/BaseMaterial";
+import Bounds from "nanogl-pbr/Bounds";
 import { GLContext } from "nanogl/types";
 import { materialIsStandard } from "./GltfUtils";
 import Lighting from "./Lighting";
@@ -43,6 +44,16 @@ export class GltfScene extends GLTFResource {
     this.parent?.add( gltf.root )
 
     return gltf
+  }
+
+  computeStaticBounds( out: Bounds ) {
+    this.gltf.root.updateWorldMatrix();
+    const b : Bounds = new Bounds();
+    Bounds.transform( out, this.gltf.renderables[0].bounds, this.gltf.renderables[0].node._wmatrix )
+    for (const renderable of this.gltf.renderables ) {
+      Bounds.transform( b, renderable.bounds, renderable.node._wmatrix )
+      Bounds.union( out, out, b );
+    }
   }
   
   overrideMaterial(name: string, factory: () => BaseMaterial ):void {

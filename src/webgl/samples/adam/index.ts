@@ -68,9 +68,8 @@ export default class AdamScene implements IGLContextProvider, IScene {
   rttPass(): void {
     this.lighting.lightSetup.prepare(this.gl);
     this.lighting.renderLightmaps( ( ctx:RenderContext )=>{
-      this.gltfSample.render(ctx)
+      this.render(ctx)
     })
-
   }
 
   render(context: RenderContext): void {

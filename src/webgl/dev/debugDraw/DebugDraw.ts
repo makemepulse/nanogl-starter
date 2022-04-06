@@ -9,10 +9,18 @@ import TextRenderer from './Text';
 import Grid, { GridOrientation } from './Grid';
 import { GLContext } from 'nanogl/types';
 import { RenderContext } from '@webgl/core/Renderer';
+import ConeGuizmo from './ConeGuizmo';
+import SpotLight from 'nanogl-pbr/lighting/SpotLight';
 
 
 
 /// #if DEBUG
+
+type ConeParams = {
+  m: mat4,
+  height: number, 
+  angle: number 
+}
 
 // TEST SWITCH HERE
 //*
@@ -29,12 +37,14 @@ class DebugDrawImpl {
   _textures: TextureDrawCommand[];
   _guizmos: mat4[];
   _frustums: mat4[];
+  _cones: ConeParams[];
 
-  guizmo: Guizmo;
-  frustum: Frustum;
-  texDraw: TextureDraw;
-  textRenderer: TextRenderer;
-  grid : Grid
+  guizmo       : Guizmo      
+  frustum      : Frustum     
+  cone         : ConeGuizmo  
+  texDraw      : TextureDraw 
+  textRenderer : TextRenderer
+  grid         : Grid
 
   @Gui
   enabled = true
@@ -55,9 +65,11 @@ class DebugDrawImpl {
     this._textures = [];
     this._guizmos  = [];
     this._frustums = [];
+    this._cones    = [];
 
     this.guizmo       = new Guizmo      ( gl )
     this.frustum      = new Frustum     ( gl )
+    this.cone         = new ConeGuizmo  ( gl )
     this.texDraw      = new TextureDraw ( gl )
     this.textRenderer = new TextRenderer( gl )
     this.grid         = new Grid        ( gl )
@@ -66,8 +78,9 @@ class DebugDrawImpl {
 
 
   clear(){
-    this._guizmos.length = 0;
+    this._guizmos .length = 0;
     this._frustums.length = 0;
+    this._cones   .length = 0;
     this._textures.length = 0; 
     this.textRenderer.clear()
   }
@@ -96,11 +109,23 @@ class DebugDrawImpl {
     if( !this.enabled ) return
     this._frustums.push( vp );
   }
+    
+  drawCone( m : mat4, height: number, angle: number  ){
+    if( !this.enabled ) return
+    this._cones.push( {m, height, angle} );
+  }
 
   drawText( txt:string, wpos: vec3 ):void{
     if( !this.enabled ) return
     this.textRenderer.add( txt, wpos)
   }
+
+
+  drawSpotLight( l :SpotLight ):void{
+    DebugDraw.drawCone( l._wmatrix, -l.radius, l.angle ) 
+    // DebugDraw.drawCircle( l._wmatrix, -l.radius, l.angle ) 
+  }
+
 
   render( ctx:RenderContext ){
     if( !this.enabled ) return
@@ -120,6 +145,15 @@ class DebugDrawImpl {
     for (let i = 0; i < this._frustums.length; i++) {
       this.frustum.projection = this._frustums[i];
       this.frustum.render( ctx.camera );
+    }
+
+    for (let i = 0; i < this._cones.length; i++) {
+      this.cone.setMatrix( this._cones[i].m );
+      this.cone.height = this._cones[i].height;
+      this.cone.angle = this._cones[i].angle;
+
+      this.cone.updateWorldMatrix()
+      this.cone.render( ctx.camera );
     }
     
     this.texDraw.prepare()
@@ -162,6 +196,14 @@ const DebugDraw = {
     _instance.drawFrustum( vp );
   },
 
+  drawCone( m : mat4, height: number, angle: number ):void{
+    _instance.drawCone( m, height, angle );
+  },
+
+  drawSpotLight( l :SpotLight ):void{
+    _instance.drawSpotLight( l );
+  },
+
   drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{
     _instance.drawTexture(t, x, y, w, h );
   },
@@ -188,6 +230,8 @@ const DebugDraw = {
   init(gl:GLContext):void{0},
   drawGuizmo(x : vec3 | mat4 ):void{0},
   drawFrustum( vp : mat4 ):void{0},
+  drawCone( m : mat4 ):void{0},
+  drawSpotLight( l :SpotLight ):void{0},
   drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{0},
   drawText( txt:string, wpos: vec3 ):void{0},
   render(ctx:IRenderContext):void{0}
