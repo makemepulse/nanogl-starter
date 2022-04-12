@@ -12,6 +12,7 @@ import ResourcesScene from "./resources"
 import DevtoolsScene from "./devtools"
 import TexturesScene from "./textures"
 import LightsScene from "./lights"
+import ClearcoatSample from "./custom_material"
 
 const Scenes = {
   adam     : AdamScene     ,
@@ -21,6 +22,7 @@ const Scenes = {
   resources: ResourcesScene,
   textures : TexturesScene ,
   lights   : LightsScene   ,
+  clearcoat: ClearcoatSample,
 }
 
 export default class SamplesSelector {
@@ -37,7 +39,8 @@ export default class SamplesSelector {
     // this._setScene(new AdamScene(gl))
     // this._setScene(new SuzanneScene(renderer))
     // this._setScene(new TexturesScene(renderer))
-    this._setScene(new LightsScene(renderer))
+    // this._setScene(new LightsScene(renderer))
+    this._setScene(new ClearcoatSample(renderer))
 
     const f = gui.folder("Scenes")
     f.select( 'scene', Scenes ).onChange( v=>{
