@@ -10,7 +10,7 @@ import Assert from "../lib/assert"
 import Program from "nanogl/program"
 import Bounds from "nanogl-pbr/Bounds"
 import { MorphAttributeType, MorphAttribInfos, MorphAttributeName } from "nanogl-pbr/MorphCode"
-import GLState from "nanogl-state"
+import GLState from 'nanogl-state/GLState'
 import GLConfig from "nanogl-state/GLConfig"
 import Gltf from "../Gltf"
 

@@ -3,7 +3,7 @@ import Program from 'nanogl/program'
 import Node from 'nanogl-node'
 
 import { GLContext } from 'nanogl/types'
-import GLState, { LocalConfig } from 'nanogl-state'
+import GLState, { LocalConfig } from 'nanogl-state/GLState'
 import Camera from 'nanogl-camera'
 import { mat4 } from 'gl-matrix'
 

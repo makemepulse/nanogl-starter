@@ -1,6 +1,6 @@
 import { lightIsShadowMappedLight } from "nanogl-pbr/lighting/Light";
 import LightSetup from "nanogl-pbr/lighting/LightSetup";
-import GLState from "nanogl-state";
+import GLState from 'nanogl-state/GLState';
 import GLConfig from "nanogl-state/GLConfig";
 import { GLContext } from "nanogl/types";
 import { RenderContext } from "./Renderer";

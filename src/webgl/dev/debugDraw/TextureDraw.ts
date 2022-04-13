@@ -2,7 +2,7 @@ import { GLContext } from "nanogl/types";
 import Rect from 'nanogl-primitives-2d/rect'
 import Program from "nanogl/program";
 import Texture2D from "nanogl/texture-2d";
-import GLState, { LocalConfig } from "nanogl-state";
+import GLState, { LocalConfig } from 'nanogl-state/GLState';
 import { RenderContext } from "@webgl/core/Renderer";
 
 const VERT = `

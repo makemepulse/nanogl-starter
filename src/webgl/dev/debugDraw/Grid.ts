@@ -3,7 +3,7 @@ import { RenderContext } from "@webgl/core/Renderer"
 import Programs from "@webgl/glsl/programs"
 import { mat4, vec3 } from "gl-matrix"
 import Rect from "nanogl-primitives-2d/rect"
-import GLState, { LocalConfig } from "nanogl-state"
+import GLState, { LocalConfig } from 'nanogl-state/GLState'
 import Program from "nanogl/program"
 import { GLContext } from "nanogl/types"
 

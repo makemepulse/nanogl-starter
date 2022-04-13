@@ -4,7 +4,7 @@ import BaseMaterial from "nanogl-pbr/BaseMaterial";
 import Flag from "nanogl-pbr/Flag";
 import { StandardMetalness } from "nanogl-pbr/StandardPass";
 import Rect from "nanogl-primitives-2d/rect";
-import GLState from "nanogl-state";
+import GLState from 'nanogl-state/GLState';
 import { GLContext, isWebgl2 } from "nanogl/types";
 
 
