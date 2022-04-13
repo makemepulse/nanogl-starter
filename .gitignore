@@ -21,3 +21,12 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+
+# tools
+build/assets/bin/FBX2glTF
+
+# samples
+public/assets/webgl/meetmats
+public/assets/webgl/fn-509_with_tactical_kit
+public/assets/webgl/ground_control_station_for_uav

@@ -68,12 +68,14 @@ class TweakControl<T> implements Control<T>{
     return this.getter()
   }
 
-  onChange(cb: (v:T)=>void): void {
-    this._listeners.push(cb)
+  onChange(cb: (v:T)=>void): this {
+    this._listeners.push(cb);
+    return this;
   }
 
-  setLabel( s:string ): void{
-    this.input.label = s
+  setLabel( s:string ): this{
+    this.input.label = s;
+    return this;
   }
 
   remove(): void {
@@ -260,8 +262,6 @@ function _factory( pane : FolderApi ){
   
 
     folder(name:string): TPGui {
-      console.log('folder', name);
-      
       return createFoldersRecursivly(name.split('/') )
     },
 

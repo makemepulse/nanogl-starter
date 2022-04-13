@@ -9,8 +9,8 @@ class DummyControl<T> implements Control<T>{
 
   constructor( private _value: T){}
   
-  setLabel(s: string): void {
-    s
+  setLabel(s: string): this {
+    s; return this;
   }
   
   valueOf(): T {
@@ -21,7 +21,7 @@ class DummyControl<T> implements Control<T>{
     return this._value
   }
 
-  onChange(): void {0;}
+  onChange(): this {0;return this;}
   remove(): void {0;}
 
 }

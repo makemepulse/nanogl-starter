@@ -4,7 +4,6 @@ import MaterialOverrideExtension from "@webgl/lib/nanogl-gltf/lib/extensions/Mat
 import Gltf from "@webgl/lib/nanogl-gltf/lib/Gltf";
 import GLTFResource from "@webgl/resources/GltfResource";
 import Node from "nanogl-node";
-import BaseMaterial from "nanogl-pbr/BaseMaterial";
 import Bounds from "nanogl-pbr/Bounds";
 import { GLContext } from "nanogl/types";
 import { materialIsStandard } from "./GltfUtils";
@@ -13,16 +12,15 @@ import Lighting from "./Lighting";
 
 export class GltfScene extends GLTFResource {
   
-
-  private _materialOverride: MaterialOverrideExtension;
+  readonly overrides: MaterialOverrideExtension;
   
   constructor( request: string, gl:GLContext, private lighting?: Lighting, private parent?:Node ) {
     super(request, {gl} )
     
-    this._materialOverride = new MaterialOverrideExtension()
+    this.overrides = new MaterialOverrideExtension()
 
     this.opts = {
-      extensions: [this._materialOverride]
+      extensions: [this.overrides]
     }
 
   }
@@ -56,10 +54,6 @@ export class GltfScene extends GLTFResource {
     }
   }
   
-  overrideMaterial(name: string, factory: () => BaseMaterial ):void {
-    this._materialOverride.add( name, factory )
-  }
-
   
   render( context:RenderContext ) : void {
     const gltf = this.gltf

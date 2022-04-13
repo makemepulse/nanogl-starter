@@ -6,8 +6,8 @@ export type Color = vec3|vec4
 
 export interface Control<T = any> {
   value: T
-  onChange( cb: (v:T)=>void ):void
-  setLabel( s:string ): void
+  onChange( cb: (v:T)=>void ):this
+  setLabel( s:string ): this
   remove():void
 }
 

@@ -15,8 +15,6 @@ function shouldSupportAlpha(
 
 
 function writeRgbaColorObject(target: BindingTarget, value: Color): void {
-  console.log("writeRgbaColorObject", target.key, value );
-  
   const obj = value.toRgbaObject();
   target.writeProperty('0', obj.r/255.0);
   target.writeProperty('1', obj.g/255.0);
@@ -25,8 +23,6 @@ function writeRgbaColorObject(target: BindingTarget, value: Color): void {
 }
 
 function writeRgbColorObject(target: BindingTarget, value: Color): void {
-  console.log("writeRgbColorObject", target.key);
-  
   const obj = value.toRgbaObject();
   target.writeProperty('0', obj.r/255.0);
   target.writeProperty('1', obj.g/255.0);

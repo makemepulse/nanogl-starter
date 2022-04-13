@@ -12,7 +12,8 @@ import ResourcesScene from "./resources"
 import DevtoolsScene from "./devtools"
 import TexturesScene from "./textures"
 import LightsScene from "./lights"
-import ClearcoatSample from "./custom_material"
+import ClearcoatSample from "./custom_material/ClearcoatSample"
+import DisolveSample from "./custom_material/DisolveSample"
 
 const Scenes = {
   adam     : AdamScene     ,
@@ -23,7 +24,12 @@ const Scenes = {
   textures : TexturesScene ,
   lights   : LightsScene   ,
   clearcoat: ClearcoatSample,
+  disolve  : DisolveSample,
 }
+
+type SceneTypes = keyof typeof Scenes
+
+
 
 export default class SamplesSelector {
 
@@ -35,22 +41,28 @@ export default class SamplesSelector {
 
 
   constructor( private renderer:Renderer ){
-
-    // this._setScene(new AdamScene(gl))
-    // this._setScene(new SuzanneScene(renderer))
-    // this._setScene(new TexturesScene(renderer))
-    // this._setScene(new LightsScene(renderer))
-    this._setScene(new ClearcoatSample(renderer))
+    console.log("hash", window.location.hash);
+    
+    const sn = window.location.hash.substring(1) as SceneTypes
+    const Scene = Scenes[sn] || SuzanneScene
+    
+    this._setScene(new Scene(renderer))
 
     const f = gui.folder("Scenes")
     f.select( 'scene', Scenes ).onChange( v=>{
+      for (const key in Scenes) {
+        if(Scenes[key as SceneTypes] === v){
+          window.location.hash = key
+          break
+        }
+      }
       this._current?.unload()
       this._current = null
       this._setScene(new v(renderer)) 
     })
     
     f.btn( 'memTest', ()=> this.memTest() )
-    
+    f.open()
   }
   
   private async _setScene( scene:IScene ):Promise<void>{

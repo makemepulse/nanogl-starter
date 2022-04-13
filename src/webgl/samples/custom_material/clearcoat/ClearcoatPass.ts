@@ -2,8 +2,8 @@ import Input from "nanogl-pbr/Input";
 import { MetalnessSurface, PbrSurface, SpecularSurface } from "nanogl-pbr/PbrSurface";
 import { StandardPass } from "nanogl-pbr/StandardPass";
 
-import vShader from "./glsl/clearcoat.vert"
-import fShader from "./glsl/clearcoat.frag"
+import vShader from "./clearcoat.vert"
+import fShader from "./clearcoat.frag"
 
 
 export class ClearcoatPass<TSurface extends PbrSurface = PbrSurface> extends StandardPass<TSurface>{

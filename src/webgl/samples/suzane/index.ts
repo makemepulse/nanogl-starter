@@ -8,9 +8,9 @@ import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 
-// const GltfPath = "webgl/suzanne/Suzanne.gltf"
+const GltfPath = "webgl/suzanne/Suzanne.gltf"
 // const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
-const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
+// const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
 
 export default class SuzanneScene implements IGLContextProvider, IScene {
 

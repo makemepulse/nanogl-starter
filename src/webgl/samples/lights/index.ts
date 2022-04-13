@@ -8,10 +8,9 @@ import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 import SpotLight from "nanogl-pbr/lighting/SpotLight"
-import { vec3 } from "gl-matrix"
-import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
-import gui from "@webgl/dev/gui"
 import FloorPlane from "@webgl/engine/FloorPlane"
+import CompleteLightSetup from "../common/CompleteLightSetup"
+import Bounds from "nanogl-pbr/Bounds"
 
 const GltfPath = "webgl/suzanne/Suzanne.gltf"
 // const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
@@ -25,6 +24,7 @@ export default class LightsScene implements IGLContextProvider, IScene {
   root       : Node
   spotLight: SpotLight
   floor: FloorPlane
+  completeLightSetup: CompleteLightSetup
   
   constructor( renderer:Renderer ){
     this.gl = renderer.gl
@@ -32,6 +32,17 @@ export default class LightsScene implements IGLContextProvider, IScene {
     this.lighting   = new Lighting( this.gl )
     this.root.add( this.lighting.root )
     this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
+
+    /**
+     * remove initial ibl light added by default by Lighting
+     */
+    this.lighting.lightSetup.remove( this.lighting.ibl )
+
+
+    /**
+     * preset with all lights types
+     */
+    this.completeLightSetup = new CompleteLightSetup( this.lighting )
 
     
     /*
@@ -43,45 +54,14 @@ export default class LightsScene implements IGLContextProvider, IScene {
     this.root.add( this.floor.node )
 
 
-    /**
-     * remove initial ibl light added by default by Lighting
-     */
-    this.lighting.lightSetup.remove( this.lighting.ibl )
 
-
-    /**
-     * add a Spotlight
-     */
-    this.spotLight = new SpotLight()
-    this.spotLight.position.set([2, 2, 2])
-    this.spotLight.lookAt(vec3.create())
-    this.spotLight.angle = .5
-    this.spotLight._color.set([5, 5, 5])
-    this.spotLight.castShadows = true
-    
-    this.lighting.root.add( this.spotLight )
-    this.lighting.lightSetup.add( this.spotLight )
-    
-    const f = gui.folder('Lighting/Spot')
-    f.range( this.spotLight, 'z', -5, 10 )
-    f.range( this.spotLight, 'radius', .1, 20 )
-    f.range( this.spotLight, 'angle', .0, Math.PI/2 )
-    f.range( this.spotLight, 'innerAngle', .0, Math.PI/2 )
-    f.add( this.spotLight, 'castShadows')
     
   }
   
 
   preRender():void {
-    this.spotLight.lookAt(vec3.create())
-
-    /**
-     * display spotlight guizmos in the scene
-     */
-    DebugDraw.drawSpotLight( this.spotLight )
-    if(  this.spotLight.castShadows ){
-      DebugDraw.drawFrustum( this.spotLight.getCamera()._viewProj )
-    }
+    this.completeLightSetup.preRender()
+    
     
     this.gltfSample.preRender()
     this.root.updateWorldMatrix()
@@ -119,8 +99,15 @@ export default class LightsScene implements IGLContextProvider, IScene {
      * light setup need scene boundaries to figure out shadowmaps projections
      * needed if shadows are enabled on lights
      */
-    this.gltfSample.computeStaticBounds(this.lighting.lightSetup.bounds)
-    this.floor.node.y = this.lighting.lightSetup.bounds.min[1]
+    const lsBounds = this.lighting.lightSetup.bounds
+    this.gltfSample.computeStaticBounds(lsBounds)
+    this.floor.node.y = lsBounds.min[1]
+    
+    const planeBounds= new Bounds()
+    planeBounds.fromMinMax([-1, -1, 0], [1, 1, 0])
+    this.floor.node.updateWorldMatrix()
+    Bounds.transform(planeBounds, planeBounds, this.floor.node._wmatrix)
+    Bounds.union(lsBounds, lsBounds, planeBounds)
   }
 
   unload(): void {

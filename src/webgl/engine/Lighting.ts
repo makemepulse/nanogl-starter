@@ -79,14 +79,26 @@ export default class Lighting {
     this.exposureInput   .attachConstant( this.exposure )
     this.gammaMode.set( 'GAMMA_STD' )
 
+    this.lightSetup.stdModel.shadowFilter.set('PCF2x2')
+
     
     /// #if DEBUG
     const f = gui.folder('Lighting')
     f.range(this, 'exposure', 0, 3)
     f.range(this, 'gamma', .8, 4)
     f.range(this.ibl, 'ambientExposure', 0, 3).setLabel('ambient')
+    
+    const shadowFilter = this.lightSetup.stdModel.shadowFilter
+    const shadowFilters = {
+      shadowFiltering:shadowFilter.value()
+    }
+    f.addSelect( shadowFilters, 'shadowFiltering', shadowFilter.values.concat() ).onChange((v)=>shadowFilter.set(v))
+    
     f.add(this.ibl, 'enableRotation').setLabel('enable ibl rotation')
     // f.add({iblRotation:0}, 'iblRotation', 0, Math.PI*2).onChange(v=>{quat.identity(this.ibl.rotation) ; this.ibl.rotateY(v); console.log(v)})
+    f.addRotation( this.root, 'rotation').onChange(()=>this.root.invalidate())
+
+
     f.addRotation( this.root, 'rotation').onChange(()=>this.root.invalidate())
     /// #endif
 
