@@ -23,7 +23,7 @@
     "nanogl-pf": "^1.1.1",
     "nanogl-post": "^1.0.0",
     "nanogl-primitives-2d": "^1.1.0",
-    "nanogl-state": "^2.0.0",
+    "nanogl-state": "^2.1.0",
     "nanogl-sync": "^1.1.0",
     "nanogl-vao": "^1.1.0",
     "tweakpane": "^3.0.5",
