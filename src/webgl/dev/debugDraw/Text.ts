@@ -12,10 +12,12 @@ import { GLContext } from 'nanogl/types'
 
 const GLYPHS = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,:()[]%#@&"'*/-+?!<>{}_`
 
-const GLYPHS_WIDTH = 12
-const GLYPHS_HEIGHT = 20
+const GLYPHS_WIDTH = 15
+const GLYPHS_HEIGHT = 22
 const TEX_WIDTH = 256
 const TEX_HEIGHT = 128
+
+const FONT_CFG = "18px 'Source Code Pro'"
 
 const MAX_CHAR = 1024 * 16
 
@@ -73,7 +75,7 @@ class TextureAtlas {
 
     await document.fonts.ready
 
-    console.assert(document.fonts.check("18px 'Source Code Pro'"));
+    console.assert(document.fonts.check(FONT_CFG));
 
 
     const cvs = document.createElement('canvas')
@@ -81,20 +83,20 @@ class TextureAtlas {
     cvs.height = TEX_HEIGHT
 
     // cvs.style.position = "absolute"
-    // cvs.style.transform = "scale(.5)"
+    // cvs.style.transform = "scale(1)"
     // document.body.appendChild(cvs)
     
     const ctx = cvs.getContext('2d')
-    ctx.font = "18px 'Source Code Pro'"
+    ctx.font = FONT_CFG
     ctx.fillStyle = "white"
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
 
     const glyphsPerLines = Math.floor(TEX_WIDTH / GLYPHS_WIDTH)
 
     for (let i = 0; i < GLYPHS.length; i++) {
       const char = GLYPHS[i];
-      const x = (i % glyphsPerLines) * GLYPHS_WIDTH
+      const x = (i % glyphsPerLines) * GLYPHS_WIDTH + 2
       const y = Math.floor(i / glyphsPerLines) * GLYPHS_HEIGHT + 18 - 3
 
       ctx.strokeText(char, x, y, GLYPHS_WIDTH)
@@ -241,7 +243,8 @@ export default class TextRenderer {
     const wu = 2 / vpw
     const hu = 2 / vph
 
-    const charw = wu * GLYPHS_WIDTH * renderScale
+    const charw = wu * (GLYPHS_WIDTH-2) * renderScale// reduce letter-spacing by 1px
+    const charh = hu * (GLYPHS_HEIGHT) * renderScale
 
     let c = 0
     const data = this.instData
@@ -255,20 +258,25 @@ export default class TextRenderer {
       vec4.transformMat4(V4, V4, camera._viewProj)
 
 
-      let x   = V4[0]/V4[3]
-      const y = V4[1]/V4[3]
-
+      let x = V4[0]/V4[3]
+      let y = V4[1]/V4[3]
+      
       if( V4[3] < 0 ) continue
-
+      
       for (let j = 0; j < text.str.length; j++) {
         const char = text.str[j];
-        if (this.atlas.hasGlyph(char)) {
+        if( char == '\n' ) {
+          x = V4[0]/V4[3]
+          y -= charh
+        } else if (this.atlas.hasGlyph(char)) {
           data[c * 3 + 0] = x
           data[c * 3 + 1] = y
           data[c * 3 + 2] = this.atlas.getGlyphIndex(char)
           c++
+          x += charw
+        } else {
+          x += charw
         }
-        x += charw
       }
 
     }

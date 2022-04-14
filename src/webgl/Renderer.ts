@@ -19,7 +19,7 @@ export default class Renderer {
   cameras   : Cameras
 
   @ColorGui({folder:'General'})
-  clearColor = vec4.fromValues(.95, .95, .95, 1)
+  clearColor = vec4.fromValues(.2, .2, .2, 1)
   
   samples: SamplesSelector
 

@@ -1,6 +1,6 @@
 
 import Guizmo from './CrossGuizmo'
-import Frustum from './FrustumGuizmo'
+import Frustum, { FrustumRenderOptions } from './FrustumGuizmo'
 import { vec3, mat4 } from 'gl-matrix';
 import { Gui, GuiFolder } from '../gui/decorators';
 import Texture2D from 'nanogl/texture-2d';
@@ -13,6 +13,7 @@ import ConeGuizmo from './ConeGuizmo';
 import SpotLight from 'nanogl-pbr/lighting/SpotLight';
 
 
+const Orange = 0xfe9f2c
 
 /// #if DEBUG
 
@@ -36,7 +37,7 @@ class DebugDrawImpl {
   
   _textures: TextureDrawCommand[];
   _guizmos: mat4[];
-  _frustums: mat4[];
+  _frustums: FrustumRenderOptions[];
   _cones: ConeParams[];
 
   guizmo       : Guizmo      
@@ -105,9 +106,9 @@ class DebugDrawImpl {
   }
 
     // take vec3 or mat4
-  drawFrustum( vp : mat4 ){
+  drawFrustum( projection : mat4, color = Orange ){
     if( !this.enabled ) return
-    this._frustums.push( vp );
+    this._frustums.push( {projection, color} );
   }
     
   drawCone( m : mat4, height: number, angle: number  ){
@@ -143,8 +144,7 @@ class DebugDrawImpl {
     }
 
     for (let i = 0; i < this._frustums.length; i++) {
-      this.frustum.projection = this._frustums[i];
-      this.frustum.render( ctx.camera );
+      this.frustum.render( ctx.camera, this._frustums[i]);
     }
 
     for (let i = 0; i < this._cones.length; i++) {

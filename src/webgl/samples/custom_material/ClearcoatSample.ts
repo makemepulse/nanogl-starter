@@ -11,11 +11,13 @@ import { ClearcoatMetalness } from "./clearcoat/ClearcoatPass"
 import { Uniform } from "nanogl-pbr/Input"
 import gui from "@webgl/dev/gui"
 import CompleteLightSetup from "../common/CompleteLightSetup"
+import FloorPlane from "@webgl/engine/FloorPlane"
+import Bounds from "nanogl-pbr/Bounds"
 
 const GltfPath = "webgl/suzanne/Suzanne.gltf"
 // const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
-
+// const GltfPath = "webgl/meetmats/astronaut/scene.gltf"
 
 
 
@@ -31,6 +33,7 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
   smoothness: Uniform
   metalness: Uniform
   completeLightSetup: CompleteLightSetup
+  floor: FloorPlane
 
   constructor(renderer: Renderer) {
     this.gl = renderer.gl
@@ -67,6 +70,13 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
      */
     this.completeLightSetup = new CompleteLightSetup(this.lighting)
 
+    /*
+    * add a floor plane for fun
+    */
+    this.floor = new FloorPlane( renderer.gl )
+    this.lighting.setupMaterial(this.floor.material)
+    this.floor.node.setScale(4)
+    this.root.add( this.floor.node )
   }
 
 
@@ -79,8 +89,9 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
      * create the custom clercoat pass
      */
     this.clearcoatPass = new ClearcoatMetalness()
-    this.clearcoatPass.glconfig.enableDepthTest();
-    this.clearcoatPass.glconfig.enableCullface(true);
+    this.clearcoatPass.glconfig
+      .enableDepthTest()
+      .enableCullface(true);
 
     // set red color
     this.clearcoatPass.surface.baseColor.attachConstant([.8, .1, .1])
@@ -112,9 +123,11 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
 
   rttPass(): void {
     this.lighting.lightSetup.prepare(this.gl);
+    this.lighting.renderLightmaps((ctx)=>this.render(ctx) )
   }
 
   render(context: RenderContext): void {
+    this.floor.render( context )
     this.gltfSample.render(context)
   }
 
@@ -122,7 +135,14 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
     await this.lighting.load()
     await this.gltfSample.load()
 
-    this.gltfSample.computeStaticBounds(this.lighting.lightSetup.bounds)
+    const lsBounds = this.lighting.lightSetup.bounds
+    this.gltfSample.computeStaticBounds(lsBounds)
+    this.floor.node.y = lsBounds.min[1]
+    const planeBounds= new Bounds()
+    planeBounds.fromMinMax([-1, -1, 0], [1, 1, 0])
+    this.floor.node.updateWorldMatrix()
+    Bounds.transform(planeBounds, planeBounds, this.floor.node._wmatrix)
+    Bounds.union(lsBounds, lsBounds, planeBounds)
   }
 
   unload(): void {

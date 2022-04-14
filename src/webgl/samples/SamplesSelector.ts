@@ -44,11 +44,11 @@ export default class SamplesSelector {
     console.log("hash", window.location.hash);
     
     const sn = window.location.hash.substring(1) as SceneTypes
-    const Scene = Scenes[sn] || SuzanneScene
+    const Scene = Scenes[sn] || ClearcoatSample
     
     this._setScene(new Scene(renderer))
 
-    const f = gui.folder("Scenes")
+    const f = gui.folder("Samples")
     f.select( 'scene', Scenes ).onChange( v=>{
       for (const key in Scenes) {
         if(Scenes[key as SceneTypes] === v){
@@ -80,7 +80,7 @@ export default class SamplesSelector {
   private _memTestRunning = false
 
 
-  @Monitor({folder:'Scenes'})
+  @Monitor({folder:'Samples'})
   private _memTestCount = 0
   
   async memTest():Promise<void>{

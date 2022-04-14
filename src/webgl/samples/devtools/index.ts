@@ -63,6 +63,7 @@ export default class DevtoolsScene implements IScene {
     DebugDraw.drawText( 'Hey!?', vec3.fromValues(0, 0, 0) )
     DebugDraw.drawText( 'ABCDEFGHIJKLMNOPQRSTU', vec3.fromValues(0, 1, 0) )
     DebugDraw.drawText( '-_,:()[]%#@', vec3.fromValues(0, 1.5, 0) )
+    DebugDraw.drawText( 'text \non \nmultiple \nlines', vec3.fromValues(0, 2, 0) )
 
     const t = performance.now()/5000
     const pos = vec3.fromValues(Math.cos(t), 0, Math.sin(t)) 

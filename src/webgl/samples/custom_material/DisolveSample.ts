@@ -123,14 +123,6 @@ export default class DisolveSample implements IGLContextProvider, IScene {
     Bounds.transform(planeBounds, planeBounds, this.floor.node._wmatrix)
     Bounds.union(lsBounds, lsBounds, planeBounds)
     
-
-
-    /**
-     * ===================================================
-     * here we add DisolveFX chunk to the main material
-     * ===================================================
-     */
-    
     
   }
 

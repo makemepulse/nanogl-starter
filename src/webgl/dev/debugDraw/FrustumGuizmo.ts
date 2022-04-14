@@ -7,6 +7,7 @@ import mat4 from 'gl-matrix/src/gl-matrix/mat4'
 import { GLContext } from 'nanogl/types'
 import GLState, { LocalConfig } from 'nanogl-state/GLState'
 import Camera from 'nanogl-camera'
+import { HexColor, HexToTmpVec3 } from '@webgl/core/Color'
 
 const M4 = mat4.create();
 
@@ -62,6 +63,12 @@ void main(void){
 }`
 
 
+export type FrustumRenderOptions = {
+  projection: mat4
+  color?: HexColor
+}
+
+
 export default class Frustum extends Node {
 
   projection: mat4
@@ -70,11 +77,13 @@ export default class Frustum extends Node {
   prg       : Program
   cfg       : LocalConfig
 
+
+
+  
+
   constructor(private gl:GLContext) {
 
     super();
-
-    this.projection = null;
 
     this.gl = gl;
     this.buffer = new GLArrayBuffer(gl, FBUFF);
@@ -93,7 +102,7 @@ export default class Frustum extends Node {
   }
 
 
-  render(camera : Camera ): void {
+  render(camera : Camera, options: FrustumRenderOptions ): void {
 
     if (this.projection === null)
       return;
@@ -102,10 +111,11 @@ export default class Frustum extends Node {
 
     this.prg.uMVP(camera._viewProj);
 
-    mat4.invert(M4, this.projection);
+    mat4.invert(M4, options.projection);
     this.prg.uFrustumMat(M4);
 
-    this.prg.uColor(1.0, 0, 0, 1);
+    
+    this.prg.uColor(HexToTmpVec3(options.color ?? 0 ));
 
     this.buffer.attribPointer(this.prg)
     this.cfg.apply()
