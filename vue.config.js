@@ -5,27 +5,7 @@ const tapIfdefLoader = require( './build/vuecli/ifdef-loader')
 module.exports = {
   lintOnSave: false,
 
-  // configureWebpack : {
-  //   module: {
-  //     rules: [
-  //       {
-  //         test: /\.(vert|frag|glsl)$/,
-  //         use: 'nanogl-template/lib/compiler'
-  //       },
-  //       {
-  //         test: /\.(glb)$/,
-  //         use: [
-  //           {
-  //             loader: "file-loader",
-  //             options: {
-  //               name: 'assets/[name].[hash:8].[ext]'
-  //             }
-  //           }
-  //         ]
-  //       }
-  //     ]
-  //   },
-  // },
+  publicPath: process.env.PUBLIC_PATH,
 
   chainWebpack(config){
 

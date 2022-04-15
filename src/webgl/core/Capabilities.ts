@@ -88,7 +88,7 @@ export class CapabilitiesImpl {
     })
   }
   /// #else
-  // #code report():void{0;}
+  /// #code report():void{0;}
   /// #endif
 }
 
