@@ -22,13 +22,16 @@ module.exports = {
 
     config.module.rule('glsl')
       .test(/\.(vert|frag|glsl)$/ )
+    
+    tapIfdefLoader(config.module.rule('glsl'))
         .use( 'shader-hmr' )
         .loader( path.resolve( __dirname, 'build/shader-hmr/index.js') )
       .end()
         .use( 'nanogl-template' )
         .loader( 'nanogl-template/lib/compiler' )
       .end()
-        
+    
+
 
     config.module.rule('images')
       .exclude

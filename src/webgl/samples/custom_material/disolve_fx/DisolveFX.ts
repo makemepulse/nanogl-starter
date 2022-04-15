@@ -1,8 +1,15 @@
+import LiveShader from "@webgl/core/LiveShader";
 import Chunk from "nanogl-pbr/Chunk";
 import ChunksSlots from "nanogl-pbr/ChunksSlots";
 import Input, { ShaderType } from "nanogl-pbr/Input";
 
-import Frag from './disolve_fx.frag'
+import FragModule from './disolve_fx.frag'
+
+/**
+ * this shader can be edited live and hot reloaded in place
+ */
+const FragCode = LiveShader(FragModule)
+
 
 
 /**
@@ -12,7 +19,7 @@ export default class DisolveFX extends Chunk {
   
   scale: Input;
   threshold: Input;
-  
+
   constructor(){
     super(true, false)
 
@@ -24,6 +31,11 @@ export default class DisolveFX extends Chunk {
     // initialize these input with constant values
     this.scale.attachConstant(1)
     this.threshold.attachConstant(.1)
+
+    /**
+     * ivalidate this chunk's code when live reloading the glsl module
+     */
+    FragCode.onHmr(()=>this.invalidateCode())
     
   }
   
@@ -32,9 +44,9 @@ export default class DisolveFX extends Chunk {
     /**
      * add code in various places in the initial passes (see disolve_fx.frag)
      */
-    slots.add('pv', Frag({slot:'pv'}))
-    slots.add('postv', Frag({slot:'postv'}))
-    slots.add('pf', Frag({slot:'pf'}))
-    slots.add('f', Frag({slot:'f'}))
+    slots.add('pv'   , FragCode({slot:'pv'   }))
+    slots.add('postv', FragCode({slot:'postv'}))
+    slots.add('pf'   , FragCode({slot:'pf'   }))
+    slots.add('f'    , FragCode({slot:'f'    }))
   }
 }

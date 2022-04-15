@@ -1,8 +1,10 @@
+// import { GlslModule } from "./GlslModule";
 
 
 type GlslModule = {
   (o?:unknown):string
   toString():string
+  onHmr(cb:(module:GlslModule)=>void):void
 }
 
 declare module "*.glsl" {

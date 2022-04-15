@@ -34,5 +34,5 @@ module.exports = function tapIfdefLoader( rule ){
     .loader('ifdef-loader')
     .options(ifdefOpts)
     .end()
-  
+  return rule 
 }
