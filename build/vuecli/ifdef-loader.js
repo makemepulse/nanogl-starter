@@ -1,6 +1,3 @@
-
-const sum = require('hash-sum')
-
 /**
  * pass all "VUE_APP_XXX" vars in process.env as XXX defines  to ifdef-loader
  */
@@ -24,8 +21,6 @@ const ifdefOpts = {
   "ifdef-uncomment-prefix": "/// #code "
 }
 
-
-const ifdefhash = sum(ifdefOpts)
 
 module.exports = function tapIfdefLoader( rule ){
 

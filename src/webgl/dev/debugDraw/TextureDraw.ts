@@ -29,7 +29,6 @@ void main(void){
 
 
 export type TextureDrawCommand = {
-
   tex : Texture2D
   x:number
   y:number
@@ -58,22 +57,26 @@ export default class TextureDraw {
     this.rect.attribPointer( this.prg )
   }
   
-  prepare():void{
-    this.prg.use()
-    this.rect.attribPointer( this.prg )
-    this.cfg.apply()
-  }
-  
+
   draw( command: TextureDrawCommand, ctx:RenderContext ):void{
     let {x,y,w,h} = command
-
+    
     const vpw = ctx.viewport.width
     const vph = ctx.viewport.height
-
+    
     x /= vpw
     y /= vph
     w /= vpw
     h /= vph
+  
+    // if( command.tex.format === this.gl.DEPTH_COMPONENT ){
+    
+    // }
+    
+
+    this.prg.use()
+    this.rect.attribPointer( this.prg )
+    this.cfg.apply()
 
     this.prg.tTex( command.tex )
     this.prg.uScaleTranslate( w, h, (x*2)-1+w, (y*2)-1+h)

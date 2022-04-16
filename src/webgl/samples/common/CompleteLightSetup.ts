@@ -71,9 +71,10 @@ export default class CompleteLightSetup {
   }
 
   preRender() {
-
     this.spot.lookAt(vec3.create())
-
+  }
+  
+  debugDraw() {
     /**
      * display spotlight guizmos in the scene
      */
@@ -81,12 +82,14 @@ export default class CompleteLightSetup {
       DebugDraw.drawText( 'spot', this.spot._wposition )
       DebugDraw.drawSpotLight( this.spot )
       if(  this.spot.castShadows ){
+        DebugDraw.drawTexture( 'spot', this.spot.getShadowmap() )
         DebugDraw.drawFrustum( this.spot.getCamera()._viewProj )
       }
-
+      
       DebugDraw.drawText( 'directional', this.directional._wposition )
       DebugDraw.drawGuizmo( this.directional._wmatrix )
       if(  this.directional.castShadows ){
+        DebugDraw.drawTexture( 'directional', this.directional.getShadowmap() )
         DebugDraw.drawFrustum( this.directional.getCamera()._viewProj )
       }
     }

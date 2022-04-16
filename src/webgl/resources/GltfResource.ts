@@ -1,9 +1,9 @@
 import { Resource } from "./Resource";
-import { WebImpl } from "@webgl/lib/nanogl-gltf/lib/io/web";
-import { GltfLoaderOptions } from "@webgl/lib/nanogl-gltf/lib/io/GltfLoaderOptions";
+import { WebImpl } from "nanogl-gltf/lib/io/web";
+import { GltfLoaderOptions } from "nanogl-gltf/lib/io/GltfLoaderOptions";
 import { IGLContextProvider } from "./IGLContextProvider";
-import GltfLoader from "@webgl/lib/nanogl-gltf/lib/io/GltfLoader";
-import Gltf from "@webgl/lib/nanogl-gltf/lib/Gltf";
+import GltfLoader from "nanogl-gltf/lib/io/GltfLoader";
+import Gltf from "nanogl-gltf/lib/Gltf";
 
 
 export const IOImpl = new WebImpl();

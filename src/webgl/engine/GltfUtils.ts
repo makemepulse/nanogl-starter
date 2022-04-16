@@ -1,5 +1,5 @@
-import Material, { IMaterial } from "@webgl/lib/nanogl-gltf/lib/elements/Material";
-import UnlitMaterial from "@webgl/lib/nanogl-gltf/lib/extensions/KHR_materials_unlit/UnlitMaterial";
+import Material, { IMaterial } from "nanogl-gltf/lib/elements/Material";
+import UnlitMaterial from "nanogl-gltf/lib/extensions/KHR_materials_unlit/UnlitMaterial";
 import { MetalnessSurface, SpecularSurface } from "nanogl-pbr/PbrSurface";
 
 

@@ -25,7 +25,7 @@ export default class DevtoolsScene implements IScene {
     this.texture1 = WebglAssets.getTexture( 'texture1', gl )
     this.texture2 = WebglAssets.getTexture( 'texture2', gl )
     
-    for (let index = 0; index < 0; index++) {
+    for (let index = 0; index < 3; index++) {
       const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/512/512' ), {gl} )
       this.textures.push( texRes )
     }
@@ -40,24 +40,21 @@ export default class DevtoolsScene implements IScene {
     await this.texture1.load()
     await this.texture2.load()
     await Promise.all( this.textures.map( t=>t.load() ) )
-    this.ready =true
+    this.ready = true
   }
   
   render(): void {
-    
     
     if( ! this.ready ) return
     
     DebugDraw.drawGuizmo( vec3.create() )
     DebugDraw.drawGuizmo( vec3.fromValues(1, 0, 0) )
     
-    DebugDraw.drawTexture( this.texture1.value )   
-    DebugDraw.drawTexture( this.texture2.value )   
-    let x = 0
+    DebugDraw.drawTexture( 'tex1', this.texture1.value )   
+    DebugDraw.drawTexture( 'tex2', this.texture2.value )   
     for (let i = 0; i < this.textures.length; i++) {
       const tex = this.textures[i].texture;
-      DebugDraw.drawTexture( tex, x )   
-      x += tex.width
+      DebugDraw.drawTexture( `picsum ${i}`, tex )   
     }
     
     DebugDraw.drawText( 'Hey!?', vec3.fromValues(0, 0, 0) )
@@ -77,9 +74,11 @@ export default class DevtoolsScene implements IScene {
     this.texture2.unload()
     this.textures.map( t=>t.unload() )
   }
+  
   preRender(): void {
     0 
   }
+
   rttPass(): void {
     0
   }

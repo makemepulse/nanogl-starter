@@ -144,7 +144,7 @@ export default class TextureCodecStd implements ITextureCodec {
 
 
 
-import { webpSupport } from "@webgl/lib/nanogl-gltf/lib/extensions/EXT_texture_webp/webpSupport";
+import { webpSupport } from "nanogl-gltf/lib/extensions/EXT_texture_webp/webpSupport";
 
 export class TextureCodecWebp extends TextureCodecStd implements ITextureCodec {
   

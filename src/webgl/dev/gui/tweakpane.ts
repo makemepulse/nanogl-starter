@@ -168,11 +168,21 @@ function _factory( pane : FolderApi ){
     },
     
 
-    addSelect<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, options:Record<string, O[Key]> | O[Key][]): Control<O[Key]> {
-      const ctrl = gui.select( prop, options )
-      ctrl.onChange( v=>tgt[prop]=v)
-      registerCtrl( tgt, ctrl )
-      return ctrl
+    addSelect<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, pOptions:Record<string, O[Key]> | O[Key][]): Control<O[Key]> {
+      let options : ListItem<O[Key]>[]
+
+      if( Array.isArray(pOptions)){
+        options = pOptions.map( v=>({text:String(v), value:v }))
+      } else {
+        options = Object.entries(pOptions).map( e=>({text:e[0], value:e[1] }))
+      }
+
+
+      const list = pane.addInput(tgt, prop, {
+        options
+      })
+      return new TweakControl(list, () => tgt[prop] );
+
     },
     
     
@@ -209,7 +219,7 @@ function _factory( pane : FolderApi ){
 
 
 
-    select<T>( name: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>{
+    select<T>( name: string, o: Record<string, T> | T[], v?:T ):Control<T>{
       
       const {label, gui} = resolvePath(name)
       let options : ListItem<T>[]
@@ -221,13 +231,11 @@ function _factory( pane : FolderApi ){
       }
 
       const list:ListApi<T> = gui._getPane().addBlade({
-        // view: useThumbnail?'thumbnail-list':'list',
         view: 'list',
         label,
         options,
-        value: options[0].value,
+        value: v ?? options[0].value,
       }) as ListApi<T>;
-
       
       return new TweakControl(list, () => list.value );
     },

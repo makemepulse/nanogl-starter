@@ -1,9 +1,9 @@
 import Program from "nanogl/program";
-import Gltf from "./lib/nanogl-gltf/lib/Gltf";
-import KHR_texture_transform from "./lib/nanogl-gltf/lib/extensions/EXT_texture_webp";
-import KHR_lights_punctual from "./lib/nanogl-gltf/lib/extensions/KHR_lights_punctual";
-import KHR_materials_pbrSpecularGlossiness from "./lib/nanogl-gltf/lib/extensions/KHR_materials_pbrSpecularGlossiness";
-import KHR_materials_unlit from "./lib/nanogl-gltf/lib/extensions/KHR_materials_unlit";
+import Gltf from "nanogl-gltf/lib/Gltf";
+import KHR_texture_transform from "nanogl-gltf/lib/extensions/EXT_texture_webp";
+import KHR_lights_punctual from "nanogl-gltf/lib/extensions/KHR_lights_punctual";
+import KHR_materials_pbrSpecularGlossiness from "nanogl-gltf/lib/extensions/KHR_materials_pbrSpecularGlossiness";
+import KHR_materials_unlit from "nanogl-gltf/lib/extensions/KHR_materials_unlit";
 import { TextureCodecs } from "./resources/TextureCodec";
 import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
 import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";

@@ -18,6 +18,7 @@
     "gl-matrix": "2.3.1",
     "nanogl": "^2.3.1",
     "nanogl-camera": "^1.1.2",
+    "nanogl-gltf": "^0.1.0",
     "nanogl-node": "^1.2.1",
     "nanogl-pbr": "3.0.0-beta.13",
     "nanogl-pf": "^1.1.1",
@@ -26,6 +27,7 @@
     "nanogl-state": "^2.1.0",
     "nanogl-sync": "^1.1.0",
     "nanogl-vao": "^1.1.0",
+    "resize-observer-polyfill": "^1.5.1",
     "tweakpane": "^3.0.5",
     "vue": "^3.2.13",
     "vue-class-component": "^8.0.0-0"
@@ -42,10 +44,8 @@
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
     "file-loader": "^6.2.0",
-    "hash-sum": "^2.0.0",
     "ifdef-loader": "^2.3.0",
     "nanogl-template": "^1.0.4",
-    "resize-observer-polyfill": "^1.5.1",
     "stylus": "^0.55.0",
     "stylus-loader": "^6.1.0",
     "typescript": "~4.5.5"

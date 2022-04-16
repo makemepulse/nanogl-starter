@@ -52,16 +52,12 @@ export default class LightsScene implements IGLContextProvider, IScene {
     this.lighting.setupMaterial(this.floor.material)
     this.floor.node.setScale(2)
     this.root.add( this.floor.node )
-
-
-
     
   }
   
 
   preRender():void {
     this.completeLightSetup.preRender()
-    
     
     this.gltfSample.preRender()
     this.root.updateWorldMatrix()
@@ -87,6 +83,7 @@ export default class LightsScene implements IGLContextProvider, IScene {
 
 
   render( context: RenderContext ):void {
+    this.completeLightSetup.debugDraw()
     this.floor.render( context )
     this.gltfSample.render( context )
   }

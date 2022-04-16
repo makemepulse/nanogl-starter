@@ -1,7 +1,7 @@
 import { RenderContext } from "@webgl/core/Renderer";
-import Animation from "@webgl/lib/nanogl-gltf/lib/elements/Animation";
-import MaterialOverrideExtension from "@webgl/lib/nanogl-gltf/lib/extensions/MaterialOverrideExtension";
-import Gltf from "@webgl/lib/nanogl-gltf/lib/Gltf";
+import Animation from "nanogl-gltf/lib/elements/Animation";
+import MaterialOverrideExtension from "nanogl-gltf/lib/extensions/MaterialOverrideExtension";
+import Gltf from "nanogl-gltf/lib/Gltf";
 import GLTFResource from "@webgl/resources/GltfResource";
 import Node from "nanogl-node";
 import Bounds from "nanogl-pbr/Bounds";

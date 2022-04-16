@@ -2,15 +2,17 @@
 import Guizmo from './CrossGuizmo'
 import Frustum, { FrustumRenderOptions } from './FrustumGuizmo'
 import { vec3, mat4 } from 'gl-matrix';
-import { Gui, GuiFolder } from '../gui/decorators';
+import { Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import Texture2D from 'nanogl/texture-2d';
-import TextureDraw, { TextureDrawCommand } from './TextureDraw';
+import TextureDraw from './TextureDraw';
 import TextRenderer from './Text';
 import Grid, { GridOrientation } from './Grid';
 import { GLContext } from 'nanogl/types';
 import { RenderContext } from '@webgl/core/Renderer';
 import ConeGuizmo from './ConeGuizmo';
 import SpotLight from 'nanogl-pbr/lighting/SpotLight';
+import gui from '../gui';
+import { Control } from '../gui/api';
 
 
 const Orange = 0xfe9f2c
@@ -21,6 +23,13 @@ type ConeParams = {
   m: mat4,
   height: number, 
   angle: number 
+}
+
+
+type TextureParams = {
+  name : string
+  tex : Texture2D
+  flipY? :boolean
 }
 
 // TEST SWITCH HERE
@@ -35,7 +44,7 @@ function m4fromV3( v3:vec3 ) : mat4 {
 @GuiFolder("DebugDraw")
 class DebugDrawImpl {
   
-  _textures: TextureDrawCommand[];
+  _textures: TextureParams[];
   _guizmos: mat4[];
   _frustums: FrustumRenderOptions[];
   _cones: ConeParams[];
@@ -59,7 +68,12 @@ class DebugDrawImpl {
   @Gui
   gridZY = false
 
+  @RangeGui( 0.1, 1, {step:.05})
+  private textureScale = .5
 
+  private currentTextureName = '--'
+  private _textureNames: string[] = ['--']
+  private _texListGuiCtrl : Control = null
 
   constructor( private gl:GLContext ){
 
@@ -75,24 +89,30 @@ class DebugDrawImpl {
     this.textRenderer = new TextRenderer( gl )
     this.grid         = new Grid        ( gl )
 
+    this._updateTexList()
   }
 
 
   clear(){
-    this._guizmos .length = 0;
-    this._frustums.length = 0;
-    this._cones   .length = 0;
-    this._textures.length = 0; 
+    this._guizmos .length = 0
+    this._frustums.length = 0
+    this._cones   .length = 0
+    this._textures.length = 0 
     this.textRenderer.clear()
   }
 
-  drawTexture( tex:Texture2D, x=0, y=0, w=tex.width, h=tex.height ){
+  drawTexture( name:string, tex:Texture2D, flipY = false ){
     if( !this.enabled ) return
 
-    this._textures.push({
-      tex,
-      x,y,w,h
-    })
+    if( !this._textureNames.includes(name) ){
+      if( this.currentTextureName === '--' ){
+        this.currentTextureName = name
+      }
+      this._textureNames.push(name)
+      this._updateTexList()
+    }
+
+    this._textures.push({name,tex,flipY})
   }
 
   // take vec3 or mat4
@@ -156,13 +176,23 @@ class DebugDrawImpl {
       this.cone.render( ctx.camera );
     }
     
-    this.texDraw.prepare()
     for (const cmd of this._textures) {
-      this.texDraw.draw( cmd, ctx )
+      if( cmd.name === this.currentTextureName ){
+        this.texDraw.draw( {...cmd, 
+          x: 8, y: 8,
+          w : cmd.tex.width * this.textureScale,
+          h : cmd.tex.height * this.textureScale,
+        }, ctx )
+      }
     }
 
     this.textRenderer.draw(ctx)
 
+  }
+
+  private _updateTexList(){
+    this._texListGuiCtrl?.remove()
+    this._texListGuiCtrl = gui.folder("DebugDraw").addSelect(this, 'currentTextureName', this._textureNames)
   }
 
 }
@@ -204,8 +234,8 @@ const DebugDraw = {
     _instance.drawSpotLight( l );
   },
 
-  drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{
-    _instance.drawTexture(t, x, y, w, h );
+  drawTexture( name:string, t:Texture2D, flipY = false ):void{
+    _instance.drawTexture(name, t, flipY );
   },
 
   drawText( txt:string, wpos: vec3 ):void{
@@ -232,7 +262,7 @@ const DebugDraw = {
   drawFrustum( vp : mat4 ):void{0},
   drawCone( m : mat4 ):void{0},
   drawSpotLight( l :SpotLight ):void{0},
-  drawTexture( t:Texture2D, x?:number, y?:number, w?:number, h?:number ):void{0},
+  drawTexture( name:string, t:Texture2D, flipY = false ):void{0},
   drawText( txt:string, wpos: vec3 ):void{0},
   render(ctx:IRenderContext):void{0}
 }
