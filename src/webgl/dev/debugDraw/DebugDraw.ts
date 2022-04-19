@@ -68,8 +68,8 @@ class DebugDrawImpl {
   @Gui
   gridZY = false
 
-  @RangeGui( 0.1, 1, {step:.05})
-  private textureScale = .5
+  @RangeGui( 0.1, 4, {step:.05})
+  private textureScale = 1
 
   private currentTextureName = '--'
   private _textureNames: string[] = ['--']

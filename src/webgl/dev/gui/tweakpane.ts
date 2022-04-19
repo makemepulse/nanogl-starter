@@ -339,66 +339,24 @@ const gui = _factory( root )
 // ===================================================================
 // FPS
 // ===================================================================
-const fpsGraph: any = root.addBlade({
+const fpsGraph = root.addBlade({
   view: 'fpsgraph',
   label: 'fpsgraph',
   lineCount: 2,
 });
 
+fpsGraph.controller_.view.element.addEventListener('dblclick', ()=>{
+  root.controller_.view.element.style.display = 'none'
+})
+
+const fpsCtrl:any = fpsGraph
 function render() {
-  fpsGraph.begin();
-  fpsGraph.end();
+  fpsCtrl.begin();
+  fpsCtrl.end();
   requestAnimationFrame(render);
 }
 
 render()
 
-
-// ===================================================================
-// Presistence
-// ===================================================================
-
-function LSSave(){
-  const v = JSON.stringify(root.exportPreset(), null, 2)
-  localStorage.setItem('gui-save', v )
-}
-
-function Export(){
-  const v = JSON.stringify(root.exportPreset(), null, 2)
-  console.log( v )
-}
-
-function LSLoad(){
-  const v = localStorage.getItem('gui-save')
-  if( v ){
-    root.importPreset( JSON.parse(v))
-  }
-}
-
-function LSClear(){
-  localStorage.removeItem('gui-save')
-}
-
-const cells = [
-  {title:'save', cbk:LSSave},
-  {title:'load', cbk:LSLoad},
-  {title:'clear', cbk:LSClear},
-  {title:'export', cbk:Export},
-]
-
-const save:any = root.addBlade({
-  view: 'buttongrid',
-  size: [cells.length, 1],
-  cells: (x:number) => cells[x],
-  label: '',
-})
-
-save.on('click', (ev:any) => {
-  cells[ev.index[0]].cbk()
-});
-
-// setTimeout(LSLoad, 200)
-
-root.addSeparator()
 
 export default gui

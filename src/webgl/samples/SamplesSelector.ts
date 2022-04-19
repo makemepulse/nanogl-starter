@@ -14,17 +14,21 @@ import TexturesScene from "./textures"
 import LightsScene from "./lights"
 import ClearcoatSample from "./custom_material/ClearcoatSample"
 import DisolveSample from "./custom_material/DisolveSample"
+import RttSample from "./rtt/RttSample"
+import MsaaSample from "./rtt/MsaaSample"
 
 const Scenes = {
-  adam     : AdamScene     ,
-  robot    : RobotScene    ,
-  suzanne  : SuzanneScene  ,
-  devtools : DevtoolsScene ,
-  resources: ResourcesScene,
-  textures : TexturesScene ,
-  lights   : LightsScene   ,
-  clearcoat: ClearcoatSample,
-  disolve  : DisolveSample,
+  adam      : AdamScene       ,
+  robot     : RobotScene      ,
+  suzanne   : SuzanneScene    ,
+  devtools  : DevtoolsScene   ,
+  resources : ResourcesScene  ,
+  textures  : TexturesScene   ,
+  lights    : LightsScene     ,
+  clearcoat : ClearcoatSample ,
+  disolve   : DisolveSample   ,
+  rtt       : RttSample       ,
+  rtt_msaa  : MsaaSample      ,
 }
 
 type SceneTypes = keyof typeof Scenes

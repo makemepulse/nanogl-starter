@@ -2,6 +2,7 @@ import { ICameraController } from "@webgl/cameras/ICameraController";
 import { quat, vec3, mat4 } from "gl-matrix";
 import Camera from "nanogl-camera";
 import PerspectiveLens from "nanogl-camera/perspective-lens";
+import ControlScheme, { CameraMode } from "./ControlScheme";
 
 
 const NULL_QUAT = quat.create()
@@ -10,14 +11,6 @@ const Q2        = quat.create()
 const V1        = vec3.create();
 const V2        = vec3.create();
 const IMVP      = mat4.create();
-
-const enum Mode {
-  NONE  = -1,
-  IDLE  = 0,
-  ORBIT = 1,
-  PAN   = 2,
-  DOLLY = 3,
-}
 
 
 const PAN_SENSITIVITY = 10;
@@ -35,8 +28,8 @@ interface IBehaviour {
 
 
 
-
 class IdleAction implements IBehaviour {
+  
   start(): void {
     0
   }
@@ -44,8 +37,6 @@ class IdleAction implements IBehaviour {
     0
   }
 }
-
-
 
 
 class OrbitAction implements IBehaviour {
@@ -58,10 +49,7 @@ class OrbitAction implements IBehaviour {
   startMouse: vec3;
   focus     : vec3;
 
-
-
-
-  constructor(){
+  constructor(private ctrl:DevCameraController){
 
     this.initialX   = vec3.create()
     this.initialR   = quat.create()
@@ -104,8 +92,6 @@ class OrbitAction implements IBehaviour {
 }
 
 
-
-
 class PanAction implements IBehaviour 
 {
 
@@ -118,7 +104,7 @@ class PanAction implements IBehaviour
   focus: vec3;
 
 
-  constructor(){
+  constructor(private ctrl:DevCameraController){
 
     this.initialX   = vec3.create()
     this.initialY   = vec3.create()
@@ -169,7 +155,7 @@ class DollyAction implements IBehaviour {
   focus     : vec3;
   
 
-  constructor(){
+  constructor( private ctrl:DevCameraController){
 
     this.initialZ   = vec3.create()
     this.initialP   = vec3.create()
@@ -192,8 +178,8 @@ class DollyAction implements IBehaviour {
   update( mouse : vec3 ){
 
     vec3.subtract( V1, mouse, this.startMouse );
-
-    vec3.scale( V1, this.initialZ, V1[1] * 5 )
+    const flip = this.ctrl.controlScheme.inverseDolly ? -1 : 1;
+    vec3.scale( V1, this.initialZ, V1[1] * 5 * flip)
     vec3.add( this.cam.position, this.initialP, V1 );
 
     this.cam.invalidate()
@@ -203,14 +189,16 @@ class DollyAction implements IBehaviour {
 }
 
 
-export default class MaxController implements ICameraController {
+export default class DevCameraController implements ICameraController {
 
   el         : HTMLElement;
   mouse      : vec3   ;
   cam        : Camera<PerspectiveLens> ;
-  mode       : Mode   ;
+  mode       : CameraMode   ;
   action     : IBehaviour;
 
+  controlScheme:ControlScheme
+  
   orbitRadius: number ;
 
   constructor( el : HTMLElement ){
@@ -218,7 +206,7 @@ export default class MaxController implements ICameraController {
     this.mouse       = vec3.fromValues(0, 0, 1);
     this.cam         = null;
     this.orbitRadius = -30;
-    this.mode        = Mode.NONE;
+    this.mode        = CameraMode.NONE;
   }
 
 
@@ -228,7 +216,7 @@ export default class MaxController implements ICameraController {
     this.orbitRadius = -vec3.length(this.cam._wposition as vec3)
     this.el.addEventListener( 'mousemove', this.onMouseMove );
     this.mode        = -1;
-    this.setMode( Mode.IDLE )
+    this.setMode( CameraMode.IDLE )
   }
 
 
@@ -244,21 +232,21 @@ export default class MaxController implements ICameraController {
   }
 
 
-  setMode( mode:Mode ):void {
+  setMode( mode:CameraMode ):void {
     if( this.mode === mode ) return;
     this.mode = mode;
     switch( mode ){
-      case Mode.IDLE :
+      case CameraMode.IDLE :
         this.action = new IdleAction()
         break;
-      case Mode.ORBIT :
-        this.action = new OrbitAction()
+      case CameraMode.ORBIT :
+        this.action = new OrbitAction(this)
         break;
-      case Mode.PAN :
-        this.action = new PanAction()
+      case CameraMode.PAN :
+        this.action = new PanAction(this)
         break;
-      case Mode.DOLLY :
-        this.action = new DollyAction()
+      case CameraMode.DOLLY :
+        this.action = new DollyAction(this)
         break;
     }
 
@@ -279,20 +267,12 @@ export default class MaxController implements ICameraController {
 
 
   onMouseMove = ( e:MouseEvent ):void =>{
-    
-    const mode = this._getModeForEvt(e)
+    const mode = this.controlScheme?.getModeForEvt(e) ?? CameraMode.IDLE;
     this.setMode( mode );
     setMousePos( e, this.el, this.mouse );
     this.action.update( this.mouse );
   }
 
-  _getModeForEvt( e:MouseEvent ) : Mode {
-    if( e .which !==  2 ) return Mode.IDLE
-    if( e.altKey ){
-      return e.ctrlKey ? Mode.DOLLY : Mode.ORBIT
-    }
-    return Mode.PAN;
-  }
 
 }
 

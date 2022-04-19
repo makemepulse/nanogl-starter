@@ -1,5 +1,5 @@
 
-import { createMaxCamera } from '@webgl/dev/cameras';
+import { createDevCamera } from '@webgl/dev/cameras';
 import gui         from '@webgl/dev/gui'
 import { Control } from '@webgl/dev/gui/api';
 
@@ -28,7 +28,7 @@ export default class Cameras {
     
     /// #if DEBUG
     /** enable debug cameras */
-    this.registerCamera( createMaxCamera(renderer), 'dev' )
+    this.registerCamera( createDevCamera(renderer), 'dev' )
     // this.registerCamera( createBlenderCamera(renderer), '' )
     this._gui()
     this.use( 'dev' )

@@ -79,8 +79,9 @@ export default class TextureDraw {
     this.cfg.apply()
 
     this.prg.tTex( command.tex )
-    this.prg.uScaleTranslate( w, h, (x*2)-1+w, (y*2)-1+h)
-    // this.prg.uScaleTranslate( 1, 1, 0, 0 )
+
+    const ty = ( command.flipY === true) ? -h : h
+    this.prg.uScaleTranslate( w, ty, (x*2)-1+w, (y*2)-1+h)
     this.rect.render()
   }
 

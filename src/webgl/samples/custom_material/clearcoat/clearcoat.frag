@@ -63,7 +63,6 @@ struct LightingData
 {{ require( "nanogl-pbr/glsl/includes/color.glsl" )() }}
 {{ require( "nanogl-pbr/glsl/includes/normals.glsl" )() }}
 {{ require( "nanogl-pbr/glsl/includes/tonemap.glsl" )() }}
-
 // substitue lighting part
 {{ require( "./lighting.glsl" )() }}
 

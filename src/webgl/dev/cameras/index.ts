@@ -2,27 +2,32 @@
 /// #if DEBUG
 //*
 
-
 import CameraManager from "@webgl/cameras/CameraManager"
 import Cameras from "@webgl/cameras/Cameras"
 import Renderer from "@webgl/Renderer"
 import PerspectiveLens from "nanogl-camera/perspective-lens"
-import MaxController from "./MaxController"
+import ControlScheme from "./ControlScheme"
+import DevCameraController from "./DevCameraController"
+import Scheme3dsMax from "./Scheme3dsMax"
+import SchemeBlender from "./SchemeBlender"
 
 
-
-export function createMaxCamera( renderer:Renderer ): CameraManager<PerspectiveLens> {
-  const devManager    = new CameraManager(Cameras.makeDefaultCamera())
-  devManager.setControler( new MaxController(renderer.ilayer) )
-  return devManager
+function getSchemeFromEnvVar():ControlScheme {
+  switch (process.env.VUE_APP_DEV_CAMERA_SCHEME) {
+    case undefined: 
+    case '3ds': return new Scheme3dsMax()
+    case 'blender': return new SchemeBlender()
+  }
+  console.warn(`Unknown camera scheme: ${process.env.VUE_APP_DEV_CAMERA_SCHEME}`)
 }
 
-export function createBlenderCamera( renderer:Renderer ): CameraManager<PerspectiveLens> {
+export function createDevCamera( renderer:Renderer ): CameraManager<PerspectiveLens> {
+  const ctrl = new DevCameraController( renderer.ilayer )
+  ctrl.controlScheme = getSchemeFromEnvVar()
   const devManager    = new CameraManager(Cameras.makeDefaultCamera())
-  devManager.setControler( new MaxController(renderer.ilayer) )
+  devManager.setControler( ctrl )
   return devManager
 }
-
 
 /*/ 
 /// #else

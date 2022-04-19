@@ -3,7 +3,7 @@ import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
-import { GLContext } from "nanogl/types"
+import { GLContext, isWebgl2 } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
@@ -41,6 +41,10 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
     this.lighting = new Lighting(this.gl)
     this.root.add(this.lighting.root)
 
+    /**
+     * preset with all lights types
+     */
+    this.completeLightSetup = new CompleteLightSetup(this.lighting)
 
     this.createClearcoatPass()
 
@@ -65,10 +69,6 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
     // })
 
 
-    /**
-     * preset with all lights types
-     */
-    this.completeLightSetup = new CompleteLightSetup(this.lighting)
 
     /*
     * add a floor plane for fun
@@ -93,11 +93,15 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
       .enableDepthTest()
       .enableCullface(true);
 
+
+    this.clearcoatPass.version.set( isWebgl2(this.gl) ? '300 es' : '100' )
+
     // set red color
     this.clearcoatPass.surface.baseColor.attachConstant([.8, .1, .1])
 
 
     this.lighting.setupStandardPass(this.clearcoatPass)
+    
 
 
     this.ccSmoothness = this.clearcoatPass.clearcoatSmoothness.attachUniform()
