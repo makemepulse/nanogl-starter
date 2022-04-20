@@ -34,6 +34,7 @@ export default class DisolveFX extends Chunk {
 
     /**
      * ivalidate this chunk's code when live reloading the glsl module
+     * noop in production release
      */
     FragCode.onHmr(()=>this.invalidateCode())
     

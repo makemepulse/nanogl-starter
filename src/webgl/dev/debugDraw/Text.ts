@@ -24,11 +24,11 @@ const MAX_CHAR = 1024 * 16
 
 const V4 = vec4.create()
 
-class Glyph {
-  quad: Float32Array
-  constructor(readonly char: string, readonly index: number, readonly px: number, readonly py: number) {
-    this.quad = new Float32Array([])
-  }
+type Glyph = {
+  readonly char: string
+  readonly index: number
+  readonly px: number
+  readonly py: number
 }
 
 
@@ -94,16 +94,15 @@ class TextureAtlas {
 
     const glyphsPerLines = Math.floor(TEX_WIDTH / GLYPHS_WIDTH)
 
-    for (let i = 0; i < GLYPHS.length; i++) {
-      const char = GLYPHS[i];
-      const x = (i % glyphsPerLines) * GLYPHS_WIDTH + 2
-      const y = Math.floor(i / glyphsPerLines) * GLYPHS_HEIGHT + 18 - 3
+    for (let index = 0; index < GLYPHS.length; index++) {
+      const char = GLYPHS[index];
+      const px = (index % glyphsPerLines) * GLYPHS_WIDTH + 2
+      const py = Math.floor(index / glyphsPerLines) * GLYPHS_HEIGHT + 18 - 3
 
-      ctx.strokeText(char, x, y, GLYPHS_WIDTH)
-      ctx.fillText(char, x, y, GLYPHS_WIDTH)
+      ctx.strokeText(char, px, py, GLYPHS_WIDTH)
+      ctx.fillText(char, px, py, GLYPHS_WIDTH)
 
-      const glyph = new Glyph(char, i, x, y)
-      this.glyphs.set(glyph.char, glyph)
+      this.glyphs.set(char, {char, index, px, py})
     }
 
     this.glyphsPerLines = glyphsPerLines

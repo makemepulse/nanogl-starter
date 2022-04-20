@@ -22,7 +22,11 @@ const GltfPath = "webgl/suzanne/Suzanne.gltf"
 
 
 
-
+/**
+ * Sample scene testing glsl code injection via Chunk objects to alter existing material (standard pbr)
+ * An override is setup on the gltf loader to add a custom chunk to every materials
+ * The chunk is DisolveFX, whick add some input (scale and threshold) and discard fragment based on 3D noise vs thrshold test
+ */
 export default class DisolveSample implements IGLContextProvider, IScene {
 
   readonly gl: GLContext
@@ -45,7 +49,6 @@ export default class DisolveSample implements IGLContextProvider, IScene {
     this.root.add(this.lighting.root)
 
     
-    
     this.disolveEffect = new DisolveFX()
     
     this.disolveScale = this.disolveEffect.scale.attachUniform()
@@ -60,6 +63,13 @@ export default class DisolveSample implements IGLContextProvider, IScene {
 
 
     this.gltfSample = new GltfScene(AssetsPath(GltfPath), this.gl, this.lighting, this.root)
+
+    /**
+     * setup an override to add the disolve effect to every materials
+     * Note that the chunk is added to the material itself, not the color pass.
+     * this way chunk is applied to every passes of the material, color AND depth pass
+     * and the shadowmapping work correctly
+     */
     this.gltfSample.overrides.overridePass( "", (ctx, material)=>{
       material.inputs.add( this.disolveEffect )
       this.lighting.setupMaterial(material)
