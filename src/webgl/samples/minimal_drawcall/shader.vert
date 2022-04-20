@@ -3,9 +3,11 @@ attribute float aAngle;
 attribute vec2 aPosition;
 
 uniform mat4 uMVP;
-uniform float uRadius;
-uniform float uArc;
+uniform vec2 uParams;
+
+#define Radius uParams.x
+#define Arc uParams.y
 
 void main(void){
-  gl_Position = uMVP * vec4( uRadius*cos(aAngle*uArc), 0.0, uRadius*sin(aAngle*uArc), 1.0);
+gl_Position = uMVP * vec4( Radius*cos(aAngle*Arc), 0.0, Radius*sin(aAngle*Arc), 1.0);
 }
