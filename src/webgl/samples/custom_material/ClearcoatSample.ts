@@ -20,7 +20,10 @@ const GltfPath = "webgl/suzanne/Suzanne.gltf"
 // const GltfPath = "webgl/meetmats/astronaut/scene.gltf"
 
 
-
+/**
+ * Sample scene testing custom clearcoat Material
+ * Custom ClearcoatPass (which inherit StandardPass) is created and override the pass created by Gltf loader
+ */
 export default class ClearcoatSample implements IGLContextProvider, IScene {
 
   readonly gl: GLContext
@@ -54,13 +57,13 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
 
 
     /**
-     * replace the gltf material with les clearcoat one
+     * completely replace the gltf material with les clearcoat one
      */
     this.gltfSample.overrides.overridePass("Suzanne", this.clearcoatPass)
    
 
     /**
-     * alternatively, use surface parameter from the original pass
+     * alternatively, use surface parameters from the original pass
      */
     // this.gltfSample.overrides.overridePass("Suzanne", (ctx, material) => {
     //   const pass = material.getPass('color').pass as StandardMetalness
@@ -93,14 +96,16 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
       .enableDepthTest()
       .enableCullface(true);
 
-
+    // mandatory for now, shadow mapping will fail with a webgl2 context but glsl 100 shader
     this.clearcoatPass.version.set( isWebgl2(this.gl) ? '300 es' : '100' )
+    
 
-    // set red color
-    this.clearcoatPass.surface.baseColor.attachConstant([.8, .1, .1])
-
-
+    // manully set lightSetup on this pass since gltf will not dio it itself
     this.lighting.setupStandardPass(this.clearcoatPass)
+
+    // set red color as glsl constant
+    // could attach a uniform if animated, or sampler or geomatry custom attribute here
+    this.clearcoatPass.surface.baseColor.attachConstant([.8, .1, .1])
     
 
 

@@ -24,14 +24,23 @@ if( module.hot ){
     fn._triggerHmr()
   }
   
-  module.hot.dispose(data => {
-    data._hmrListeners = fn._hmrListeners;
-  });
+  // if module is updated but update are not handled
+  // so if it's a dependency, the parent glsl module will trigger an HMR update
+  if( module.hot.data && module.hot.data._hmrListeners && module.hot.data._hmrListeners.length === 0 ){
+    module.hot.invalidate();
+
+  } else {
   
-  module.hot.accept(
-    function(e){ console.log( e );} // Function to handle errors when evaluating the new version
-    );
+    module.hot.dispose(data => {
+      data._hmrListeners = fn._hmrListeners;
+    });
+    
+    module.hot.accept(
+      function(e){ console.log( e );} // Function to handle errors when evaluating the new version
+      );
+    }
   }
+
 /// #else
 fn.onHmr = function(){}
 /// #endif

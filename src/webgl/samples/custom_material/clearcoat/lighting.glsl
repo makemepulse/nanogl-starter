@@ -1,4 +1,7 @@
-
+/**
+ * altered version of lighting.glsl from nanogl-pbr
+ * used a modified version of BRDFData to add clearcoat effect to the brdf calculations, for punctual lights and IBLs
+ */
 
 struct Light
 {
@@ -107,7 +110,7 @@ struct BRDFData
 #define DIELECTRIC_SPEC 0.04
 #define DIELECTRIC_OMS (1.0-0.04)
 
-// "Optimizing PBR for Mobile" from Siggraph 2015 moving mobile graphics course
+// "Optimizing PBR for Mobile" from Siggraph 2015 moving mobile graphics course 
 // https://community.arm.com/events/1155
 
 mediump vec3 GGXZiomaBDRF(BRDFData brdfData, mediump vec3 normalWS, mediump vec3 wLightDir, mediump vec3 wViewDir)
@@ -133,7 +136,7 @@ mediump vec3 GGXZiomaBDRF(BRDFData brdfData, mediump vec3 normalWS, mediump vec3
 
 
   brdf = brdf * (1.0 - coatFresnel) + brdfCC;
-  brdf = brdf*2.0;// + brdfCC;
+  brdf = brdf*2.0;
   return brdf;
 }
 

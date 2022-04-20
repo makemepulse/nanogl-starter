@@ -3,6 +3,12 @@
 #pragma SLOT definitions
 
 
+/**
+ * AA Basically a copy past of nanogl-pbr "snadard.frag" shader
+ * here we replace the BRDFData structure and setup to add clearcoat related values, used by the modified lighting functions in `lighting.glsl`
+ */
+
+
 #ifndef hasNormals
   #define hasNormals 1
 #endif 
