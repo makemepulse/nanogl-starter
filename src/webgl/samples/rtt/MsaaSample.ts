@@ -12,6 +12,7 @@ import RenderPass from "@webgl/core/RenderPass"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import GLState from "nanogl-state/GLState"
 import { MsaaFbo } from "@webgl/core/MsaaFbo"
+import gui from "@webgl/dev/gui"
 
 const GltfPath = "webgl/suzanne/Suzanne.gltf"
 
@@ -23,6 +24,8 @@ export default class MsaaSample implements IGLContextProvider, IScene {
   lighting   : Lighting
   root       : Node
   msaaFbo    : MsaaFbo
+
+  
   
   constructor( private renderer:Renderer ){
     const gl = this.gl = renderer.gl
@@ -31,10 +34,12 @@ export default class MsaaSample implements IGLContextProvider, IScene {
     this.root.add( this.lighting.root )
     this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
 
-    this.msaaFbo = new MsaaFbo(gl, 16)
+    this.msaaFbo = new MsaaFbo(gl, false, 4, true)
     this.msaaFbo.setSize(FBO_SIZE, FBO_SIZE)
     
+    gui.folder('msaa').select('msaa', [4, 8, 16, 0]).onChange(v=>this.msaaFbo.msaa = v)
 
+    DebugDraw.textureScale = 3
   }
 
   preRender():void {
@@ -72,6 +77,7 @@ export default class MsaaSample implements IGLContextProvider, IScene {
   }
 
   unload(): void {
+    DebugDraw.textureScale = 1
     this.lighting.dispose()
   }
 

@@ -6,66 +6,89 @@ import RenderBuffer from "nanogl/renderbuffer";
 
 export class MsaaFbo {
 
-  readonly gl: GLContext;
-  readonly _useMsaa : boolean;
+  msaaFbo : Fbo = null
+  blitFbo : Fbo = null
+  
+  
+  private _msaa = 1;
+  private _maxMsaa = 1;
+  private _width  = 4
+  private _height = 4
 
-  renderFbo : Fbo;
-  blitFbo   : Fbo;
+ 
+  set msaa( samples:number ) {
+    if( this._msaa !== samples){
+      this._msaa = Math.min(samples, this._maxMsaa)
+      this._allocate()
+    }
+  }
+
+  get msaa():number {
+    return this._msaa;
+  }
 
 
-  constructor( gl : GLContext, samples : number, stencil = false ){
+  constructor( readonly gl : GLContext, readonly _alpha = false, samples = 4, readonly _depth = true, readonly _stencil = false ){
+    this._maxMsaa = isWebgl2(gl) ? gl.getParameter( gl.MAX_SAMPLES ):0
+    this.msaa = samples    
+  }
+
+ 
+
+  _allocate(){
     
-    this.gl = gl;
-    this._useMsaa = isWebgl2(gl) && samples > 1
-
-
-    this.renderFbo = new Fbo( gl );
-    // this.renderFbo.bind();
+    const gl = this.gl
     
-    if( isWebgl2(gl) && this._useMsaa )
+    if( isWebgl2(gl) && this._msaa > 0 && this.msaaFbo === null  )
     {
-      console.log('Msaa available');
-      this.renderFbo.attach( gl.COLOR_ATTACHMENT0, new RenderBuffer(gl, gl.RGBA8, samples ) );
-      this.renderFbo.attach( gl.DEPTH_ATTACHMENT, new RenderBuffer(gl, gl.DEPTH_COMPONENT24, samples ) );
-      this.blitFbo = new Fbo( gl );
-      this.blitFbo.attach(gl.COLOR_ATTACHMENT0, new Texture2D(gl, gl.RGBA, gl.UNSIGNED_BYTE));
-      this.blitFbo.attach(gl.DEPTH_ATTACHMENT, new RenderBuffer(gl, gl.DEPTH_COMPONENT24 ));
+      this.msaaFbo = new Fbo( gl );
+      this.msaaFbo.attach( gl.COLOR_ATTACHMENT0, new RenderBuffer(gl, this._alpha? gl.RGBA8 : gl.RGB8, this._msaa ) );
+      if( this._depth ){
+        this.msaaFbo.attach( gl.DEPTH_ATTACHMENT, new RenderBuffer(gl, gl.DEPTH_COMPONENT24, this._msaa ) );
+      }
+
       
-      // if(stencil){
-        //   this.renderFbo.attach(gl.STENCIL_ATTACHMENT, new RenderBuffer(gl, gl.STENCIL_INDEX8));
-      //   this.blitFbo.attach(gl.STENCIL_ATTACHMENT, new RenderBuffer(gl, gl.STENCIL_INDEX8));
-      // }
+      this.msaaFbo.resize(this._width, this._height);
+    } 
+
+    if( this._msaa < 1){
+      this.msaaFbo?.dispose()
+      this.msaaFbo = null
+    }
+
+    if( this.blitFbo === null )
+    {
+
+      this.blitFbo = new Fbo( gl );
+      this.blitFbo.attach(gl.COLOR_ATTACHMENT0, new Texture2D(gl, this._alpha? gl.RGBA : gl.RGB, gl.UNSIGNED_BYTE));
+      if( this._depth || this._stencil ){
+        this.blitFbo.attach( gl.DEPTH_ATTACHMENT, new RenderBuffer(gl, isWebgl2(gl)?gl.DEPTH_COMPONENT24:gl.DEPTH_COMPONENT16 ) );
+      }
+
       
       this.blitFbo.getColorTexture(0).setFilter(false, false, false);
-      this.renderFbo.resize(4, 4);
-      this.blitFbo.resize(4, 4);
-    } else 
-    {
-      console.log('Msaa not available');
-      this.renderFbo.attach( gl.COLOR_ATTACHMENT0, new Texture2D( gl, gl.RGBA, gl.UNSIGNED_BYTE) );
-      if(stencil){
-        this.renderFbo.attach(gl.DEPTH_STENCIL_ATTACHMENT, new RenderBuffer(gl, gl.DEPTH_STENCIL));
-      } else {
-        this.renderFbo.attach( gl.DEPTH_ATTACHMENT, new RenderBuffer(gl, gl.DEPTH_COMPONENT16 ) );
-      }
-      this.renderFbo.resize(4, 4);
-      this.blitFbo = this.renderFbo;
+      this.blitFbo.resize(this._width, this._height);
     }
-    
     
   }
 
 
+  get renderFbo(){
+    return this.msaaFbo ?? this.blitFbo
+  }
+
   blitMsaa(){
-    if( this._useMsaa ) {
+    if( this.msaaFbo ) {
       const gl : WebGL2RenderingContext = this.gl as WebGL2RenderingContext;
-      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.renderFbo.fbo );
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.msaaFbo.fbo );
       gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.blitFbo.fbo);
       gl.clearBufferfv(gl.COLOR, 0, [0.0, 0.0, 0.0, 1.0]);
+      let bits = gl.COLOR_BUFFER_BIT
+      if( this._depth ) bits = bits | gl.DEPTH_BUFFER_BIT
       gl.blitFramebuffer(
-        0, 0, this.renderFbo.width, this.renderFbo.height,
-        0, 0, this.renderFbo.width, this.renderFbo.height,
-        gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT, gl.NEAREST
+        0, 0, this.msaaFbo.width, this.msaaFbo.height,
+        0, 0, this.msaaFbo.width, this.msaaFbo.height,
+        bits, gl.NEAREST
       );
     }
   }
@@ -77,7 +100,9 @@ export class MsaaFbo {
 
 
   setSize( w: number, h: number): void{
-    this.renderFbo.resize(w,h);
+    this._width = w
+    this._height = h
+    this.msaaFbo?.resize(w,h);
     this.blitFbo.resize(w,h);
   }
 

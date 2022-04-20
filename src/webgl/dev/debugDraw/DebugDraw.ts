@@ -69,7 +69,7 @@ class DebugDrawImpl {
   gridZY = false
 
   @RangeGui( 0.1, 4, {step:.05})
-  private textureScale = 1
+  public textureScale = 1
 
   private currentTextureName = '--'
   private _textureNames: string[] = ['--']
@@ -211,10 +211,17 @@ const DebugDraw = {
   get enabled():boolean{
     return _instance.enabled
   },
-
-
   set enabled(v:boolean){
     _instance.enabled = v
+  },
+
+
+  get textureScale():number{
+    return _instance.textureScale
+  },
+
+  set textureScale(v:number){
+    _instance.textureScale = v
   },
 
   drawGuizmo(x : vec3 | mat4 ):void{
