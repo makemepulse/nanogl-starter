@@ -26,14 +26,24 @@ export default class GLApp {
   }
 
   
+  /**
+   * implement loading here if the entry point has a "main" loading logic
+   */
   load(): Promise<void> {
     return Promise.resolve()
   }
 
+
+  /**
+   * start rendering loop on GLView
+   */
   start():void {
     this.glview.start()
   }
 
+  /**
+   * stop rendering loop on GLView
+   */
   stop():void {
     this.glview.stop()
   }

@@ -2,14 +2,13 @@ import Input from "nanogl-pbr/Input";
 import { MetalnessSurface, PbrSurface, SpecularSurface } from "nanogl-pbr/PbrSurface";
 import { StandardPass } from "nanogl-pbr/StandardPass";
 
-import vShader from "./clearcoat.vert"
+import vShader from "nanogl-pbr/glsl/standard.vert"
 import fShader from "./clearcoat.frag"
 import LiveShader from "@webgl/core/LiveShader";
 
 /**
  * create Hot-reloadable shaders
  */
-const VertCode = LiveShader(vShader)
 const FragCode = LiveShader(fShader)
 
 
@@ -30,15 +29,22 @@ export class ClearcoatPass<TSurface extends PbrSurface = PbrSurface> extends Sta
     this.clearcoatSmoothness.attachConstant(1)
     
     // update pass shader code when glsl update
+    // could add vertex shader also, but here we use one from nanogl-pbr
     // noop in non DEBUG mode
-    VertCode.onHmr(()=>this._updateCode())
     FragCode.onHmr(()=>this._updateCode())
     
   }
   
-  _updateCode( ){
-    this._shaderSource.vert = VertCode()
+  /**
+   * in release mode, this is called once, in the ctor
+   * in DEBUG, it can be called each time the fragment shader is edited
+   * in this case, the pass need to be invalidated to force recompilation
+   */
+  private _updateCode( ){
+    this._shaderSource.vert = vShader()
     this._shaderSource.frag = FragCode()
+
+
     /// #if DEBUG
     this.inputs.invalidateCode()
     this._shaderSource.uid = Math.random().toString()

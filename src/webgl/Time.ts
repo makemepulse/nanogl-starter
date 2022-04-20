@@ -3,7 +3,9 @@ let dt = 1/60
 let time = -1
 
 
-
+/**
+ * TODO: not static , create an instance in renderer instead
+ */
 const Time = {
 
   get dt(): number {

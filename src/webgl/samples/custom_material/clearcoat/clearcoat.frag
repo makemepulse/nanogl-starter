@@ -4,8 +4,9 @@
 
 
 /**
- * AA Basically a copy past of nanogl-pbr "snadard.frag" shader
- * here we replace the BRDFData structure and setup to add clearcoat related values, used by the modified lighting functions in `lighting.glsl`
+ * Basically a copy past of nanogl-pbr "standard.frag" shader
+ * here we replace the BRDFData setup to add clearcoat related values, 
+ * Clearcoat data is added to the BRDFData structure in the modified version of `lighting.glsl`
  */
 
 
@@ -69,6 +70,7 @@ struct LightingData
 {{ require( "nanogl-pbr/glsl/includes/color.glsl" )() }}
 {{ require( "nanogl-pbr/glsl/includes/normals.glsl" )() }}
 {{ require( "nanogl-pbr/glsl/includes/tonemap.glsl" )() }}
+
 // substitue lighting part
 {{ require( "./lighting.glsl" )() }}
 

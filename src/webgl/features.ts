@@ -8,6 +8,9 @@ import { TextureCodecs } from "./resources/TextureCodec";
 import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
 import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";
 
+//==============================
+// code here is called before GLApp is defined
+//==============================
 
 
 /// #if DEBUG

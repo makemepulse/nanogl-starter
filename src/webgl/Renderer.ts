@@ -14,8 +14,14 @@ import SamplesSelector from "./samples/SamplesSelector";
 
 export default class Renderer {
 
-
+  /**
+   * the HTMLElemment used to listen user inputs
+   */
   ilayer    : HTMLElement
+
+  /**
+   * cameras manager
+   */
   cameras   : Cameras
 
   @ColorGui({folder:'General'})
@@ -64,12 +70,6 @@ export default class Renderer {
   }
 
 
-
-  // load(): Promise<void>{
-  //   return this.scenes.load()
-  // }
-
-
   private _onViewRender = (dt:number)=>{
     dt;
     
@@ -82,6 +82,7 @@ export default class Renderer {
     
     DebugDraw.render(this.context)
   }
+  
   
   private renderScene( scene : IScene ){
     if( !scene ) return
@@ -104,8 +105,6 @@ export default class Renderer {
 
     scene.render(this.context.withMask(RenderMask.OPAQUE))
     scene.render(this.context.withMask(RenderMask.BLENDED))
-
-    // this.tests.render()
     
   }
 
