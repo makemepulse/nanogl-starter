@@ -1,0 +1,34 @@
+{
+  "todohighlight.isEnable": true,
+  "todohighlight.isCaseSensitive": true,
+  "todohighlight.keywords": [
+    {
+      "text": "/// #if DEBUG",
+      "color": "#ad6d1a",
+      "backgroundColor": "#322",
+      "border": "1px solid #ad6d1a",
+      "overviewRulerColor": "grey",
+      "fontWeight":"bold",
+      "isWholeLine": true,
+    },
+    {
+      "text": "/// #endif",
+      "color": "#ad6d1a",
+      "backgroundColor": "#322",
+      "border": "1px solid #ad6d1a",
+      "overviewRulerColor": "grey",
+      "fontWeight":"bold",
+      "isWholeLine": true,
+    },
+    {
+      "text": "TODO:",
+      "color": "red",
+      "border": "1px solid red",
+      "borderRadius": "2px", //NOTE: using borderRadius along with `border` or you will see nothing change
+      "backgroundColor": "rgba(0,0,0,.2)",
+      "isWholeLine": true,
+      //other styling properties goes here ... 
+    }
+  ],
+  "editor.tabSize": 2,
+}

@@ -1,5 +1,4 @@
 /// #if DEBUG
-
 import TextureProfiler from "./TexturesProfiler"
 
 window.dev ||= {}

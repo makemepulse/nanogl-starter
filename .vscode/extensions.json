@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "irongeek.vscode-env",
+    "slevesque.shader",
+    "wayou.vscode-todo-highlight",
+    "octref.vetur"
+  ]
+}
