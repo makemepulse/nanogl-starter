@@ -1,4 +1,6 @@
 import { GlslModule } from "@webgl/glsl/glslModule";
+import Program from "nanogl/program";
+import { GLContext } from "nanogl/types";
 
 /// #if DEBUG
 
@@ -19,6 +21,17 @@ export default function LiveShader(glslModule:GlslModule ): GlslModule {
 }
 
 
+export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule ): Program {
+  const lv = LiveShader(vert)
+  const lf = LiveShader(frag)
+  const prg = new Program(gl, lv(), lf())
+  lv.onHmr(()=>prg.compile(lv(), lf()))
+  lf.onHmr(()=>prg.compile(lv(), lf()))
+  return prg
+}
+
+
 /// #else
 /// #code export default function LiveShader(glslModule:GlslModule ): GlslModule { return glslModule }
+/// #code export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule ): Program { return new Program(gl, vert(), frag()); }
 /// #endif

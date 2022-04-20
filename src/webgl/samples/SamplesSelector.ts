@@ -16,19 +16,21 @@ import ClearcoatSample from "./custom_material/ClearcoatSample"
 import DisolveSample from "./custom_material/DisolveSample"
 import RttSample from "./rtt/RttSample"
 import MsaaSample from "./rtt/MsaaSample"
+import MinimalDrawcallSample from "./minimal_drawcall"
 
 const Scenes = {
-  adam      : AdamScene       ,
-  robot     : RobotScene      ,
-  suzanne   : SuzanneScene    ,
-  devtools  : DevtoolsScene   ,
-  resources : ResourcesScene  ,
-  textures  : TexturesScene   ,
-  lights    : LightsScene     ,
-  clearcoat : ClearcoatSample ,
-  disolve   : DisolveSample   ,
-  rtt       : RttSample       ,
-  rtt_msaa  : MsaaSample      ,
+  adam             : AdamScene             ,
+  robot            : RobotScene            ,
+  suzanne          : SuzanneScene          ,
+  devtools         : DevtoolsScene         ,
+  resources        : ResourcesScene        ,
+  textures         : TexturesScene         ,
+  lights           : LightsScene           ,
+  clearcoat        : ClearcoatSample       ,
+  disolve          : DisolveSample         ,
+  rtt              : RttSample             ,
+  rtt_msaa         : MsaaSample            ,
+  minimal_drawcall : MinimalDrawcallSample ,
 }
 
 type SceneTypes = keyof typeof Scenes
@@ -45,7 +47,6 @@ export default class SamplesSelector {
 
 
   constructor( private renderer:Renderer ){
-    console.log("hash", window.location.hash);
     
     const sn = window.location.hash.substring(1) as SceneTypes
     const Scene = Scenes[sn] || ClearcoatSample
