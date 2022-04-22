@@ -17,6 +17,7 @@ import DisolveSample from "./custom_material/DisolveSample"
 import RttSample from "./rtt/RttSample"
 import MsaaSample from "./rtt/MsaaSample"
 import MinimalDrawcallSample from "./minimal_drawcall"
+import MatcapSample from "./custom_material/MatcapSample"
 
 const Scenes = {
   adam             : AdamScene             ,
@@ -28,6 +29,7 @@ const Scenes = {
   lights           : LightsScene           ,
   clearcoat        : ClearcoatSample       ,
   disolve          : DisolveSample         ,
+  matcap           : MatcapSample          ,
   rtt              : RttSample             ,
   rtt_msaa         : MsaaSample            ,
   minimal_drawcall : MinimalDrawcallSample ,

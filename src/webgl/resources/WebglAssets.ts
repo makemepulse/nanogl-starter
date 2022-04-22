@@ -13,6 +13,7 @@ const _contextId = _files.id
 
 const _assetsByPath:Map<string, FileInfos> = new Map()
 const _assetsByName:Map<string, FileInfos> = new Map()
+const _assets:FileInfos[] = []
 const _textures:Map<string, TextureAsset> = new Map()
 
 
@@ -110,6 +111,7 @@ function isTexture(fileInfos: FileInfos) {
 
 function handleFile( initialPath: string, path: string ){
   const fileInfos = parsePath( initialPath, path )
+  _assets.push( fileInfos )
   _assetsByPath.set(fileInfos.initialPath, fileInfos )
   _assetsByName.set(fileInfos.name, fileInfos )
   if( isTexture( fileInfos )){
@@ -150,6 +152,10 @@ function getAssetPath( filename: string): string {
   return getAssetInfos(filename).path
 }
 
+function getAssets(): FileInfos[] {
+  return _assets.concat()
+}
+
 function getTexture( filename: string, gl:GLContext ): TextureResource {
   const infos = getAssetInfos(filename)
   const res = _textures.get(infos.group+'/'+infos.name)
@@ -166,6 +172,7 @@ function getTexture( filename: string, gl:GLContext ): TextureResource {
 }
 
 const WebglAssets = {
+  getAssets,
   getAssetPath,
   getTexture
 }
