@@ -15,7 +15,7 @@ import { GuiFolder, RangeGui } from '@webgl/dev/gui/decorators';
 @GuiFolder('DrawcallSample')
 export default class MinimalDrawcallSample implements IScene {
 
-  private quad: GLArrayBuffer;
+  private geom: GLArrayBuffer;
 
   private prg: Program;
 
@@ -32,9 +32,13 @@ export default class MinimalDrawcallSample implements IScene {
      * custom geometry, a vertex is a single float describing an angle on a circle
      */
     const vertices = new Float32Array(64).map((_,i)=>i/64*Math.PI*2)
-    this.quad = new GLArrayBuffer(gl, vertices)
+    this.geom = new GLArrayBuffer(gl, vertices)
       .attrib('aAngle', 1, gl.FLOAT)
 
+    /*
+     * LiveProgram utility provide a WebglProgram which update automatically 
+     * when one of it's shader is updated (using webpack HMR)
+     */
     this.prg = LiveProgram(gl, vShader, fShader)
     
   }
@@ -42,14 +46,14 @@ export default class MinimalDrawcallSample implements IScene {
   
   
   render(context: RenderContext): void {
-    if( context.mask !== RenderMask.OPAQUE )return
+    if( context.mask !== RenderMask.OPAQUE ) return
     
     this.prg.use()
     this.prg.uMVP( context.camera._viewProj )
     this.prg.uParams(this.radius, this.arc)
     
-    this.quad.attribPointer(this.prg)
-    this.quad.drawTriangleFan()
+    this.geom.attribPointer(this.prg)
+    this.geom.drawTriangleFan()
   }
   
   

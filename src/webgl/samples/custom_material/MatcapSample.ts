@@ -12,7 +12,7 @@ import WebglAssets from "@webgl/resources/WebglAssets"
 const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 
 /**
- * 
+ * Illustrate creation of a MaterialPass from scratch
  */
 export default class MatcapSample implements IGLContextProvider, IScene {
 

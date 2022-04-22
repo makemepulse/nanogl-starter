@@ -18,6 +18,7 @@ import RttSample from "./rtt/RttSample"
 import MsaaSample from "./rtt/MsaaSample"
 import MinimalDrawcallSample from "./minimal_drawcall"
 import MatcapSample from "./custom_material/MatcapSample"
+import SpherizeSample from "./custom_material/SpherizeSample"
 
 const Scenes = {
   adam             : AdamScene             ,
@@ -29,6 +30,7 @@ const Scenes = {
   lights           : LightsScene           ,
   clearcoat        : ClearcoatSample       ,
   disolve          : DisolveSample         ,
+  spherize         : SpherizeSample        ,
   matcap           : MatcapSample          ,
   rtt              : RttSample             ,
   rtt_msaa         : MsaaSample            ,
