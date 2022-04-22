@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import Quality from "@webgl/core/Quality"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
@@ -57,7 +56,7 @@ export default class AdamScene implements IGLContextProvider, IScene {
     this.root = new Node()
     this.lighting = new Lighting(this.gl)
     this.root.add(this.lighting.root)
-    this.gltfSample = new GltfScene(AssetsPath("webgl/adam/Lu_Scene_recorded.gltf"), this.gl, this.lighting, this.root)
+    this.gltfSample = new GltfScene("gltfs/adam/Lu_Scene_recorded.gltf", this.gl, this.lighting, this.root)
   }
 
   preRender(): void {

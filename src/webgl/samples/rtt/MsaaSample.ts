@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
@@ -14,7 +13,7 @@ import GLState from "nanogl-state/GLState"
 import { MsaaFbo } from "@webgl/core/MsaaFbo"
 import gui from "@webgl/dev/gui"
 
-const GltfPath = "webgl/suzanne/Suzanne.gltf"
+const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 
 const FBO_SIZE = 512
 export default class MsaaSample implements IGLContextProvider, IScene {
@@ -32,7 +31,7 @@ export default class MsaaSample implements IGLContextProvider, IScene {
     this.root       = new Node()
     this.lighting   = new Lighting( gl )
     this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting, this.root )
 
     this.msaaFbo = new MsaaFbo(gl, false, 4, true)
     this.msaaFbo.setSize(FBO_SIZE, FBO_SIZE)

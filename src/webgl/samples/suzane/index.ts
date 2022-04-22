@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -8,7 +7,9 @@ import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 
-const GltfPath = "webgl/suzanne/Suzanne.gltf"
+// import Suzanne from "@/assets/webgl/gltfs/suzanne/Suzanne.gltf"
+
+const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 // const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
 // const GltfPath = "webgl/meetmats/vzla/scene.gltf"
@@ -29,7 +30,7 @@ export default class SuzanneScene implements IGLContextProvider, IScene {
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
     this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting, this.root )
   }
 
   preRender():void {

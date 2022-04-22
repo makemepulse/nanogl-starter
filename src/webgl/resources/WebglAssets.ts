@@ -18,9 +18,6 @@ const _textures:Map<string, TextureAsset> = new Map()
 
 
 
-
-
-
 type FileInfos = {
   initialPath:  string, 
   path:  string, 
@@ -38,7 +35,7 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
   const group = initialPath.substring(0, sep)
   const filename = initialPath.substring( sep+1, initialPath.length )
 
-  const regexp = /^(\w+)\.(\w+)(\.(.*))?/
+  const regexp = /^(.+)\.(\w+)(\.(.*))?/
   const r = regexp.exec( filename )
   
     
@@ -180,8 +177,10 @@ const deps:string[] = []
 
 _files.keys().forEach( k=>{
   deps.push( k )
-  handleFile( k, _files(k) )
+  handleFile( k, _files(k).default )
 })
+
+console.log(_assetsByName);
 
 console.log( Array.from(_assetsByName.values()).map(i=>i.initialPath) )
 

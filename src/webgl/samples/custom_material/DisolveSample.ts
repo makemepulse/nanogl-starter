@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -15,10 +14,10 @@ import CompleteLightSetup from "../common/CompleteLightSetup"
 import Bounds from "nanogl-pbr/Bounds"
 import DepthPass from "nanogl-pbr/DepthPass"
 
-const GltfPath = "webgl/suzanne/Suzanne.gltf"
-// const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
-// const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
-// const GltfPath = "webgl/adam/Lu_Scene_recorded.gltf"
+const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+// const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
+// const GltfPath = "gltfs/ground_control_station_for_uav/scene.gltf"
+// const GltfPath = "gltfs/adam/Lu_Scene_recorded.gltf"
 
 
 
@@ -62,7 +61,7 @@ export default class DisolveSample implements IGLContextProvider, IScene {
 
 
 
-    this.gltfSample = new GltfScene(AssetsPath(GltfPath), this.gl, this.lighting, this.root)
+    this.gltfSample = new GltfScene(GltfPath, this.gl, this.lighting, this.root)
 
     /**
      * setup an override to add the disolve effect to every materials

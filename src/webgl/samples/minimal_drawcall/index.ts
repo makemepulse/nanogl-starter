@@ -39,9 +39,6 @@ export default class MinimalDrawcallSample implements IScene {
     
   }
 
-
-
-
   
   
   render(context: RenderContext): void {
@@ -53,7 +50,6 @@ export default class MinimalDrawcallSample implements IScene {
     
     this.quad.attribPointer(this.prg)
     this.quad.drawTriangleFan()
-    
   }
   
   
@@ -61,8 +57,8 @@ export default class MinimalDrawcallSample implements IScene {
   
   /** useless stuffs */
   load(): Promise<void> {return Promise.resolve()}
-  rttPass(): void {}
-  unload(): void {}
-  preRender(): void {}
+  rttPass(): void {0}
+  unload(): void {0}
+  preRender(): void {0}
   
 }

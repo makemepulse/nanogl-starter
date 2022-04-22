@@ -125,8 +125,8 @@ export default class Lighting {
 
   load(): Promise<void> {
     return this.ibl.load(
-      require( "@/assets/webgl/ibl/Helipad/env.png"),
-      require( "@/assets/webgl/ibl/Helipad/sh.bin")
+      require( "@/assets/webgl/ibl/Helipad/env.png").default,
+      require( "@/assets/webgl/ibl/Helipad/sh.bin").default
     )
   }
 

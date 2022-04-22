@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -72,7 +71,7 @@ export default class TexturesScene implements IGLContextProvider, IScene {
   async load() :Promise<void> {
     
     const tlist = [
-      new TextureResource(AssetsPath("/webgl/suzanne/Suzanne_BaseColor.png"), this ),
+      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this ),
       WebglAssets.getTexture( 'texture1', this.gl ),
     ]
 

@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -14,10 +13,10 @@ import CompleteLightSetup from "../common/CompleteLightSetup"
 import FloorPlane from "@webgl/engine/FloorPlane"
 import Bounds from "nanogl-pbr/Bounds"
 
-const GltfPath = "webgl/suzanne/Suzanne.gltf"
-// const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
-// const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
-// const GltfPath = "webgl/meetmats/astronaut/scene.gltf"
+const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+// const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
+// const GltfPath = "gltfs/ground_control_station_for_uav/scene.gltf"
+// const GltfPath = "gltfs/meetmats/astronaut/scene.gltf"
 
 
 /**
@@ -52,7 +51,7 @@ export default class ClearcoatSample implements IGLContextProvider, IScene {
     this.createClearcoatPass()
 
 
-    this.gltfSample = new GltfScene(AssetsPath(GltfPath), this.gl, this.lighting, this.root)
+    this.gltfSample = new GltfScene(GltfPath, this.gl, this.lighting, this.root)
 
 
 

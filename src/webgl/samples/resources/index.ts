@@ -1,5 +1,4 @@
 import Delay from "@/core/Delay"
-import { AssetsPath } from "@/core/PublicPath"
 import { AbortController } from "@azure/abort-controller"
 import gui from "@webgl/dev/gui"
 import Renderer from "@webgl/Renderer"
@@ -96,15 +95,15 @@ export default class ResourcesScene implements IScene {
   constructor(renderer: Renderer) {
     this.testers = [
 
-      new ResourceTester('texture'  , () => new TextureResource(AssetsPath("/webgl/suzanne/Suzanne_BaseColor.png"), renderer   )),
+      new ResourceTester('texture'  , () => new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), renderer   )),
       new ResourceTester('timport'  , () => WebglAssets.getTexture( 'texture1', renderer.gl )),
-      new ResourceTester('gltf'     , () => new GltfResource   (AssetsPath("/webgl/suzanne/Suzanne.gltf"         ), renderer   )),
-      new ResourceTester('gltfScene', () => new GltfScene      (AssetsPath("/webgl/suzanne/Suzanne.gltf"         ), renderer.gl)),
+      new ResourceTester('gltf'     , () => new GltfResource   ("gltfs/suzanne/Suzanne.gltf"         , renderer   )),
+      new ResourceTester('gltfScene', () => new GltfScene      ("gltfs/suzanne/Suzanne.gltf"         , renderer.gl)),
       new ResourceTester('group', () => {
         const group = new ResourceGroup()
-        group.add(new TextureResource(AssetsPath("webgl/suzanne/Suzanne_BaseColor.png"), renderer))
-        group.add(new GltfResource(AssetsPath("webgl/suzanne/Suzanne.gltf"), renderer))
-        group.add(new GltfScene(AssetsPath("webgl/suzanne/Suzanne.gltf"), renderer.gl))
+        group.add(new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), renderer))
+        group.add(new GltfResource("gltfs/suzanne/Suzanne.gltf", renderer))
+        group.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", renderer.gl))
         return group;
       }),
 

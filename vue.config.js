@@ -48,7 +48,7 @@ module.exports = {
         .loader( 'file-loader' )
           .options({
             name: 'assets/webgl/[name].[hash:8].[ext]',
-            esModule: false
+            esModule: true
           })
   }
 

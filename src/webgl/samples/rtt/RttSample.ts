@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
@@ -13,7 +12,7 @@ import RenderPass from "@webgl/core/RenderPass"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import GLState from "nanogl-state/GLState"
 
-const GltfPath = "webgl/suzanne/Suzanne.gltf"
+const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 
 const FBO_SIZE = 512
 export default class RttSample implements IGLContextProvider, IScene {
@@ -29,7 +28,7 @@ export default class RttSample implements IGLContextProvider, IScene {
     this.root       = new Node()
     this.lighting   = new Lighting( gl )
     this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( AssetsPath(GltfPath), this.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting, this.root )
 
     this.fbo = new Fbo(gl)
     this.fbo.attachColor(gl.RGB)

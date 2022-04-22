@@ -1,4 +1,3 @@
-import { AssetsPath } from "@/core/PublicPath"
 import { RenderContext } from "@webgl/core/Renderer"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import MeshRenderer from "nanogl-gltf/lib/renderer/MeshRenderer"
@@ -25,7 +24,7 @@ export default class RobotScene implements IGLContextProvider, IScene {
     this.gl = renderer.gl
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
-    this.gltfSample = new GltfScene( AssetsPath("webgl/black_honey_robotic_arm/scene.gltf"), renderer.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( "gltfs/black_honey_robotic_arm/scene.gltf", renderer.gl, this.lighting, this.root )
 
     this.floor = new FloorPlane( renderer.gl )
     this.lighting.setupMaterial(this.floor.material)

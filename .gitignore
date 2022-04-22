@@ -26,6 +26,6 @@ pnpm-debug.log*
 build/assets/bin/FBX2glTF
 
 # samples
-public/assets/webgl/meetmats
-public/assets/webgl/fn-509_with_tactical_kit
-public/assets/webgl/ground_control_station_for_uav
+src/assets/webgl/gltfs/meetmats
+src/assets/webgl/gltfs/fn-509_with_tactical_kit
+src/assets/webgl/gltfs/ground_control_station_for_uav
