@@ -14,8 +14,8 @@ export class GltfScene extends GLTFResource {
   
   readonly overrides: MaterialOverrideExtension;
   
-  constructor( request: string, gl:GLContext, private lighting?: Lighting, private parent?:Node ) {
-    super(request, {gl} )
+  constructor( request: string, gl:GLContext, private lighting?: Lighting, private parent?:Node, useModuleIO = true ) {
+    super(request, {gl}, undefined, useModuleIO )
     
     this.overrides = new MaterialOverrideExtension()
 

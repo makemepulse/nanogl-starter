@@ -24,7 +24,8 @@ export default class RobotScene implements IGLContextProvider, IScene {
     this.gl = renderer.gl
     this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
-    this.gltfSample = new GltfScene( "gltfs/black_honey_robotic_arm/scene.gltf", renderer.gl, this.lighting, this.root )
+
+    this.gltfSample = new GltfScene( "https://mmp-labs.s3.eu-west-1.amazonaws.com/resources/gltfs/black_honey_robotic_arm/scene.gltf", renderer.gl, this.lighting, this.root, false )
 
     this.floor = new FloorPlane( renderer.gl )
     this.lighting.setupMaterial(this.floor.material)

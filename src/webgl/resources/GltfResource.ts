@@ -5,6 +5,7 @@ import { IGLContextProvider } from "./IGLContextProvider";
 import GltfLoader from "nanogl-gltf/lib/io/GltfLoader";
 import Gltf from "nanogl-gltf/lib/Gltf";
 import WebglAssets from "./WebglAssets";
+import IOInterface from "nanogl-gltf/lib/io/IOInterface";
 
 
 
@@ -30,19 +31,22 @@ export const _moduleIO = new ModuleIO();
 
 export default class GltfResource extends Resource<Gltf>{
 
+  private readonly _io : IOInterface
+
   get gltf(): Gltf {
     return this.value
   }
 
-  constructor(protected request: string, protected glp: IGLContextProvider, protected opts: GltfLoaderOptions = {}) {
+  constructor(protected request: string, protected glp: IGLContextProvider, protected opts: GltfLoaderOptions = {}, useModuleIO = true) {
     super()
+    this._io = useModuleIO ? _moduleIO : _stdIO;
   }
 
 
   async doLoad(): Promise<Gltf> {
     console.log('req', this.request);
     
-    const loader = new GltfLoader(_moduleIO, this.request, {
+    const loader = new GltfLoader( this._io, this.request, {
       ...this.opts,
       abortSignal: this.abortSignal
     });
