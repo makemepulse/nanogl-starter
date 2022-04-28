@@ -2,7 +2,7 @@ import TextureData from "./TextureData";
 
 
 
-export interface ITextureRequestOptions {
+export interface ITextureOptions {
   /**
    * if true, standard texture use RGBA format instead of RGB
    */
@@ -14,10 +14,10 @@ export interface ITextureRequestOptions {
   wrap: 'repeat'|'clamp'|'mirror'
 }
 
-const _DEFAULT_OPTS : Readonly<ITextureRequestOptions> = {
-  alpha: false,
-  smooth: true,
-  mipmap: false,
+const _DEFAULT_OPTS : Readonly<ITextureOptions> = {
+  alpha    : false,
+  smooth   : true ,
+  mipmap   : false,
   miplinear: false,
   aniso: 0,
   wrap: 'repeat',
@@ -28,11 +28,9 @@ const _DEFAULT_OPTS : Readonly<ITextureRequestOptions> = {
  * @param opts partial options or undefined
  * @returns 
  */
-export function resolveTextureOptions( opts?:Partial<ITextureRequestOptions> ): Readonly<ITextureRequestOptions> {
-  if( opts ) return Object.assign( {}, _DEFAULT_OPTS, opts)
-  return _DEFAULT_OPTS
+export function resolveTextureOptions( opts?:Partial<ITextureOptions> ): Readonly<ITextureOptions> {
+  return Object.assign( {}, _DEFAULT_OPTS, opts || {})
 }
-
 
 
 export interface ITextureRequestLod {
@@ -48,14 +46,14 @@ export interface ITextureRequestSource {
 
 
 export interface ITextureRequest {
-  options : Partial<ITextureRequestOptions>;
+  // options : Partial<ITextureRequestOptions>;
   sources : ITextureRequestSource[];
 }
 
 
 export class TextureSrcSet implements ITextureRequest {
 
-  options: ITextureRequestOptions;
+  // options: ITextureRequestOptions;
   sources: ITextureRequestSource[];
 
   static create( path:string, bbc = false ) : TextureSrcSet {
@@ -99,7 +97,7 @@ export class TextureSrcSet implements ITextureRequest {
 
 export class CubeSrcSet implements ITextureRequest {
 
-  options: ITextureRequestOptions;
+  options: ITextureOptions;
   sources: ITextureRequestSource[];
 
   constructor( sources : Record<string, Array<string>> ){

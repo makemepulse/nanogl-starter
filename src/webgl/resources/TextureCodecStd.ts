@@ -1,5 +1,5 @@
 import { ITextureCodec } from "./TextureCodec";
-import { ITextureRequestOptions, ITextureRequestSource } from "./TextureRequest";
+import { ITextureOptions, ITextureRequestSource } from "./TextureRequest";
 import { TextureType } from "nanogl/texture-base";
 import Deferred from "@/core/Deferred";
 import { TextureDataType, TextureMip } from "./TextureData";
@@ -62,7 +62,7 @@ export default class TextureCodecStd implements ITextureCodec {
 
 
 
-  async decodeLod(source: ITextureRequestSource, lod: number, options: ITextureRequestOptions): Promise<void> {
+  async decodeLod(source: ITextureRequestSource, lod: number, options: ITextureOptions): Promise<void> {
 
 
     const requestLod = source.lods[lod];
@@ -74,7 +74,7 @@ export default class TextureCodecStd implements ITextureCodec {
       height : image.height,
       data : image
     }
-
+    
     const fmt = options.alpha ? 0x1908 : 0x1907;
 
     source.datas = {
@@ -96,7 +96,7 @@ export default class TextureCodecStd implements ITextureCodec {
   }
 
 
-  async decodeCube(source: ITextureRequestSource, options: ITextureRequestOptions) : Promise<void>{
+  async decodeCube(source: ITextureRequestSource, options: ITextureOptions) : Promise<void>{
 
     const fmt = options.alpha ? 0x1908 : 0x1907;
 

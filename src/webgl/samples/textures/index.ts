@@ -10,6 +10,7 @@ import Texture2D from "nanogl/texture-2d"
 import { TextureResource } from "@webgl/resources/TextureResource"
 import WebglAssets from "@webgl/resources/WebglAssets"
 import TexCoord from "nanogl-pbr/TexCoord"
+import { Sampler } from "nanogl-pbr/Input"
 
 
 class TextureSample {
@@ -22,11 +23,18 @@ class TextureSample {
     this.unlitPass = new UnlitPass()
     this.unlitPass.glconfig
       .enableDepthTest()
+      .enableBlend()
+      .blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
+    this.unlitPass.alphaMode.set("BLEND")
+
     this.plane.material.addPass( this.unlitPass )
   }
 
   setTexture(t:Texture2D ){
-    this.unlitPass.baseColor.attachSampler( "color", TexCoord.create('aTexCoord')).set(t)
+    const sampler = new Sampler('color', TexCoord.create('aTexCoord') )
+    sampler.set( t )
+    this.unlitPass.baseColor.attach( sampler, 'rgb' )
+    this.unlitPass.alpha.attach( sampler, 'a' )
   }
 
   render(context: RenderContext) {
@@ -40,19 +48,32 @@ export default class TexturesScene implements IGLContextProvider, IScene {
   readonly gl : GLContext
   root       : Node
   planes : TextureSample[] = []
+  matcap: TextureResource
+  avatarOpaque: TextureResource
+  avatarTransparent: TextureResource
   
-  constructor( renderer:Renderer ){
+  constructor( private renderer:Renderer ){
     this.gl = renderer.gl
     this.root       = new Node()
 
-    for (let i = 0; i < 2; i++) {
-      const s = new TextureSample( renderer.gl )
-      this.planes.push( s )
-      s.plane.node.x = i*1.2
-      s.plane.node.y = .1
-      s.plane.node.setScale(.5)
-      this.root.add( s.plane.node )
-    }
+
+
+    this.matcap = WebglAssets.getTexture( 'matcap_white', this.gl, {
+      smooth: true,
+      mipmap: true, 
+      miplinear: true,
+      wrap: 'mirror',
+      aniso: 16
+    } )
+
+    this.avatarOpaque = WebglAssets.getTexture( 'avatar', this.gl )
+    
+    this.avatarTransparent = WebglAssets.getTexture( 'avatar', this.gl, {
+      alpha: true,
+      smooth: false,
+    } )
+    
+
 
   }
 
@@ -73,17 +94,29 @@ export default class TexturesScene implements IGLContextProvider, IScene {
     const tlist = [
       new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this ),
       WebglAssets.getTexture( 'texture1', this.gl ),
+      this.matcap,
+      this.avatarOpaque,
+      this.avatarTransparent,
     ]
 
     
-    tlist.map( r=>r.load() )
-    
+    const promises = tlist.map( r=>r.load() )
+    for (let i = 0; i < 2; i++) {
+    }
     for (let i = 0; i < tlist.length; i++) {
       const t = tlist[i];
-      this.planes[i].setTexture( t.texture )
+
+      const s = new TextureSample( this.renderer.gl )
+      this.planes.push( s )
+      s.plane.node.x = i*1.2
+      s.plane.node.y = .1
+      s.plane.node.setScale(.5)
+      this.root.add( s.plane.node )
+      s.setTexture( t.texture )
     }
 
-  
+    await Promise.all( promises )
+
   }
 
   unload(): void {

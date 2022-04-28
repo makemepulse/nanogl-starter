@@ -1,6 +1,6 @@
 
 import { GLContext } from "nanogl/types"
-import { ITextureRequest, ITextureRequestOptions, ITextureRequestSource } from "./TextureRequest"
+import { ITextureRequest, ITextureOptions, ITextureRequestSource } from "./TextureRequest"
 import { TextureResource } from "./TextureResource"
 
 
@@ -83,7 +83,7 @@ function sortTexSources(sa: ITextureRequestSource, sb: ITextureRequestSource):nu
 
 class TextureAsset implements ITextureRequest {
 
-  options: ITextureRequestOptions;
+  options: ITextureOptions;
   sources: ITextureRequestSource[] = []
 
   /// #if DEBUG
@@ -156,13 +156,13 @@ function getAssets(): FileInfos[] {
   return _assets.concat()
 }
 
-function getTexture( filename: string, gl:GLContext ): TextureResource {
+function getTexture( filename: string, gl:GLContext, options?: Partial<ITextureOptions> ): TextureResource {
   const infos = getAssetInfos(filename)
   const res = _textures.get(infos.group+'/'+infos.name)
   if ( !res ) {
     console.error(`can't find texture ${filename}`);
   }
-  const tr = new TextureResource( res, {gl} )
+  const tr = new TextureResource( res, {gl}, options )
 
   /// #if DEBUG
   res._resources.push(tr)

@@ -1,6 +1,6 @@
 
 import { GLContext } from "nanogl/types";
-import { ITextureRequest, ITextureRequestOptions, ITextureRequestSource } from "./TextureRequest";
+import { ITextureRequest, ITextureOptions, ITextureRequestSource } from "./TextureRequest";
 
 
 export interface ITextureCodec {
@@ -8,8 +8,8 @@ export interface ITextureCodec {
   name : string;
   isSupported( gl:GLContext ) : Promise<boolean>;
   // createTextureData( textureResource : BaseTextureResource, source : ITextureRequestSource ) : TextureData;
-  decodeLod( source : ITextureRequestSource, lod:number, options: ITextureRequestOptions, gl:GLContext ) : Promise<void>;
-  decodeCube(source : ITextureRequestSource, options: ITextureRequestOptions, gl:GLContext ): Promise<void>;
+  decodeLod( source : ITextureRequestSource, lod:number, options: ITextureOptions, gl:GLContext ) : Promise<void>;
+  decodeCube(source : ITextureRequestSource, options: ITextureOptions, gl:GLContext ): Promise<void>;
 
 }
 
