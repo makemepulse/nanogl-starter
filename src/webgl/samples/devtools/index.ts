@@ -26,7 +26,7 @@ export default class DevtoolsScene implements IScene {
     this.texture2 = WebglAssets.getTexture( 'texture2', gl )
     
     for (let index = 0; index < 3; index++) {
-      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/512/512' ), {gl} )
+      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/128/128' ), {gl} )
       this.textures.push( texRes )
     }
     
@@ -65,6 +65,9 @@ export default class DevtoolsScene implements IScene {
     const t = performance.now()/5000
     const pos = vec3.fromValues(Math.cos(t), 0, Math.sin(t)) 
     DebugDraw.drawText( `[${pos[0].toPrecision(3)}-${pos[1].toPrecision(3)}]`, pos )
+
+    DebugDraw.drawLine( vec3.create(), pos )
+
   }
 
   unload(): void {

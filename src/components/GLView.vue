@@ -1,18 +1,17 @@
 
 <template>
-  <div class="glview">
-  </div>
+  <div class="glview" :class="{windowed}" />
 </template>
 
 
 <script lang="ts">
 
 import { Options, Vue } from 'vue-class-component';
-import GLApp from "@webgl/index";
+import GLApp from "@webgl/GLApp";
 
 @Options({})
 export default class GLView extends Vue {
-
+  windowed = true
   loaded = false
   isdestroyed = false
 
@@ -52,6 +51,9 @@ export default class GLView extends Vue {
   position absolute
   top 0
   left 0
+  touch-action none
+  box-sizing border-box
+
 
   canvas 
     width 100vw
@@ -60,5 +62,18 @@ export default class GLView extends Vue {
     top 0
     left 0
 
-  
+  /** 
+   * windowed - test canvas not fullscreen
+   */
+  &.windowed
+    margin 200px 0
+    padding 40px
+    width 100%
+    height 100%
+
+    canvas 
+      position initial
+      width 100%
+      height 100%
+
 </style>

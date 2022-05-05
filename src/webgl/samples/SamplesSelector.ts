@@ -19,22 +19,24 @@ import MsaaSample from "./rtt/MsaaSample"
 import MinimalDrawcallSample from "./minimal_drawcall"
 import MatcapSample from "./custom_material/MatcapSample"
 import SpherizeSample from "./custom_material/SpherizeSample"
+import PickFloorSample from "./interactions/PickFloorSample"
 
 const Scenes = {
-  adam             : AdamScene             ,
-  robot            : RobotScene            ,
-  suzanne          : SuzanneScene          ,
-  devtools         : DevtoolsScene         ,
-  resources        : ResourcesScene        ,
-  textures         : TexturesScene         ,
-  lights           : LightsScene           ,
-  clearcoat        : ClearcoatSample       ,
-  disolve          : DisolveSample         ,
-  spherize         : SpherizeSample        ,
-  matcap           : MatcapSample          ,
-  rtt              : RttSample             ,
-  rtt_msaa         : MsaaSample            ,
-  minimal_drawcall : MinimalDrawcallSample ,
+  'Gltf - Adam'              : AdamScene             ,
+  'Gltf - Robot'             : RobotScene            ,
+  'Gltf - Suzanne'           : SuzanneScene          ,
+  'Devtools'                 : DevtoolsScene         ,
+  'Resources - Cancellation' : ResourcesScene        ,
+  'Textures'                 : TexturesScene         ,
+  'Lights'                   : LightsScene           ,
+  'Materials - Clearcoat'    : ClearcoatSample       ,
+  'Materials - Disolve'      : DisolveSample         ,
+  'Materials - Spherize'     : SpherizeSample        ,
+  'Materials - Matcap'       : MatcapSample          ,
+  'RTT - Basic'              : RttSample             ,
+  'RTT - Msaa'               : MsaaSample            ,
+  'Minimal Drawcall'         : MinimalDrawcallSample ,
+  'Pointers - Picking'       : PickFloorSample       ,
 }
 
 type SceneTypes = keyof typeof Scenes
@@ -52,7 +54,7 @@ export default class SamplesSelector {
 
   constructor( private renderer:Renderer ){
     
-    const sn = window.location.hash.substring(1) as SceneTypes
+    const sn = decodeURI(window.location.hash.substring(1)) as SceneTypes
     const Scene = Scenes[sn] || ClearcoatSample
     
     this._setScene(new Scene(renderer))

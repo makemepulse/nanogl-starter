@@ -20,13 +20,22 @@ export default function LiveShader(glslModule:GlslModule ): GlslModule {
   return fn
 }
 
-
-export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule ): Program {
+/**
+ * Return a program which automatically recompile when one of its shader is updated by HMR
+ * @param gl 
+ * @param vert 
+ * @param frag 
+ * @param defs 
+ * @returns 
+ */
+export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program {
+  const prg = new Program(gl)
   const lv = LiveShader(vert)
   const lf = LiveShader(frag)
-  const prg = new Program(gl, lv(), lf())
-  lv.onHmr(()=>prg.compile(lv(), lf()))
-  lf.onHmr(()=>prg.compile(lv(), lf()))
+  const compile = ()=>prg.compile(lv(), lf(), defs)
+  compile()
+  lv.onHmr(compile)
+  lf.onHmr(compile)
   return prg
 }
 

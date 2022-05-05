@@ -23,7 +23,6 @@ const FBUFF = new Float32Array(Circle)
 
 const VERT = `
 attribute vec2 aPosition;
-varying vec3 vColor;
 uniform mat4 uMVP;
 uniform float uRadius;
 void main(void){

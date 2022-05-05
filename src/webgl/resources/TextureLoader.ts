@@ -1,6 +1,6 @@
 
 /// #if DEBUG
-import Profiler from '@webgl/dev/TexturesProfiler';
+import TextureProfiler from '@webgl/dev/TexturesProfiler';
 /// #endif
 
 
@@ -33,7 +33,7 @@ export default class TexturesLoader {
     texture.bind();
 
     /// #if DEBUG
-    Profiler.markPerfIn();
+    TextureProfiler.markPerfIn();
     /// #endif
 
     switch (texture.textureType) {
@@ -46,8 +46,8 @@ export default class TexturesLoader {
     }
 
     /// #if DEBUG
-    Profiler.markPerfOut();
-    Profiler.add(resource, data, lod );
+    TextureProfiler.markPerfOut();
+    TextureProfiler.add(resource, data, lod );
     /// #endif
   }
 
@@ -57,13 +57,13 @@ export default class TexturesLoader {
   }
 
 
-
   private uploadTextureCube(texture: TextureCube, data: TextureData, lod = 0) {
     for (let face = 0; face < 6; face++) {
       const faceTarget = cubeFaceForSurface(face as FaceIndex);
       this.uploadAllSurfaceLevels(texture, data, lod, face, faceTarget)
     }
   }
+
 
   private uploadAllSurfaceLevels(texture: Texture, data: TextureData, lod: number, surface: number, target: GLenum): void {
     switch (data.datatype) {

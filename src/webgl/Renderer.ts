@@ -11,6 +11,7 @@ import { ColorGui } from "./dev/gui/decorators";
 import GLView from "./GLView";
 import { IScene } from "./engine/IScene";
 import SamplesSelector from "./samples/SamplesSelector";
+import Pointers from "./core/Pointers";
 
 export default class Renderer {
 
@@ -23,6 +24,9 @@ export default class Renderer {
    * cameras manager
    */
   cameras   : Cameras
+
+
+  pointers : Pointers
 
   @ColorGui({folder:'General'})
   clearColor = vec4.fromValues(.2, .2, .2, 1)
@@ -46,9 +50,10 @@ export default class Renderer {
 
     DebugDraw.init( glview.gl )
 
-    this.samples = new SamplesSelector( this )
-    this.cameras = new Cameras(this)
-    this.context = new MainRenderContext( this.gl, this.viewport )
+    this.context  = new MainRenderContext( this.gl, this.viewport )
+    this.pointers = new Pointers( this.ilayer )
+    this.cameras  = new Cameras(this)
+    this.samples  = new SamplesSelector( this )
 
     Capabilities(this.gl).report()
   }
@@ -72,15 +77,11 @@ export default class Renderer {
 
   private _onViewRender = (dt:number)=>{
     dt;
-    
     this.context.withCamera( this.camera )
-    
     this.viewport.setSize(this.glview.width, this.glview.height)
-    
-    
     this.renderScene( this.samples.current )
-    
     DebugDraw.render(this.context)
+    this.pointers.endFrame()
   }
   
   
@@ -108,6 +109,10 @@ export default class Renderer {
     
   }
 
+
+  dispose(){
+    this.pointers.dispose()
+  }
 
 
 

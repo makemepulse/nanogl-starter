@@ -7,6 +7,7 @@ import KHR_materials_unlit from "nanogl-gltf/lib/extensions/KHR_materials_unlit"
 import { TextureCodecs } from "./resources/TextureCodec";
 import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
 import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";
+import './dev/console';
 
 //==============================
 // code here is called before GLApp is defined

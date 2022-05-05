@@ -1,17 +1,18 @@
 
-import Guizmo from './CrossGuizmo'
-import Frustum, { FrustumRenderOptions } from './FrustumGuizmo'
 import { vec3, mat4 } from 'gl-matrix';
-import { Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import Texture2D from 'nanogl/texture-2d';
+import SpotLight from 'nanogl-pbr/lighting/SpotLight';
+import { RenderContext } from '@webgl/core/Renderer';
+import Frustum, { FrustumRenderOptions } from './FrustumGuizmo'
+import Guizmo from './CrossGuizmo'
 import TextureDraw from './TextureDraw';
 import TextRenderer from './Text';
 import Grid, { GridOrientation } from './Grid';
-import { GLContext } from 'nanogl/types';
-import { RenderContext } from '@webgl/core/Renderer';
+import Lines from './Lines';
 import ConeGuizmo from './ConeGuizmo';
-import SpotLight from 'nanogl-pbr/lighting/SpotLight';
+import { GLContext } from 'nanogl/types';
 import gui from '../gui';
+import { Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import { Control } from '../gui/api';
 
 
@@ -55,6 +56,7 @@ class DebugDrawImpl {
   texDraw      : TextureDraw 
   textRenderer : TextRenderer
   grid         : Grid
+  lines        : Lines
 
   @Gui
   enabled = true
@@ -88,6 +90,7 @@ class DebugDrawImpl {
     this.texDraw      = new TextureDraw ( gl )
     this.textRenderer = new TextRenderer( gl )
     this.grid         = new Grid        ( gl )
+    this.lines        = new Lines       ( gl )
 
     this._updateTexList()
   }
@@ -141,6 +144,11 @@ class DebugDrawImpl {
     this.textRenderer.add( txt, wpos)
   }
 
+  drawLine( a:vec3, b:vec3, color = Orange ){
+    if( !this.enabled ) return
+    this.lines.addLine( a, b, color )
+  }
+
 
   drawSpotLight( l :SpotLight ):void{
     DebugDraw.drawCone( l._wmatrix, -l.radius, l.angle ) 
@@ -186,6 +194,7 @@ class DebugDrawImpl {
       }
     }
 
+    this.lines.render(ctx.camera)
     this.textRenderer.draw(ctx)
 
   }
@@ -245,6 +254,10 @@ const DebugDraw = {
     _instance.drawTexture(name, t, flipY );
   },
 
+  drawLine( a:vec3, b:vec3, color = Orange ):void{
+    _instance.drawLine( a, b, color );
+  },
+
   drawText( txt:string, wpos: vec3 ):void{
     _instance.drawText( txt, wpos );
   },
@@ -271,6 +284,7 @@ const DebugDraw = {
   drawSpotLight( l :SpotLight ):void{0},
   drawTexture( name:string, t:Texture2D, flipY = false ):void{0},
   drawText( txt:string, wpos: vec3 ):void{0},
+  drawLine( a:vec3, b:vec3, color = Orange ):void{0},
   render(ctx:IRenderContext):void{0}
 }
 

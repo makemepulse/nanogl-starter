@@ -118,6 +118,7 @@ export default class Cameras {
     this._cguiCtrls.length = 0
     this._cguiCtrls.push( g.range(this.camera.lens, 'near', .1, 50) )
     this._cguiCtrls.push( g.range(this.camera.lens, 'far', 10, 200) )
+    this._cguiCtrls.push( g.range(this.camera.lens, 'fov', .05, Math.PI*.9) )
   }
   /// #endif
 
