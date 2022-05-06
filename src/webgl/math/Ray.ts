@@ -1,4 +1,4 @@
-import { vec3, mat4, mat3 } from "gl-matrix"
+import { vec3, mat4 } from "gl-matrix"
 import Camera from 'nanogl-camera'
 
 const V1   = vec3.create()

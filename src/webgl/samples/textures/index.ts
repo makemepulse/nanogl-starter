@@ -101,8 +101,7 @@ export default class TexturesScene implements IGLContextProvider, IScene {
 
     
     const promises = tlist.map( r=>r.load() )
-    for (let i = 0; i < 2; i++) {
-    }
+    
     for (let i = 0; i < tlist.length; i++) {
       const t = tlist[i];
 

@@ -1,4 +1,3 @@
-import { quat } from "gl-matrix";
 
 const PI2 = Math.PI*2.0;
 

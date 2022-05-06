@@ -10,7 +10,6 @@ import { GLContext } from "nanogl/types";
 import TexturesLoader from "./TextureLoader";
 import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
 import Capabilities from "@webgl/core/Capabilities";
-import { Options } from "vue-class-component";
 
 
 

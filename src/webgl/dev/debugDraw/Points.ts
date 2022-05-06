@@ -5,7 +5,7 @@ import Node from 'nanogl-node'
 import { GLContext } from 'nanogl/types'
 import GLState, { LocalConfig } from 'nanogl-state/GLState'
 import Camera from 'nanogl-camera'
-import { mat4, vec3, vec4 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 import Texture2D from 'nanogl/texture-2d'
 
 const M4 = mat4.create();
