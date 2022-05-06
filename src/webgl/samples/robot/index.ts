@@ -53,7 +53,8 @@ export default class RobotScene implements IGLContextProvider, IScene {
     for (let i = 0; i < paccessor.count; i++) {
       paccessor.getValue( V3, i )
       vec3.transformMat4( V3, V3, n._wmatrix )
-      DebugDraw.drawText( i+"", V3 )
+      // DebugDraw.drawText( i+"", V3 )
+      DebugDraw.drawPoint( V3 )
     }
       
 

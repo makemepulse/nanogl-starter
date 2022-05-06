@@ -1,17 +1,6 @@
-import { mat3, vec3, quat } from "gl-matrix";
-
-
-
-
-const MAT3 = mat3.create();
-const VX   = <vec3>new Float32Array( MAT3.buffer, 0*4, 3 );
-const VY   = <vec3>new Float32Array( MAT3.buffer, 3*4, 3 );
-const VZ   = <vec3>new Float32Array( MAT3.buffer, 6*4, 3 );
-const VUP  = vec3.fromValues( 0, 1, 0 );
-
+import { quat } from "gl-matrix";
 
 const PI2 = Math.PI*2.0;
-
 
 export const DEG2RAD = Math.PI/180.0;
 
@@ -54,14 +43,24 @@ export function randomFloat (minValue: number, maxValue: number):number {
   return Math.min(minValue + (Math.random() * (maxValue - minValue)), maxValue)
 }
 
-
+/**
+ * Wrap an angle between 0 and 2*PI
+ * @param a the angle to wrap
+ * @returns 
+ */
 export function normalizeAngle(a: number):number{
   while( a >= PI2 ) a -= PI2
   while( a < 0.0  ) a += PI2
   return a;
 }
 
-
+/**
+ * Avoid 360 wrap around when update an angle. Usefull when angle value is smoothed
+ * Eg : if angle is 350 and dest is 10, return 370 (this function use radians though)
+ * @param angle the initial angle in radians
+ * @param dest the destination angle in radians
+ * @returns the destination angle, eventually modified to avoid 360 wrap around
+ */
 export function normalizeDeltaAngle( angle: number, dest: number ):number{
   let   d0 = dest - angle;
   const d1 = d0 - PI2
@@ -75,58 +74,5 @@ export function normalizeDeltaAngle( angle: number, dest: number ):number{
   }
 
   return angle+d0;
-}
-
-
-export function mat3Lookat( mat3 : mat3, dir : vec3 ):void {
-
-  vec3.normalize( VZ, dir );
-  vec3.cross( VX, VUP, VZ );
-  vec3.normalize( VX, VX );
-  vec3.cross( VY, VZ, VX );
-  mat3.set( MAT3 );
-
-}
-
-
-export function quatSlerp( out: quat, a: number[], i1: number, i2: number, t: number ): quat{
-    // benchmarks:
-    //    http://jsperf.com/quaternion-slerp-implementations
-
-    const ax = a[i1+0], ay = a[i1+1], az = a[i1+2], aw = a[i1+3];
-    let bx   = a[i2+0], by = a[i2+1], bz = a[i2+2], bw = a[i2+3];
-
-    let        omega, cosom, sinom, scale0, scale1;
-
-    // calc cosine
-    cosom = ax * bx + ay * by + az * bz + aw * bw;
-    // adjust signs (if necessary)
-    if ( cosom < 0.0 ) {
-        cosom = -cosom;
-        bx = - bx;
-        by = - by;
-        bz = - bz;
-        bw = - bw;
-    }
-    // calculate coefficients
-    if ( (1.0 - cosom) > 0.000001 ) {
-        // standard case (slerp)
-        omega  = Math.acos(cosom);
-        sinom  = Math.sin(omega);
-        scale0 = Math.sin((1.0 - t) * omega) / sinom;
-        scale1 = Math.sin(t * omega) / sinom;
-    } else {        
-        // "from" and "to" quaternions are very close 
-        //  ... so we can do a linear interpolation
-        scale0 = 1.0 - t;
-        scale1 = t;
-    }
-    // calculate final values
-    out[0] = scale0 * ax + scale1 * bx;
-    out[1] = scale0 * ay + scale1 * by;
-    out[2] = scale0 * az + scale1 * bz;
-    out[3] = scale0 * aw + scale1 * bw;
-    
-    return out;
 }
 

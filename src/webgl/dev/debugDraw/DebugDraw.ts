@@ -14,6 +14,7 @@ import { GLContext } from 'nanogl/types';
 import gui from '../gui';
 import { Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import { Control } from '../gui/api';
+import Points from './Points';
 
 
 const Orange = 0xfe9f2c
@@ -57,6 +58,7 @@ class DebugDrawImpl {
   textRenderer : TextRenderer
   grid         : Grid
   lines        : Lines
+  points       : Points
 
   @Gui
   enabled = true
@@ -91,6 +93,7 @@ class DebugDrawImpl {
     this.textRenderer = new TextRenderer( gl )
     this.grid         = new Grid        ( gl )
     this.lines        = new Lines       ( gl )
+    this.points       = new Points      ( gl )
 
     this._updateTexList()
   }
@@ -149,6 +152,11 @@ class DebugDrawImpl {
     this.lines.addLine( a, b, color )
   }
 
+  drawPoint( a:vec3 ){
+    if( !this.enabled ) return
+    this.points.addPoint( a )
+  }
+
 
   drawSpotLight( l :SpotLight ):void{
     DebugDraw.drawCone( l._wmatrix, -l.radius, l.angle ) 
@@ -195,6 +203,7 @@ class DebugDrawImpl {
     }
 
     this.lines.render(ctx.camera)
+    this.points.render(ctx.camera)
     this.textRenderer.draw(ctx)
 
   }
@@ -237,7 +246,6 @@ const DebugDraw = {
     _instance.drawGuizmo(x);
   },
   
-  
   drawFrustum( vp : mat4 ):void{
     _instance.drawFrustum( vp );
   },
@@ -256,6 +264,10 @@ const DebugDraw = {
 
   drawLine( a:vec3, b:vec3, color = Orange ):void{
     _instance.drawLine( a, b, color );
+  },
+
+  drawPoint( a:vec3 ):void{
+    _instance.drawPoint( a );
   },
 
   drawText( txt:string, wpos: vec3 ):void{
@@ -285,6 +297,7 @@ const DebugDraw = {
   drawTexture( name:string, t:Texture2D, flipY = false ):void{0},
   drawText( txt:string, wpos: vec3 ):void{0},
   drawLine( a:vec3, b:vec3, color = Orange ):void{0},
+  drawPoint( a:vec3 ):void{0},
   render(ctx:IRenderContext):void{0}
 }
 

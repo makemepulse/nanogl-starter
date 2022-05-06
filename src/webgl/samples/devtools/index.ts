@@ -48,6 +48,7 @@ export default class DevtoolsScene implements IScene {
     if( ! this.ready ) return
     
     DebugDraw.drawGuizmo( vec3.create() )
+    DebugDraw.drawPoint( vec3.create() )
     DebugDraw.drawGuizmo( vec3.fromValues(1, 0, 0) )
     
     DebugDraw.drawTexture( 'tex1', this.texture1.value )   
@@ -61,12 +62,14 @@ export default class DevtoolsScene implements IScene {
     DebugDraw.drawText( 'ABCDEFGHIJKLMNOPQRSTU', vec3.fromValues(0, 1, 0) )
     DebugDraw.drawText( '-_,:()[]%#@', vec3.fromValues(0, 1.5, 0) )
     DebugDraw.drawText( 'text \non \nmultiple \nlines', vec3.fromValues(0, 2, 0) )
-
+    
     const t = performance.now()/5000
     const pos = vec3.fromValues(Math.cos(t), 0, Math.sin(t)) 
     DebugDraw.drawText( `[${pos[0].toPrecision(3)}-${pos[1].toPrecision(3)}]`, pos )
-
+    
+    DebugDraw.drawPoint( pos )
     DebugDraw.drawLine( vec3.create(), pos )
+
 
   }
 
