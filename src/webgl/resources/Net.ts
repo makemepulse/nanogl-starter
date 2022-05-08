@@ -7,11 +7,6 @@ const _domParser = new DOMParser();
 
 
 
-
-
-
-
-
 function validateResponse(response: Response): void {
   if (!response.ok) {
     throw new Error(`NetworkError: status : ${response.status} ${response.statusText}, url : ${response.url}`)

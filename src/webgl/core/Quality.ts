@@ -2,7 +2,7 @@ import { throwIfAborted } from "@/core/AbortSignalUtils";
 import Deferred from "@/core/Deferred";
 import Delay from "@/core/Delay";
 import Signal from "@/core/Signal";
-import { AbortSignal } from "@azure/abort-controller";
+import { AbortController, AbortSignal } from "@azure/abort-controller";
 import gui from "@webgl/dev/gui";
 
 
@@ -36,6 +36,8 @@ class FPSMonitor {
     this._defer = new Deferred()
     this.startTime = pnow();
     this._running = true;
+    this.record.length = 0
+    this.lastFrameTime = -1
     requestAnimationFrame(this.onRaf)
     return this._defer.promise;
   }
@@ -50,7 +52,6 @@ class FPSMonitor {
   _stop() {
     this._defer = null
     this._running = false
-    this.record.length = 0
   }
 
   onRaf = () => {
@@ -115,9 +116,26 @@ const WARMUP_DELAY = 1500
  */
 const POST_DEGRADE_DELAY = 200
 
+/**
+ * In continuous mode, th efps is checked every CONTINUOUS_CHECK_DELAY milliseconds
+ */
+const CONTINUOUS_CHECK_DELAY = 5000
+
+
+const _DEGRADE = 1<<1
+const _UPGRADE = 1<<2
+const _CONTINUOUS = 1<<3
+
+export enum QualityPolicy {
+  DEGRADE = _DEGRADE,
+  DEGRADE_CONTINUOUS = _DEGRADE | _CONTINUOUS,
+  UPGRADE = _UPGRADE,
+  UPGRADE_CONTINUOUS = _UPGRADE | _CONTINUOUS,
+}
 
 
 export default class Quality<TLevel> {
+  private _autoLevelAbortCtrl: AbortController;
 
   setLevel(level: number) {
     this.levelIndex = level
@@ -125,9 +143,8 @@ export default class Quality<TLevel> {
 
   readonly onChange = new Signal<TLevel>()
 
-  _currentLevel: number;
+  private _currentLevel: number
 
-  
   
   /// #if DEBUG
 
@@ -165,36 +182,100 @@ export default class Quality<TLevel> {
     /// #if DEBUG
     this._debugLevel = this._currentLevel
     const f = gui.folder("Quality")
+    f.monitor( this, '_currentLevel' ).setLabel("Current level")
     f.add(this, "forceQuality", { label: "force quality level" })
     f.add(this, "debugLevel", { min: 0, max: levels.length-1, step: 1, label: "quality" })
     /// #endif
   }
 
 
-  async startAutoLevel(signal: AbortSignal) {
 
-    this._applyLevel()
+  async startAutoLevel(psignal: AbortSignal, policy: QualityPolicy = QualityPolicy.DEGRADE) {
+
+    this._autoLevelAbortCtrl = new AbortController( psignal )
+    const signal = this._autoLevelAbortCtrl.signal
+
+    const degradeMode = ( policy & _DEGRADE ) !== 0 
+
+    if( degradeMode ) {
+      this.maxQuality()
+    } else {
+      this.minQuality()
+    }
 
     const monitor = new FPSMonitor();
-    const targetFrame = 1 / FPS_TARGET
+    const targetFrameTime = 1.0 / FPS_TARGET
 
-    await Delay(WARMUP_DELAY)
+    await Delay( WARMUP_DELAY )
 
     // eslint-disable-next-line no-constant-condition
-    while (true) {
+    while( true ){
 
       const res = await monitor.start()
-      throwIfAborted(signal)
+
+      throwIfAborted( signal )
 
       console.log(`fps ${1 / res.meanFrame}`);
+      
+      if( degradeMode ){
+      
+        if( res.meanFrame > targetFrameTime ) {
+          if (!this.degrade()) break;
+          await Delay(POST_DEGRADE_DELAY)
+        } else {
+          break;
+        }
 
-      if (res.meanFrame > targetFrame) {
-        if (!this.degrade()) return;
-        await Delay(POST_DEGRADE_DELAY)
       } else {
-        return;
+
+        if( res.meanFrame < targetFrameTime ) {
+          if (!this.upgrade()) break;
+          await Delay(POST_DEGRADE_DELAY)
+        } else {
+          this.degrade()
+          break;
+        }
+
       }
     }
+    
+    /*
+     * continuously check fps and try to upgrade or degrade accordingly 
+     */
+    if( (policy & _CONTINUOUS) ){
+
+      while(!signal.aborted){
+
+        // monitor fps
+        await Delay( CONTINUOUS_CHECK_DELAY )
+        throwIfAborted( signal )
+        let res = await monitor.start()
+        throwIfAborted( signal )
+        
+        // if fps is ok, upgrade, check again and degrade if not ok
+        if( res.meanFrame < targetFrameTime ) {
+          this.upgrade()
+          await Delay(POST_DEGRADE_DELAY)
+          throwIfAborted( signal )
+          res = await monitor.start(.5)
+          throwIfAborted( signal )
+          if( res.meanFrame > targetFrameTime ) {
+            this.degrade()
+          }
+        } else {
+          this.degrade()
+        }
+      }
+    }
+
+
+
+
+
+  }
+
+  stopAutoLevel(){
+    this._autoLevelAbortCtrl?.abort()
   }
 
 
@@ -221,11 +302,20 @@ export default class Quality<TLevel> {
   }
 
 
-  public improve() {
+  public maxQuality(){
+    this.levelIndex = this.levels.length - 1
+  }
+
+  public minQuality(){
+    this.levelIndex = 0
+  }
+
+  public upgrade() {
     if (this.levelIndex >= this.levels.length - 1) return false
     this.levelIndex++;
     return true;
   }
+
 
   public degrade() {
     if (this.levelIndex <= 0) return false

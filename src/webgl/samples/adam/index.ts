@@ -1,4 +1,4 @@
-import Quality from "@webgl/core/Quality"
+import Quality, { QualityPolicy } from "@webgl/core/Quality"
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
 import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
@@ -97,7 +97,7 @@ export default class AdamScene implements IGLContextProvider, IScene {
     }
 
     this.quality.onChange.on( this.setQuality )
-    this.quality.startAutoLevel( this.abortCtrl.signal )
+    this.quality.startAutoLevel( this.abortCtrl.signal, QualityPolicy.DEGRADE_CONTINUOUS )
     
     
   }

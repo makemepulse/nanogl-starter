@@ -11,8 +11,8 @@ import GLApp from "@webgl/GLApp";
 
 @Options({})
 export default class GLView extends Vue {
-  windowed = true
-  loaded = false
+  windowed = false
+
   isdestroyed = false
 
   viewer!: GLApp
@@ -35,7 +35,6 @@ export default class GLView extends Vue {
   onLoaded(): void {
     if( this.isdestroyed ) return
     this.viewer.start()
-    this.loaded = true
   }
 
 
