@@ -72,7 +72,7 @@ class ResourceTester {
  * continuously create various types of resources, then load and abort them in mid air
  * to test for memory leaks or error when resources are cancelled during loading
  */
-export default class ResourcesScene implements IScene {
+export default class CancellationSample implements IScene {
 
   testers: ResourceTester[] = []
   texture: ResourceTester
@@ -113,7 +113,7 @@ export default class ResourcesScene implements IScene {
   }
 
   load(): Promise<void> {
-    const folder = gui.folder("ResourcesScene")
+    const folder = gui.folder("Resources Cancellation")
     folder.range(this, 'abortDelay', 0, 1000, { step: 50 })
     this.testers.forEach(t => {
       t.running = true
@@ -124,7 +124,7 @@ export default class ResourcesScene implements IScene {
   }
 
   unload(): void {
-    gui.clearFolder("ResourcesScene")
+    gui.clearFolder("Resources Cancellation")
     this.testers.forEach(t => t.running = false)
   }
 

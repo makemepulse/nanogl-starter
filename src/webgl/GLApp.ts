@@ -1,4 +1,4 @@
-import './features'
+import './Features'
 import GLView from './GLView';
 import Renderer from './Renderer';
 

@@ -189,7 +189,7 @@ export class LambdaResource<T = any> extends Resource<T>{
  */
 export class InternalResourceHelper {
 
-  static loadResource<T>( r:Resource<T>, abortSignal: AbortSignal ) : Promise<T> {
+  static loadResource( r:Resource, abortSignal: AbortSignal ) : Promise<any> {
     return (r as any)._load( abortSignal )
   }
 

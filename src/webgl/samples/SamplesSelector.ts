@@ -8,7 +8,7 @@ import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
-import ResourcesScene from "./resources"
+import CancellationSample from "./resources/CancellationSample"
 import DevtoolsScene from "./devtools"
 import TexturesScene from "./textures"
 import LightsScene from "./lights"
@@ -20,13 +20,15 @@ import MinimalDrawcallSample from "./minimal_drawcall"
 import MatcapSample from "./custom_material/MatcapSample"
 import SpherizeSample from "./custom_material/SpherizeSample"
 import PickFloorSample from "./interactions/PickFloorSample"
+import ReourceGroupSample from "./resources/ResourceGroupSample"
 
 const Scenes = {
   'Gltf - Adam'              : AdamScene             ,
   'Gltf - Robot'             : RobotScene            ,
   'Gltf - Suzanne'           : SuzanneScene          ,
   'Devtools'                 : DevtoolsScene         ,
-  'Resources - Cancellation' : ResourcesScene        ,
+  'Resources - Cancellation' : CancellationSample    ,
+  'Resources - Groups'       : ReourceGroupSample    ,
   'Textures'                 : TexturesScene         ,
   'Lights'                   : LightsScene           ,
   'Materials - Clearcoat'    : ClearcoatSample       ,

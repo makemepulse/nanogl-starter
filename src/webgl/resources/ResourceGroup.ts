@@ -2,7 +2,7 @@
 import { InternalResourceHelper as IRH, Resource } from "./Resource";
 
 
-export type ResourceOrGroup<T> = Resource<T|T[]> 
+export type ResourceOrGroup<T> = Resource<T> | Resource<T[]> 
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,7 +27,7 @@ export default class ResourceGroup<T=any> extends Resource<T[]> {
 
 
   async doLoad(): Promise<T[]> {
-    const _all: Promise<T[]|T>[] = this._resources.map( (r)=>IRH.loadResource(r, this.abortSignal) );
+    const _all: Promise<T[]|T>[] = this._resources.map( r=>IRH.loadResource(r, this.abortSignal) );
     try{
       const b = await Promise.all(_all);
       if( !this.isPending && this._resources.some(r=>!r.isComplete) ){
@@ -71,10 +71,12 @@ export default class ResourceGroup<T=any> extends Resource<T[]> {
     this._resources.push( resource );
     if( name ) this._resourcesMap.set( name, resource );
 
-    if( this.isPending ) 
+    if( this.isPending ) {
+
       IRH.unloadResource( resource )
-    else 
+    } else {
       IRH.loadResource( resource, this.abortSignal )
+    }
 
     if( this.isLoaded ){
       IRH.resetResource(this)
