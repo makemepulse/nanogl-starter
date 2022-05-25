@@ -99,7 +99,6 @@ export default class AdamScene implements IGLContextProvider, IScene {
     this.quality.onChange.on( this.setQuality )
     this.quality.startAutoLevel( this.abortCtrl.signal, QualityPolicy.DEGRADE_CONTINUOUS )
     
-    
   }
   
 

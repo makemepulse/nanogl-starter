@@ -187,9 +187,8 @@ _files.keys().forEach( k=>{
   handleFile( k, _files(k).default )
 })
 
-console.log(_assetsByName);
-
-console.log( Array.from(_assetsByName.values()).map(i=>i.initialPath) )
+// console.log(_assetsByName);
+// console.log( Array.from(_assetsByName.values()).map(i=>i.initialPath) )
 
 
 
@@ -241,7 +240,7 @@ if( module.hot ){
     ()=>{ 
       const reloadedFiles = getFileContext()
       reloadedFiles.keys().forEach( k=>{
-        handleFileUpdate( k,reloadedFiles(k) );
+        handleFileUpdate( k,reloadedFiles(k).default );
       })
     }
   );

@@ -2,10 +2,35 @@
 const path = require('path')
 const tapIfdefLoader = require( './build/vuecli/ifdef-loader')
 
+
+const https = process.env.DEV_SERVE_HTTPS === 'true'
+const cert  = process.env.DEV_HTTPS_CERT
+const key   = process.env.DEV_HTTPS_KEY
+
+
 module.exports = {
   lintOnSave: false,
 
   publicPath: process.env.PUBLIC_PATH,
+
+
+  devServer: {
+
+    client:{
+      webSocketURL: {
+        protocol: https ? 'wss' : 'ws'
+      },
+    },
+
+    server: {
+      type: https ? 'https' : 'http',
+      options: {
+        key,
+        cert,
+      },
+    },
+
+  },
 
   chainWebpack(config){
 
