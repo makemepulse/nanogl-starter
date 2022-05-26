@@ -26,6 +26,7 @@ type FileInfos = {
   name  : string
   ext   : string
   meta ?: string
+  lod   : number
 }
 
 
@@ -39,10 +40,17 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
   const regexp = /^(.+)\.(\w+)(\.(.*))?/
   const r = regexp.exec( filename )
   
+  const lodexp = /(.+)_LOD(\d)/
+  const l = lodexp.exec( r[1] )
+  
     
-  const name  = r[1]
+  const name  = l ? l[1] : r[1]
+  const lod   = l ? parseInt(l[2]) : 0
   const ext   = r[2]
   const meta  = r[4]
+
+
+  // console.log( filename, lod, r)
   return {
     initialPath,
     path,
@@ -50,6 +58,7 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
     name,
     ext,
     meta,
+    lod,
   }
 
 } 
@@ -90,13 +99,22 @@ class TextureAsset implements ITextureRequest {
   _resources: TextureResource[] = []
   /// #endif
 
+
   addSource( fileInfos:FileInfos  ){
     const codec = getTextureCodec( fileInfos )
-    this.sources.push( {
-      codec,
-      lods : [{files:[fileInfos.path], buffers:null}],
-      datas : null
-    })
+    let requestSource = this.sources.find( s=>s.codec === codec )
+
+    if( !requestSource ){
+      requestSource = {
+        codec,
+        lods : [],
+        datas : null
+      }
+      this.sources.push( requestSource )
+    }
+
+    requestSource.lods[fileInfos.lod] = {files:[fileInfos.path], buffers:null}
+
     this.sources.sort( sortTexSources )
   }
 
@@ -186,6 +204,16 @@ _files.keys().forEach( k=>{
   deps.push( k )
   handleFile( k, _files(k).default )
 })
+
+// validate Texture Sources
+// check if lods are missing
+for (const tex of _textures.values()) {
+  tex.sources.forEach( s=>{
+    if( s.lods.includes(undefined) ) {
+      console.error(`texture has missing lods`, s.lods)
+    }
+  })
+}
 
 // console.log(_assetsByName);
 // console.log( Array.from(_assetsByName.values()).map(i=>i.initialPath) )

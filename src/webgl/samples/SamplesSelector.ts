@@ -10,7 +10,7 @@ import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
 import CancellationSample from "./resources/CancellationSample"
 import DevtoolsScene from "./devtools"
-import TexturesScene from "./textures"
+import TexturesSample from "./resources/TexturesSample"
 import LightsScene from "./lights"
 import ClearcoatSample from "./custom_material/ClearcoatSample"
 import DisolveSample from "./custom_material/DisolveSample"
@@ -29,7 +29,7 @@ const Scenes = {
   'Devtools'                 : DevtoolsScene         ,
   'Resources - Cancellation' : CancellationSample    ,
   'Resources - Groups'       : ReourceGroupSample    ,
-  'Textures'                 : TexturesScene         ,
+  'Resources - Textures'     : TexturesSample        ,
   'Lights'                   : LightsScene           ,
   'Materials - Clearcoat'    : ClearcoatSample       ,
   'Materials - Disolve'      : DisolveSample         ,

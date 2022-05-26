@@ -9,6 +9,9 @@ import { GLContext } from "nanogl/types";
 import TexturesLoader from "./TextureLoader";
 import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
 import Capabilities from "@webgl/core/Capabilities";
+import Deferred from "@/core/Deferred";
+import { AbortController, AbortSignal } from "@azure/abort-controller";
+import { throwIfAborted } from "@/core/AbortSignalUtils";
 
 
 
@@ -27,6 +30,22 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   protected _options: ITextureOptions;
   private _sourceGroup : ResourceGroup<ArrayBuffer> 
 
+  protected _loadLevelDeferred: Deferred<T>
+  private _loadLevelAbortCtrl : AbortController
+
+  private _lodLevel = 0;
+  public get lodLevel() {
+    return this._lodLevel;
+  }
+  public set lodLevel(value) {
+    if( this._lodLevel !== value ){
+      this._lodLevel = value;
+      if( this.state !== ResourceState.UNLOADED ){
+        this._doLoadLevel( value )
+      }
+    }
+  }
+  
   // readonly options : TextureOptions
 
 
@@ -62,15 +81,13 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
 
-  async doLoad(): Promise<T> {
-    if( this._texture === null ){
-      this._texture = this.createTexture()
-    }
-    await this.loadLevelAsync( 0 );
-    return this._texture
+  doLoad(): Promise<T> {
+    this._loadLevelDeferred = new Deferred<T>()
+    // loadLevelAsync can abort if lodLevel if changed mid air
+    this._doLoadLevel( this._lodLevel );
+    return this._loadLevelDeferred.promise
   }
-
-
+  
   doUnload():void  {
     this._texture.dispose()
     this._texture = this.createTexture();
@@ -79,20 +96,31 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
 
 
-  async loadLevelAsync(level: number): Promise<T> {
+  private _doLoadLevel(level: number): void {
+    this._loadLevelAbortCtrl?.abort()
+    this._loadLevelAbortCtrl = new AbortController( this.abortSignal )
+    this.loadLevelAsync( level, this._loadLevelAbortCtrl.signal ).then( this._loadLevelDeferred.resolve )
+  }
+
+
+  protected async loadLevelAsync(level: number, signal:AbortSignal): Promise<T> {
+
+
     const gl = this.gl 
     const loader = BaseTextureResource.getTextureLoader( gl );
 
     // find which source is available based on codecs and extensions
     //
     const cres = await TextureCodecs.getCodecForRequest(this._request, gl );
+    throwIfAborted(signal)
+
     if( cres === null ){
       throw `can't find codecs for request ${JSON.stringify(this._request) }`
     }
     const [codec, source] = cres
 
     // load files for a given request source based on lod
-    await this.loadSourceLod(source.lods[level]);
+    await this.loadSourceLod(source.lods[level], signal);
     // run codec to create or setup TextureData
     try {
       await codec.decodeLod(source, level, this._options, gl);
@@ -100,6 +128,8 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       console.error( `can't decode `, source );
       throw e
     }
+
+    throwIfAborted(signal)
     // use texture loader to upload data to texture
     loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
 
@@ -114,7 +144,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
    * mark this texture as transparent. Must be called before loading
    */
   setTransparent(): this {
-    if( this.state !== ResourceState.PENDING ){
+    if( this.state !== ResourceState.UNLOADED ){
       throw "setTransparent() can't be call on loaded resource"
     }
     this._options.alpha = true
@@ -125,7 +155,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
    * mark this texture as opaque. Must be called before loading
    */
   setOpaque(): this {
-    if( this.state !== ResourceState.PENDING ){
+    if( this.state !== ResourceState.UNLOADED ){
       throw "setOpaque() can't be call on loaded resource"
     }
     this._options.alpha = false
@@ -138,52 +168,47 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     opts.smooth = smooth;
     opts.mipmap = mipmap;
     opts.miplinear = miplinear;
-    if( this._texture ){
-      this._applyFilter()
-    }
+    this._applyFilter()
     return this
   }
 
   setAnisotropy(aniso: 0|2|4|8|16): this {
     this._options.aniso = aniso;
-    if( this._texture ){
-      this._applyAnisotropy()
-    }
+    this._applyAnisotropy()
     return this
   }
 
   clamp(): this {
     this._options.wrap = 'clamp'
-    if( this._texture ) { this._applyWrapping() }
+    this._applyWrapping()
     return this
   }
   
   repeat(): this {
     this._options.wrap = 'repeat'
-    if( this._texture ) { this._applyWrapping() }
+    this._applyWrapping()
     return this
   }
   
   mirror(): this {
     this._options.wrap = 'mirror'
-    if( this._texture ) { this._applyWrapping() }
+    this._applyWrapping()
     return this
   }
 
 
   private _applyFilter():void {
     const options = this._options
-    const gl = this._texture.gl
     this._texture.setFilter( options.smooth, options.mipmap, options.miplinear )
 
     if( options.mipmap === true ){
-      gl.generateMipmap(this._texture._target)
+      this.gl.generateMipmap(this._texture._target)
     }
   }
 
   private _applyAnisotropy():void {
     const options = this._options
-    const gl = this._texture.gl
+    const gl = this.gl
     const aniso = Math.min( Capabilities(gl).maxAnisotropy , options.aniso )
     if( aniso > 0 ){
       gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, aniso );
@@ -192,14 +217,14 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
   private _applyWrapping():void {
     switch( this._options.wrap ){
-      case 'clamp': this._texture. clamp(); break;
+      case 'clamp' : this._texture. clamp(); break;
       case 'repeat': this._texture.repeat(); break;
       case 'mirror': this._texture.mirror(); break;
     }
   }
 
 
-  async loadSourceLod(lod: ITextureRequestLod): Promise<ArrayBuffer[]> {
+  protected async loadSourceLod(lod: ITextureRequestLod, signal:AbortSignal ): Promise<ArrayBuffer[]> {
 
     this._sourceGroup?.unload()
 
@@ -210,7 +235,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       this._sourceGroup.add( res as ResourceOrGroup<ArrayBuffer>)
     }
 
-    const buffers = await this._sourceGroup.load( this.abortSignal );
+    const buffers = await this._sourceGroup.load( signal );
     lod.buffers = buffers;
     return buffers;
   }
@@ -237,7 +262,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
   }
 
 
-  async loadLevelAsync(): Promise<TextureCube> {
+  async loadLevelAsync(level: number, signal:AbortSignal): Promise<TextureCube> {
 
     const gl = this.gl 
     const options = resolveTextureOptions( this._options )
@@ -248,11 +273,13 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
 
     for (let i = 0; i < source.lods.length; i++) {
       // load files for a given request source based on lod
-      await this.loadSourceLod(source.lods[i]);
+      await this.loadSourceLod(source.lods[i], signal);
       // console.log(source.datas);
     }
     // run codec to create or setup TextureData
     await codec.decodeCube(source, options, gl);
+
+    throwIfAborted(signal)
     // use texture loader to upload data to texture
     loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
 

@@ -96,7 +96,6 @@ export default class Renderer {
     
     scene.rttPass()
     
-
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     this.viewport.setupGl(gl)

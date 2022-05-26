@@ -5,7 +5,7 @@ import { AbortController, AbortError, AbortSignal } from "@azure/abort-controlle
 
 
 export enum ResourceState {
-  PENDING,
+  UNLOADED,
   LOADING,
   LOADED,
   ERRORED,
@@ -22,7 +22,7 @@ export abstract class Resource<T = any>{
   
   protected _abortCtrl: AbortController;
 
-  private _state : ResourceState = ResourceState.PENDING;
+  private _state : ResourceState = ResourceState.UNLOADED;
 
   private _isControlled = false;
   
@@ -40,7 +40,7 @@ export abstract class Resource<T = any>{
   }
   
   private _reset() : void {
-    this._state = ResourceState.PENDING;
+    this._state = ResourceState.UNLOADED;
     this._value = null;
     this._deferred = new Deferred<T>();
     catchAbortError( this._deferred.promise );
@@ -55,7 +55,7 @@ export abstract class Resource<T = any>{
   
   get isLoaded ():boolean { return this._state === ResourceState.LOADED  }
   get isErrored():boolean { return this._state === ResourceState.ERRORED }
-  get isPending():boolean { return this._state === ResourceState.PENDING }
+  get isPending():boolean { return this._state === ResourceState.UNLOADED }
   get isLoading():boolean { return this._state === ResourceState.LOADING }
   
   get isComplete() : boolean {
