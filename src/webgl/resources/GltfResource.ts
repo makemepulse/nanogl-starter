@@ -1,11 +1,11 @@
 import { Resource } from "./Resource";
 import { WebImpl } from "nanogl-gltf/lib/io/web";
 import { GltfLoaderOptions } from "nanogl-gltf/lib/io/GltfLoaderOptions";
-import { IGLContextProvider } from "./IGLContextProvider";
 import GltfLoader from "nanogl-gltf/lib/io/GltfLoader";
 import Gltf from "nanogl-gltf/lib/Gltf";
 import WebglAssets from "./WebglAssets";
 import IOInterface from "nanogl-gltf/lib/io/IOInterface";
+import { GLContext } from "nanogl/types";
 
 
 
@@ -37,7 +37,7 @@ export default class GltfResource extends Resource<Gltf>{
     return this.value
   }
 
-  constructor(protected request: string, protected glp: IGLContextProvider, protected opts: GltfLoaderOptions = {}, useModuleIO = true) {
+  constructor(protected request: string, protected gl: GLContext, protected opts: GltfLoaderOptions = {}, useModuleIO = true) {
     super()
     this._io = useModuleIO ? _moduleIO : _stdIO;
   }
@@ -52,7 +52,7 @@ export default class GltfResource extends Resource<Gltf>{
     });
 
     const gltf = await loader.load();
-    await gltf.allocate(this.glp.gl)
+    await gltf.allocate(this.gl)
     return gltf
   }
 

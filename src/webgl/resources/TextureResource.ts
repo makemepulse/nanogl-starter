@@ -5,7 +5,6 @@ import TextureCube from "nanogl/texture-cube";
 import { ITextureRequest, ITextureRequestLod, ITextureOptions, resolveTextureOptions, TextureSrcSet } from "./TextureRequest";
 import { BytesResource } from "./Net";
 import { TextureCodecs } from "./TextureCodec";
-import { IGLContextProvider } from "./IGLContextProvider";
 import { GLContext } from "nanogl/types";
 import TexturesLoader from "./TextureLoader";
 import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
@@ -16,9 +15,13 @@ import Capabilities from "@webgl/core/Capabilities";
 
 export abstract class BaseTextureResource<T extends Texture = Texture> extends Resource<T> {
 
-  texture: T = null;
+  protected _texture: T = null
 
-  glp: IGLContextProvider;
+  get texture(): T{
+    return this._texture;
+  }
+
+  readonly gl: GLContext;
 
   protected _request: ITextureRequest;
   protected _options: ITextureOptions;
@@ -39,14 +42,15 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
 
-  constructor(request: ITextureRequest | string, glp: IGLContextProvider, options?: Partial<ITextureOptions> ) {
+  constructor(request: ITextureRequest | string, gl: GLContext, options?: Partial<ITextureOptions> ) {
     super();
-    this.glp = glp;
+    this.gl = gl;
     if( typeof request === 'string' ){
       request = new TextureSrcSet( request )
     }
     this._request = request;
     this._options = resolveTextureOptions( options )
+    this._texture = this.createTexture()
   }
 
   get request() : ITextureRequest {
@@ -54,29 +58,29 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
 
   get value(): T {
-    return this.texture;
+    return this._texture;
   }
 
 
   async doLoad(): Promise<T> {
-    if( this.texture === null ){
-      this.texture = this.createTexture()
+    if( this._texture === null ){
+      this._texture = this.createTexture()
     }
     await this.loadLevelAsync( 0 );
-    return this.texture
+    return this._texture
   }
 
 
   doUnload():void  {
-    this.texture.dispose()
-    this.texture = null;
+    this._texture.dispose()
+    this._texture = this.createTexture();
     this._sourceGroup?.unload()
   }
 
 
 
   async loadLevelAsync(level: number): Promise<T> {
-    const gl = this.glp.gl 
+    const gl = this.gl 
     const loader = BaseTextureResource.getTextureLoader( gl );
 
     // find which source is available based on codecs and extensions
@@ -103,7 +107,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     this._applyAnisotropy()
     this._applyWrapping()
     
-    return this.texture;
+    return this._texture;
 
   }
   /**
@@ -134,7 +138,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     opts.smooth = smooth;
     opts.mipmap = mipmap;
     opts.miplinear = miplinear;
-    if( this.texture ){
+    if( this._texture ){
       this._applyFilter()
     }
     return this
@@ -142,7 +146,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
   setAnisotropy(aniso: 0|2|4|8|16): this {
     this._options.aniso = aniso;
-    if( this.texture ){
+    if( this._texture ){
       this._applyAnisotropy()
     }
     return this
@@ -150,36 +154,36 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
   clamp(): this {
     this._options.wrap = 'clamp'
-    if( this.texture ) { this._applyWrapping() }
+    if( this._texture ) { this._applyWrapping() }
     return this
   }
   
   repeat(): this {
     this._options.wrap = 'repeat'
-    if( this.texture ) { this._applyWrapping() }
+    if( this._texture ) { this._applyWrapping() }
     return this
   }
   
   mirror(): this {
     this._options.wrap = 'mirror'
-    if( this.texture ) { this._applyWrapping() }
+    if( this._texture ) { this._applyWrapping() }
     return this
   }
 
 
   private _applyFilter():void {
     const options = this._options
-    const gl = this.texture.gl
-    this.texture.setFilter( options.smooth, options.mipmap, options.miplinear )
+    const gl = this._texture.gl
+    this._texture.setFilter( options.smooth, options.mipmap, options.miplinear )
 
     if( options.mipmap === true ){
-      gl.generateMipmap(this.texture._target)
+      gl.generateMipmap(this._texture._target)
     }
   }
 
   private _applyAnisotropy():void {
     const options = this._options
-    const gl = this.texture.gl
+    const gl = this._texture.gl
     const aniso = Math.min( Capabilities(gl).maxAnisotropy , options.aniso )
     if( aniso > 0 ){
       gl.texParameterf( gl.TEXTURE_2D, Capabilities(gl).extAniso.TEXTURE_MAX_ANISOTROPY_EXT, aniso );
@@ -188,9 +192,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 
   private _applyWrapping():void {
     switch( this._options.wrap ){
-      case 'clamp': this.texture. clamp(); break;
-      case 'repeat': this.texture.repeat(); break;
-      case 'mirror': this.texture.mirror(); break;
+      case 'clamp': this._texture. clamp(); break;
+      case 'repeat': this._texture.repeat(); break;
+      case 'mirror': this._texture.mirror(); break;
     }
   }
 
@@ -219,7 +223,7 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
 export class TextureResource extends BaseTextureResource<Texture2D> {
   
   createTexture(): Texture2D {
-    return new Texture2D(this.glp.gl);
+    return new Texture2D(this.gl);
   }
 
 }
@@ -229,13 +233,13 @@ export class TextureResource extends BaseTextureResource<Texture2D> {
 export class TextureCubeResource extends BaseTextureResource<TextureCube> {
 
   createTexture(): TextureCube {
-    return new TextureCube(this.glp.gl);
+    return new TextureCube(this.gl);
   }
 
 
   async loadLevelAsync(): Promise<TextureCube> {
 
-    const gl = this.glp.gl 
+    const gl = this.gl 
     const options = resolveTextureOptions( this._options )
     const loader = BaseTextureResource.getTextureLoader( gl );
     // find which source is available based on codecs and extensions
@@ -254,7 +258,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
 
 
     //
-    return this.texture;
+    return this._texture;
 
   }
 

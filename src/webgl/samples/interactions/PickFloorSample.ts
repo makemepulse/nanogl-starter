@@ -1,5 +1,4 @@
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import { GLContext } from "nanogl/types"
 import { IScene } from "@webgl/engine/IScene"
 import Plane from "@webgl/math/Plane"
@@ -14,7 +13,7 @@ const V3 = vec3.create()
 const XZPlane = new Plane()
 const ray = new Ray()
 
-export default class PickFloorSample implements IGLContextProvider, IScene {
+export default class PickFloorSample implements IScene {
 
   readonly gl: GLContext
 

@@ -1,6 +1,5 @@
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
@@ -26,7 +25,7 @@ const GltfPath = "gltfs/suzanne/Suzanne.gltf"
  * An override is setup on the gltf loader to add a custom chunk to every materials
  * The chunk is DisolveFX, whick add some input (scale and threshold) and discard fragment based on 3D noise vs thrshold test
  */
-export default class DisolveSample implements IGLContextProvider, IScene {
+export default class DisolveSample implements IScene {
 
   readonly gl: GLContext
   gltfSample: GltfScene

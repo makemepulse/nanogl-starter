@@ -1,6 +1,5 @@
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
@@ -15,7 +14,7 @@ const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 // const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "gltfs/ground_control_station_for_uav/scene.gltf"
 
-export default class LightsScene implements IGLContextProvider, IScene {
+export default class LightsScene implements IScene {
 
   readonly gl : GLContext
   gltfSample : GltfScene

@@ -1,6 +1,5 @@
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext, isWebgl2 } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
@@ -23,7 +22,7 @@ const GltfPath = "gltfs/suzanne/Suzanne.gltf"
  * Sample scene testing custom clearcoat Material
  * Custom ClearcoatPass (which inherit StandardPass) is created and override the pass created by Gltf loader
  */
-export default class ClearcoatSample implements IGLContextProvider, IScene {
+export default class ClearcoatSample implements IScene {
 
   readonly gl: GLContext
   gltfSample: GltfScene

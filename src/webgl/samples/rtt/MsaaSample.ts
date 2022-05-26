@@ -1,5 +1,4 @@
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
@@ -16,7 +15,7 @@ import gui from "@webgl/dev/gui"
 const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 
 const FBO_SIZE = 512
-export default class MsaaSample implements IGLContextProvider, IScene {
+export default class MsaaSample implements IScene {
 
   readonly gl : GLContext
   gltfSample : GltfScene

@@ -1,6 +1,5 @@
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { IScene } from "@webgl/engine/IScene"
@@ -43,19 +42,21 @@ class TextureSample {
 
 }
 
-export default class TexturesScene implements IGLContextProvider, IScene {
+export default class TexturesScene implements IScene {
 
   readonly gl : GLContext
-  root       : Node
-  planes : TextureSample[] = []
-  matcap: TextureResource
-  avatarOpaque: TextureResource
-  avatarTransparent: TextureResource
+  
+  root              : Node
+  planes            : TextureSample  [] = []
+
+  matcap            : TextureResource
+  avatarOpaque      : TextureResource
+  avatarTransparent : TextureResource
   
   constructor( private renderer:Renderer ){
+    
     this.gl = renderer.gl
     this.root       = new Node()
-
 
 
     this.matcap = WebglAssets.getTexture( 'matcap_white', this.gl, {
@@ -92,7 +93,7 @@ export default class TexturesScene implements IGLContextProvider, IScene {
   async load() :Promise<void> {
     
     const tlist = [
-      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this ),
+      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this.gl ),
       WebglAssets.getTexture( 'texture1', this.gl ),
       this.matcap,
       this.avatarOpaque,

@@ -18,6 +18,9 @@ const FragCode = LiveShader(fShader)
  */
 export class ClearcoatPass<TSurface extends PbrSurface = PbrSurface> extends StandardPass<TSurface>{
 
+  /**
+   * add new parameter for clearcoat smoothness
+   */
   clearcoatSmoothness : Input
 
   constructor( name?: string ){
@@ -25,6 +28,9 @@ export class ClearcoatPass<TSurface extends PbrSurface = PbrSurface> extends Sta
 
     this._updateCode()
 
+    
+    // add new parameter for clearcoat smoothness
+    // adn set it by default to constant 1
     this.inputs.add(this.clearcoatSmoothness = new Input('ClearcoatSmoothness', 1));
     this.clearcoatSmoothness.attachConstant(1)
     

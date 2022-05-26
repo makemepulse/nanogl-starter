@@ -26,7 +26,7 @@ export default class DevtoolsScene implements IScene {
     this.texture2 = WebglAssets.getTexture( 'texture2', gl )
     
     for (let index = 0; index < 3; index++) {
-      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/128/128' ), {gl} )
+      const texRes = new TextureResource( new TextureSrcSet( 'https://picsum.photos/128/128' ), gl )
       this.textures.push( texRes )
     }
     

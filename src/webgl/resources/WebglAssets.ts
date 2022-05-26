@@ -162,7 +162,7 @@ function getTexture( filename: string, gl:GLContext, options?: Partial<ITextureO
   if ( !res ) {
     console.error(`can't find texture ${filename}`);
   }
-  const tr = new TextureResource( res, {gl}, options )
+  const tr = new TextureResource( res, gl, options )
 
   /// #if DEBUG
   res._resources.push(tr)

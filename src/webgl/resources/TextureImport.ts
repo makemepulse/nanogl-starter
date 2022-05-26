@@ -1,6 +1,6 @@
 import { TextureResource } from "./TextureResource";
 import { ITextureRequest } from "./TextureRequest";
-import { IGLContextProvider } from "./IGLContextProvider";
+import { GLContext } from "nanogl/types";
 
 
 
@@ -17,8 +17,8 @@ export default class TextureImport {
   }
 
 
-  createResource( glp : IGLContextProvider ) : TextureResource {
-    const resource = new TextureResource(this._request, glp);
+  createResource( gl : GLContext ) : TextureResource {
+    const resource = new TextureResource(this._request, gl);
     this._resources.push( resource );
     return resource;
   }

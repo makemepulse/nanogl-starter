@@ -2,7 +2,6 @@ import { RenderContext } from "@webgl/core/Renderer"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import MeshRenderer from "nanogl-gltf/lib/renderer/MeshRenderer"
 import Renderer from "@webgl/Renderer"
-import { IGLContextProvider } from "@webgl/resources/IGLContextProvider"
 import { vec3 } from "gl-matrix"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
@@ -12,7 +11,7 @@ import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 
 
-export default class RobotScene implements IGLContextProvider, IScene {
+export default class RobotScene implements IScene {
 
   readonly gl : GLContext
   gltfSample : GltfScene
