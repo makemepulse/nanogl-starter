@@ -37,7 +37,7 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
   const group = initialPath.substring(0, sep)
   const filename = initialPath.substring( sep+1, initialPath.length )
 
-  const regexp = /^(.+)\.(\w+)(\.(.*))?/
+  const regexp = /^([^.]+)\.(\w+)(\.(.*))?/
   const r = regexp.exec( filename )
   
   const lodexp = /(.+)_LOD(\d)/
