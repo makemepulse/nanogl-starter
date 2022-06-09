@@ -43,12 +43,10 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
   const lodexp = /(.+)_LOD(\d)/
   const l = lodexp.exec( r[1] )
   
-    
   const name  = l ? l[1] : r[1]
   const lod   = l ? parseInt(l[2]) : 0
   const ext   = r[2]
   const meta  = r[4]
-
 
   // console.log( filename, lod, r)
   return {
@@ -64,7 +62,7 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
 } 
 
 
-const CODECS_PRIO: Record<string, number> = {
+const CODECS_PRIORITY: Record<string, number> = {
   'astc':0,
   'pvr' :1,
   'dxt' :1,
@@ -86,7 +84,7 @@ function getTextureCodec( fileInfos : FileInfos ): string {
 }
 
 function sortTexSources(sa: ITextureRequestSource, sb: ITextureRequestSource):number {
-  return CODECS_PRIO[sa.codec] - CODECS_PRIO[sb.codec]
+  return CODECS_PRIORITY[sa.codec] - CODECS_PRIORITY[sb.codec]
 }
 
 
@@ -108,12 +106,11 @@ class TextureAsset implements ITextureRequest {
       requestSource = {
         codec,
         lods : [],
-        datas : null
       }
       this.sources.push( requestSource )
     }
 
-    requestSource.lods[fileInfos.lod] = {files:[fileInfos.path], buffers:null}
+    requestSource.lods[fileInfos.lod] = {files:[fileInfos.path]}
 
     this.sources.sort( sortTexSources )
   }
@@ -232,9 +229,14 @@ function scheduleTextureReload(r:TextureResource[]){
   r.forEach(t=>_texToReload.add(t))
   clearTimeout(_texReloadTimeout)
   _texReloadTimeout = setTimeout( ()=>{
-    _texToReload.forEach( t=>t.doLoad() )
+    _texToReload.forEach( reloadTexture )
     _texToReload.clear()
-  }, 500 )
+  }, 10 )
+}
+
+function reloadTexture(t:TextureResource){
+  t.request.sources = t.request.sources.filter(s=>s.codec==='std')
+  t.doLoad()
 }
 
 function handleTextureUpdate(asset: TextureAsset, fileInfos: FileInfos) {
@@ -259,7 +261,6 @@ function handleFileUpdate( initialPath:string, path:string ){
     }
   }
 }
-
 
 
 if( module.hot ){

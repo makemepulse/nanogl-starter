@@ -1,6 +1,3 @@
-import TextureData from "./TextureData";
-
-
 
 export interface ITextureOptions {
   /**
@@ -35,13 +32,13 @@ export function resolveTextureOptions( opts?:Partial<ITextureOptions> ): Readonl
 
 export interface ITextureRequestLod {
   files : string[],
-  buffers : ArrayBuffer[],
+  // buffers : ArrayBuffer[],
 }
 
 export interface ITextureRequestSource {
   codec : string
   lods : ITextureRequestLod[],
-  datas : TextureData | null
+  // datas : TextureData | null
 }
 
 
@@ -86,8 +83,7 @@ export class TextureSrcSet implements ITextureRequest {
       const url = codec[1];
       this.sources.push( {
         codec: codec[0],
-        lods : [{files:[url], buffers:null}],
-        datas : null
+        lods : [{files:[url]}],
       });
     }
   }
@@ -105,20 +101,11 @@ export class CubeSrcSet implements ITextureRequest {
     this.sources = []
     for (const codec in sources) {
 
-      const lods = [];
-      for(let i = 0; i < sources[codec].length; i++){
-        lods.push(
-          {
-            files: [sources[codec][i]],
-            buffers: null
-          }
-        )
-      }
+      const lods = [{files: sources[codec]}];
 
       this.sources.push( {
         codec,
-        lods : lods,
-        datas : null
+        lods,
       });
 
     }

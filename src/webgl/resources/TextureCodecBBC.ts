@@ -1,7 +1,7 @@
 import { ITextureCodec } from "./TextureCodec";
 import { ITextureRequestSource } from "./TextureRequest";
 import KTXParser from "./KTXParser";
-import { CompressedTextureData, TextureDataType, TextureMip } from "./TextureData";
+import TextureData, { CompressedTextureData, TextureDataType, TextureMip } from "./TextureData";
 import { TextureType } from "nanogl/texture-base";
 import { GLContext } from "nanogl/types";
 import Capabilities from "@webgl/core/Capabilities";
@@ -17,10 +17,9 @@ export abstract class TextureCodecBBC implements ITextureCodec {
 
   abstract isSupported(gl:GLContext): Promise<boolean>;
 
-  decodeLod(source: ITextureRequestSource, lod: number ): Promise<void> {
+  decodeLod(source: ITextureRequestSource, lod: number, buffers: ArrayBuffer[] ): Promise<TextureData> {
 
-    const requestLod = source.lods[lod];
-    const image = this.parser.parse(requestLod.buffers[0]);
+    const image = this.parser.parse(buffers[0]);
     const mips: TextureMip<ArrayBufferView>[] = image.surfaces[0].map(l => {
       return {
         width: image.width,
@@ -44,12 +43,11 @@ export abstract class TextureCodecBBC implements ITextureCodec {
       }]
     }
 
-    source.datas = datas;
-    return null;
+    return Promise.resolve(datas);
 
   }
 
-  decodeCube():Promise<void> {
+  decodeCube():Promise<TextureData> {
     throw new Error("Method not implemented.");
   }
 

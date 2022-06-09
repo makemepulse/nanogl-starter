@@ -24,22 +24,22 @@ mogrify -flip -flop $TMPDIR/cube_negy.tga
 
 # .pvr
 PVRTexToolCLI -cube -legacypvr -q $PVRQUALITY -f PVRTC1_2_RGB,UBN,lRGB -o $OUTPUT_FOLDER/tex.pvr -i \
+$TMPDIR/cube_posx.tga,\
 $TMPDIR/cube_negx.tga,\
 $TMPDIR/cube_posy.tga,\
-$TMPDIR/cube_negz.tga,\
-$TMPDIR/cube_posx.tga,\
 $TMPDIR/cube_negy.tga,\
 $TMPDIR/cube_posz.tga \
+$TMPDIR/cube_negz.tga,\
 
 
 # .ktx
 PVRTexToolCLI  -cube -q $ETCQUALITY -f ETC1,UBN,lRGB -o $OUTPUT_FOLDER/tex.ktx -i \
+$TMPDIR/cube_posx.tga,\
 $TMPDIR/cube_negx.tga,\
 $TMPDIR/cube_posy.tga,\
-$TMPDIR/cube_negz.tga,\
-$TMPDIR/cube_posx.tga,\
 $TMPDIR/cube_negy.tga,\
 $TMPDIR/cube_posz.tga \
+$TMPDIR/cube_negz.tga,\
 
 # .jpg
 convert $TMPDIR/cube_negx.tga $OUTPUT_FOLDER/negx.jpg

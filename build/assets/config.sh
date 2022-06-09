@@ -2,7 +2,7 @@
 TMPDIR=./tmp
 BLIB=./build/assets
 
-pvrcompres=PVRTexToolCLI
+pvrcompres=/Applications/Imagination/PVRTexTool/CLI/OSX_x86/PVRTexToolCLI
 astccompress=astcenc
 FBX2glTF=$BLIB/bin/FBX2glTF
 # FBX2glTF=/Users/plepers/work/workspaces/c/FBX2glTF/xcode/Debug/FBX2glTF 

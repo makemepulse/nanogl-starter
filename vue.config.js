@@ -65,7 +65,7 @@ module.exports = {
 
 
     config.module.rule('webgl-file')
-      .test(/\.(glb|gltf|bin|ktx|jpg|jpeg|png|webp)$/ )
+      .test(/\.(glb|gltf|bin|ktx|jpg|jpeg|png|webp|basis)$/ )
       .include
         .add( path.resolve( __dirname, 'src/assets/webgl' ) )
         .end()

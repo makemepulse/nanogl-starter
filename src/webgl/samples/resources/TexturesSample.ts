@@ -11,6 +11,7 @@ import WebglAssets from "@webgl/resources/WebglAssets"
 import TexCoord from "nanogl-pbr/TexCoord"
 import { Sampler } from "nanogl-pbr/Input"
 import Delay from "@/core/Delay"
+import gui from "@webgl/dev/gui"
 
 
 class TextureSample {
@@ -52,6 +53,8 @@ export default class TexturesSample implements IScene {
   textures          : TextureResource[]
   lodTex: TextureResource
 
+  _loaded = false
+
   
   constructor( private renderer:Renderer ){
 
@@ -73,11 +76,10 @@ export default class TexturesSample implements IScene {
           {
             codec: 'std',
             lods: [
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD0.png")], buffers:null},
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD1.png")], buffers:null},
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD2.png")], buffers:null},
+              {files: [WebglAssets.getAssetPath("sample/avatar_LOD0.png")]},
+              {files: [WebglAssets.getAssetPath("sample/avatar_LOD1.png")]},
+              {files: [WebglAssets.getAssetPath("sample/avatar_LOD2.png")]},
             ],
-            datas:null
           }
         ]
       }, this.gl ),
@@ -113,6 +115,11 @@ export default class TexturesSample implements IScene {
 
     ]
 
+    // stress test to validate unload effectivness
+    // for (let i = 0; i < 50; i++) {
+    //   this.textures.push(new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this.gl ))
+    // }
+
 
     for (let i = 0; i < this.textures.length; i++) {
       const t = this.textures[i];
@@ -129,6 +136,11 @@ export default class TexturesSample implements IScene {
     this.lodTex.lodLevel = 2
     this.startLodSequence()
 
+
+    const f = gui.folder('Textures Sample')
+    f.btn('unload all', ()=>this.unloadTextures() )
+    f.btn('load all', ()=>this.load() )
+
   }
 
   async startLodSequence(){
@@ -136,6 +148,14 @@ export default class TexturesSample implements IScene {
     this.lodTex.lodLevel--
     await Delay(1000)
     this.lodTex.lodLevel--
+  }
+
+  /**
+   * unload all texture resources
+   */
+  unloadTextures(){
+    this._loaded = false
+    this.textures.forEach(t=>t.unload())
   }
 
   preRender():void {
@@ -151,7 +171,8 @@ export default class TexturesSample implements IScene {
   }
 
   load() :Promise<void> {
-    return Promise.all( this.textures.map( r=>r.load() ) ).then()
+    return Promise.all( this.textures.map( r=>r.load() ) )
+      .then( ()=>{this._loaded = true} )
   }
 
   unload(): void {

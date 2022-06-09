@@ -27,12 +27,6 @@ class GLView {
   pixelRatio: number
   gl: GLContext
 
-  /**
-   * use window.innerXXX to infer canvas size and avoid coslty "compute layout". otherwise use canvas clientWidth/clientHeight
-   * set to true if canvas is always fullscreen
-   */
-  useWindowSize = true
-
   width: number
   height: number
   canvasWidth: number

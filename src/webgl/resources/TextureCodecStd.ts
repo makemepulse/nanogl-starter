@@ -2,7 +2,7 @@ import { ITextureCodec } from "./TextureCodec";
 import { ITextureOptions, ITextureRequestSource } from "./TextureRequest";
 import { TextureType } from "nanogl/texture-base";
 import Deferred from "@/core/Deferred";
-import { TextureDataType, TextureMip } from "./TextureData";
+import TextureData, { TextureDataType, TextureMip } from "./TextureData";
 
 
 const _HAS_CIB : boolean = (navigator.userAgent.indexOf("Chrome") !== -1) && ( window.createImageBitmap !== undefined );
@@ -62,12 +62,10 @@ export default class TextureCodecStd implements ITextureCodec {
 
 
 
-  async decodeLod(source: ITextureRequestSource, lod: number, options: ITextureOptions): Promise<void> {
+  async decodeLod(source: ITextureRequestSource, lod: number, buffers: ArrayBuffer[], options: ITextureOptions): Promise<TextureData> {
 
 
-    const requestLod = source.lods[lod];
-
-    const image = await this.decodeImage( requestLod.buffers[0] );
+    const image = await this.decodeImage( buffers[0] );
 
     const mip : TextureMip<TexImageSource> = {
       width  : image.width,
@@ -77,7 +75,7 @@ export default class TextureCodecStd implements ITextureCodec {
     
     const fmt = options.alpha ? 0x1908 : 0x1907;
 
-    source.datas = {
+    return {
       datatype       : TextureDataType.IMAGE ,
       format         : fmt                   , // RGB || RGBA
       internalformat : fmt                   , // RGB || RGBA
@@ -96,11 +94,11 @@ export default class TextureCodecStd implements ITextureCodec {
   }
 
 
-  async decodeCube(source: ITextureRequestSource, options: ITextureOptions) : Promise<void>{
+  async decodeCube(source: ITextureRequestSource, buffers: ArrayBuffer[][], options: ITextureOptions) : Promise<TextureData>{
 
     const fmt = options.alpha ? 0x1908 : 0x1907;
 
-    source.datas = {
+    const datas:TextureData = {
       
       requireMipmapGen : options.mipmap,
       datatype         : TextureDataType.IMAGE ,
@@ -118,9 +116,7 @@ export default class TextureCodecStd implements ITextureCodec {
 
     for(let i = 0; i < 6; i++){
   
-      const requestLod = source.lods[i];
-  
-      const image = await this.decodeImage( requestLod.buffers[0] );
+      const image = await this.decodeImage( buffers[0][i] );
   
       const mip : TextureMip<TexImageSource> = {
         width  : image.width,
@@ -128,9 +124,11 @@ export default class TextureCodecStd implements ITextureCodec {
         data : image
       }
 
-      source.datas.sources[0].surfaces.push([mip]);
+      datas.sources[0].surfaces.push([mip]);
       
     }
+
+    return Promise.resolve(datas)
 
   }
 

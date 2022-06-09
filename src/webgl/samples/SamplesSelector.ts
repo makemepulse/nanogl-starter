@@ -21,6 +21,7 @@ import MatcapSample from "./custom_material/MatcapSample"
 import SpherizeSample from "./custom_material/SpherizeSample"
 import PickFloorSample from "./interactions/PickFloorSample"
 import ReourceGroupSample from "./resources/ResourceGroupSample"
+import TextureCubeSample from "./resources/TextureCubeSample"
 
 const Scenes = {
   'Gltf - Adam'              : AdamScene             ,
@@ -30,6 +31,7 @@ const Scenes = {
   'Resources - Cancellation' : CancellationSample    ,
   'Resources - Groups'       : ReourceGroupSample    ,
   'Resources - Textures'     : TexturesSample        ,
+  'Resources - Cubemaps'     : TextureCubeSample     ,
   'Lights'                   : LightsScene           ,
   'Materials - Clearcoat'    : ClearcoatSample       ,
   'Materials - Disolve'      : DisolveSample         ,

@@ -2,7 +2,7 @@ import { Texture } from "nanogl/texture-base";
 import { Resource, ResourceState } from "./Resource";
 import Texture2D from "nanogl/texture-2d";
 import TextureCube from "nanogl/texture-cube";
-import { ITextureRequest, ITextureRequestLod, ITextureOptions, resolveTextureOptions, TextureSrcSet } from "./TextureRequest";
+import { ITextureRequest, ITextureOptions, resolveTextureOptions, TextureSrcSet, ITextureRequestLod } from "./TextureRequest";
 import { BytesResource } from "./Net";
 import { TextureCodecs } from "./TextureCodec";
 import { GLContext } from "nanogl/types";
@@ -12,6 +12,7 @@ import Capabilities from "@webgl/core/Capabilities";
 import Deferred from "@/core/Deferred";
 import { AbortController, AbortSignal } from "@azure/abort-controller";
 import { throwIfAborted } from "@/core/AbortSignalUtils";
+import { cubeFaceForSurface, FaceIndex } from "./TextureData";
 
 
 
@@ -89,8 +90,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   }
   
   doUnload():void  {
-    this._texture.dispose()
-    this._texture = this.createTexture();
+    this.resetTexture()
+    // this._texture.dispose()
+    // this._texture = this.createTexture();
     this._sourceGroup?.unload()
   }
 
@@ -119,19 +121,22 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     }
     const [codec, source] = cres
 
-    // load files for a given request source based on lod
-    await this.loadSourceLod(source.lods[level], signal);
+    // load files for a given request source based on lod, set buffers
+    const buffers = await this.loadSourceLod(source.lods[level], signal);
     // run codec to create or setup TextureData
     try {
-      await codec.decodeLod(source, level, this._options, gl);
+
+      // take buffers , set datas
+      const textureDatas = await codec.decodeLod(source, level, buffers, this._options, gl);
+      throwIfAborted(signal)
+
+      // use texture loader to upload data to texture
+      loader.upload(this as unknown as BaseTextureResource<Texture>, textureDatas);
+
     } catch(e){
       console.error( `can't decode `, source );
       throw e
     }
-
-    throwIfAborted(signal)
-    // use texture loader to upload data to texture
-    loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
 
     this._applyFilter()
     this._applyAnisotropy()
@@ -236,11 +241,11 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
     }
 
     const buffers = await this._sourceGroup.load( signal );
-    lod.buffers = buffers;
     return buffers;
   }
 
   abstract createTexture():T;
+  abstract resetTexture():void;
 
 }
 
@@ -249,6 +254,12 @@ export class TextureResource extends BaseTextureResource<Texture2D> {
   
   createTexture(): Texture2D {
     return new Texture2D(this.gl);
+  }
+
+  resetTexture(): void {
+    const gl = this.gl
+    gl.bindTexture(gl.TEXTURE_2D, this.texture.id);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
   }
 
 }
@@ -261,6 +272,13 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
     return new TextureCube(this.gl);
   }
 
+  resetTexture(): void {
+    const gl = this.gl
+    for (let face = 0; face < 6; face++) {
+      const faceTarget = cubeFaceForSurface(face as FaceIndex);
+      gl.texImage2D(faceTarget, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+    }
+  }
 
   async loadLevelAsync(level: number, signal:AbortSignal): Promise<TextureCube> {
 
@@ -271,17 +289,14 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
     // TODO: test if null
     const [codec, source] = await TextureCodecs.getCodecForRequest(this._request, gl);
 
-    for (let i = 0; i < source.lods.length; i++) {
-      // load files for a given request source based on lod
-      await this.loadSourceLod(source.lods[i], signal);
-      // console.log(source.datas);
-    }
-    // run codec to create or setup TextureData
-    await codec.decodeCube(source, options, gl);
 
+    const promises = source.lods.map( l=>this.loadSourceLod(l, signal))
+    const buffers = await Promise.all(promises)
+    // run codec to create or setup TextureData
+    const datas = await codec.decodeCube(source, buffers, options, gl);
     throwIfAborted(signal)
     // use texture loader to upload data to texture
-    loader.upload(this as unknown as BaseTextureResource<Texture>, source.datas);
+    loader.upload(this as unknown as BaseTextureResource<Texture>, datas);
 
 
     //
