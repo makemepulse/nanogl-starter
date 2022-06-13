@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ColorInputParams, FolderApi, ListItem, MonitorBindingApi } from "@tweakpane/core";
+import { ColorInputParams, FolderApi, ListItem, MonitorBindingApi, ButtonApi } from "@tweakpane/core";
 import { InputBindingApi, ListApi, Pane, InputParams } from "tweakpane";
 import { Color, Control, Gui } from "./api";
 import { VecColorInputPlugin } from "./plugins/tp-color";
@@ -28,6 +28,13 @@ class QuatWrapper {
 }
 
 const root = new Pane()
+const _allFolders: TPGui[] = []
+
+function deleteAllEmptyFolders(){
+  for( let i = _allFolders.length-1; i >= 0; i-- ){
+    _allFolders[i]._deleteEmptyFolders()
+  }
+}
 
 root.registerPlugin( {plugin:VecColorInputPlugin} )
 root.registerPlugin( EssentialsPlugin )
@@ -45,7 +52,7 @@ function registerCtrl( target:any, ctrl:Control<any> ){
   l.push(ctrl)
 }
 
-type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T> | MonitorBindingApi<T>
+type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T> | MonitorBindingApi<T> | ButtonApi
 
 class TweakControl<T> implements Control<T>{
 
@@ -80,6 +87,7 @@ class TweakControl<T> implements Control<T>{
 
   remove(): void {
     this.input.dispose()
+    deleteAllEmptyFolders()
   }
 
 }
@@ -91,6 +99,7 @@ type RadioItem<T> = {
 type TPGui = Gui & {
   _getPane():FolderApi
   _createFolder(name:string):TPGui
+  _deleteEmptyFolders():void
 }
 
 
@@ -194,10 +203,11 @@ function _factory( pane : FolderApi ){
     },
 
   
-    btn(name: string, fn: (name?: string) => void): void {
+    btn(name: string, fn: (name?: string) => void):Control<undefined>{
       const {label:title, gui} = resolvePath(name)
       const btn = gui._getPane().addButton({title});
       btn.on( 'click', ()=>fn(title))
+      return new TweakControl(btn, () => undefined);
     },
     
     
@@ -286,6 +296,10 @@ function _factory( pane : FolderApi ){
       
       const folder = _folders.get( name );
       _folders.delete( name );
+      const index = _allFolders.indexOf( folder )
+      if( index >= 0 ){
+        _allFolders.splice( index, 1 )
+      }
       folder?.clear()
     },
 
@@ -308,7 +322,8 @@ function _factory( pane : FolderApi ){
 
 
     _createFolder(name:string): TPGui {
-
+      console.log('_createFolder', name);
+      
       let folder = _folders.get( name );
       if( !folder ){
         folder = _factory( pane.addFolder({
@@ -316,6 +331,7 @@ function _factory( pane : FolderApi ){
           expanded: false
         }))
         _folders.set( name, folder )
+        _allFolders.push( folder )
       }
       return folder
     },
@@ -324,6 +340,17 @@ function _factory( pane : FolderApi ){
     _getPane():FolderApi {
       return pane
     },
+
+    _deleteEmptyFolders():void {
+
+      const foldersNames = _folders.keys()
+      for( const name of foldersNames ){
+        const folder = _folders.get( name );
+        if( folder._getPane().children.length === 0 ){
+          this.clearFolder(name)
+        }
+      }
+    }
     
   }
 
@@ -334,6 +361,7 @@ function _factory( pane : FolderApi ){
 
 
 const gui = _factory( root )
+_allFolders.push( gui )
 
 
 // ===================================================================

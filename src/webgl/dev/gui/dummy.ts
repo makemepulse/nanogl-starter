@@ -63,18 +63,19 @@ function _factory(){
       return gui;
     },
     
-    btn(): void {0},
     btns(): void {0},
     clear() {0},
     clearTarget(): void {0},
     clearFolder(): void {0},
     open():Gui {return this},
     close():Gui {return this},
-
+    
+    btn():Control<undefined> {
+      return new DummyControl(null);
+    },
     select: function <T>(): Control<T> {
       return new DummyControl(null);
     },
-
     radios: function <T>(): Control<T> {
       return new DummyControl(null);
     },

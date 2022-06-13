@@ -1,9 +1,8 @@
 import { vec4 } from "gl-matrix"
-import gui from "../../dev/gui"
-import { Gui, RangeGui, GuiFolder, ColorGui } from "../../dev/gui/decorators"
+import { Gui, RangeGui, GuiFolder, ColorGui, CreateGui, DeleteGui, Monitor, GuiBtn } from "../../dev/gui/decorators"
 
-@GuiFolder('Tests GUI')
-export default class TestGui{
+@GuiFolder('Gui Test Object')
+export default class GuiTestObject {
 
   ilayer    : HTMLElement
   root      : Node
@@ -35,27 +34,32 @@ export default class TestGui{
   @ColorGui({folder:'subfolder', label:"color"})
   p2 = vec4.fromValues(1, 0, 0, 1)
   
-  
+  @Monitor()
+  monitored = 0
   
   constructor(){
-    const f = gui.folder('Tests GUI')
-    f.add( this, 'skipRender' )
-    f.btn( 'testButton1', ()=>{ this.testButton1() } )
-    f.btn( 'testButton2', ()=>{ this.testButton2() } )
+    CreateGui(this).open()
   }
   
   dispose():void {
-    gui.clearTarget(this)
-    gui.clearFolder('Tests GUI')
+    DeleteGui(this)
   }
   
+  
+  @GuiBtn
   testButton1():void{
     console.log('btn 1');
+    console.log(this.p0, this.p1, this.someFlags)
   }
   
+  @GuiBtn
   testButton2():void{
     console.log('btn 2');
   }
   
+
+  preRender():void {
+    this.monitored = Math.sin( performance.now()/1000 )
+  }
 
 }

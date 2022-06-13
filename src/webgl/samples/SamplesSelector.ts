@@ -22,12 +22,14 @@ import SpherizeSample from "./custom_material/SpherizeSample"
 import PickFloorSample from "./interactions/PickFloorSample"
 import ReourceGroupSample from "./resources/ResourceGroupSample"
 import TextureCubeSample from "./resources/TextureCubeSample"
+import GuiSample from "./devtools/GuiSample"
 
-const Scenes = {
+export const SampleScenes = {
   'Gltf - Adam'              : AdamScene             ,
   'Gltf - Robot'             : RobotScene            ,
   'Gltf - Suzanne'           : SuzanneScene          ,
-  'Devtools'                 : DevtoolsScene         ,
+  'Devtools - DebugDraw'     : DevtoolsScene         ,
+  'Devtools - Gui'           : GuiSample             ,
   'Resources - Cancellation' : CancellationSample    ,
   'Resources - Groups'       : ReourceGroupSample    ,
   'Resources - Textures'     : TexturesSample        ,
@@ -41,9 +43,9 @@ const Scenes = {
   'RTT - Msaa'               : MsaaSample            ,
   'Minimal Drawcall'         : MinimalDrawcallSample ,
   'Pointers - Picking'       : PickFloorSample       ,
-}
+} as const
 
-type SceneTypes = keyof typeof Scenes
+export type SceneTypes = keyof typeof SampleScenes
 
 
 
@@ -58,15 +60,15 @@ export default class SamplesSelector {
 
   constructor( private renderer:Renderer ){
     
-    const sn = decodeURI(window.location.hash.substring(1)) as SceneTypes
-    const Scene = Scenes[sn] || ClearcoatSample
+    // const sn = decodeURI(window.location.hash.substring(1)) as SceneTypes
+    // const Scene = SampleScenes[sn] || ClearcoatSample
     
-    this._setScene(new Scene(renderer))
+    // this._setScene(new Scene(renderer))
 
     const f = gui.folder("Samples")
-    f.select( 'scene', Scenes ).onChange( v=>{
-      for (const key in Scenes) {
-        if(Scenes[key as SceneTypes] === v){
+    f.select( 'scene', SampleScenes ).onChange( v=>{
+      for (const key in SampleScenes) {
+        if(SampleScenes[key as SceneTypes] === v){
           window.location.hash = key
           break
         }
@@ -80,6 +82,11 @@ export default class SamplesSelector {
     f.open()
   }
   
+  async setScene( sceneName:SceneTypes ):Promise<void>{
+    const scene = new SampleScenes[sceneName]( this.renderer )
+    return this._setScene(scene)
+  }
+
   private async _setScene( scene:IScene ):Promise<void>{
     this._current?.unload()
     this._current = null

@@ -9,7 +9,7 @@ import { LiveProgram } from '@webgl/core/LiveShader';
 import vShader from './shader.vert'
 import fShader from './shader.frag'
 import RenderMask from '@webgl/core/RenderMask';
-import { GuiFolder, RangeGui } from '@webgl/dev/gui/decorators';
+import { CreateGui, DeleteGui, GuiFolder, RangeGui } from '@webgl/dev/gui/decorators';
 
 
 @GuiFolder('DrawcallSample')
@@ -40,6 +40,9 @@ export default class MinimalDrawcallSample implements IScene {
      * when one of it's shader is updated (using webpack HMR)
      */
     this.prg = LiveProgram(gl, vShader, fShader)
+
+
+    CreateGui(this)
     
   }
 
@@ -58,11 +61,13 @@ export default class MinimalDrawcallSample implements IScene {
   
   
   
+  unload(): void {
+    DeleteGui(this)
+  }
   
   /** useless stuffs */
   load(): Promise<void> {return Promise.resolve()}
   rttPass(): void {0}
-  unload(): void {0}
   preRender(): void {0}
   
 }

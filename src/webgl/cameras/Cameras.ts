@@ -31,14 +31,14 @@ export default class Cameras {
     const devCamera = createDevCamera(renderer)
     this.registerCamera( devCamera, 'dev' )
 
-    if( localStorage.getItem('devcam_matrix') ){
-      const m = JSON.parse( localStorage.getItem('devcam_matrix') )
-      devCamera.camera.setMatrix( m )
+    if( localStorage.getItem('devcam_state') ){
+      const state = JSON.parse( localStorage.getItem('devcam_state') )
+      devCamera.camera.setMatrix( state.matrix )
+      devCamera.camera.lens.fov = state.fov
+      devCamera.camera.lens.near = state.near
+      devCamera.camera.lens.far = state.far
     }
-    if( localStorage.getItem('devcam_fov') ){
-      const fov = JSON.parse( localStorage.getItem('devcam_fov') )
-      devCamera.camera.lens.fov = fov
-    }
+
     // this.registerCamera( createBlenderCamera(renderer), '' )
     this._gui()
     this.use( 'dev' )
@@ -121,20 +121,12 @@ export default class Cameras {
     g.btns({
       'store': ()=>{
         const camera = this._managers.get( 'dev' ).camera
-        localStorage.setItem('devcam_matrix', JSON.stringify(Array.from(camera._matrix ) ) )
-        localStorage.setItem('devcam_fov', JSON.stringify(this._managers.get( 'dev' ).camera.lens.fov ) )
+        localStorage.setItem('devcam_state', this.serializeCamera(camera) )
       },
       'clear': ()=>{
-        localStorage.removeItem('devcam_matrix')
-        localStorage.removeItem('devcam_fov')
+        localStorage.removeItem('devcam_state')
       }
-    }, 'devcam pos')
-    // g.btn( 'store camera position', ()=>{
-    //   localStorage.setItem('devcam_matrix', JSON.stringify(Array.from(this._managers.get( 'dev' ).camera._matrix ) ) )
-    // })
-    // g.btn( 'clear camera position', ()=>{
-    //   localStorage.removeItem('devcam_matrix')
-    // })
+    }, 'devcam state')
   }
 
   private _cguiCtrls:Control<unknown>[] = []
@@ -147,6 +139,18 @@ export default class Cameras {
     this._cguiCtrls.push( g.range(this.camera.lens, 'far', 10, 200) )
     this._cguiCtrls.push( g.range(this.camera.lens, 'fov', .05, Math.PI*.9) )
   }
+
+
+  serializeCamera( camera: Camera<PerspectiveLens>):string {
+    return JSON.stringify( {
+      matrix: Array.from(camera._matrix),
+      fov: camera.lens.fov,
+      near: camera.lens.near,
+      far: camera.lens.far,
+     })
+  }
+
+
   /// #endif
 
 }

@@ -12,7 +12,7 @@ import Lines from './Lines';
 import ConeGuizmo from './ConeGuizmo';
 import { GLContext } from 'nanogl/types';
 import gui from '../gui';
-import { Gui, GuiFolder, RangeGui } from '../gui/decorators';
+import { CreateGui, Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import { Control } from '../gui/api';
 import Points from './Points';
 
@@ -96,6 +96,8 @@ class DebugDrawImpl {
     this.points       = new Points      ( gl )
 
     this._updateTexList()
+
+    CreateGui( this )
   }
 
 

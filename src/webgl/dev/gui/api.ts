@@ -21,7 +21,7 @@ export interface Gui {
   addSelect<O extends Record<string, any>, Key extends string>( tgt: O, prop: Key, options:Record<string, O[Key]> | O[Key][] ): Control<O[Key]>
   addRadios<O extends Record<string, any>, Key extends string>( tgt: O, prop: Key, options:Record<string, O[Key]> | O[Key][] ): Control<O[Key]>
   
-  btn( name: string, fn:(name?:string)=>void ): void;
+  btn( name: string, fn:(name?:string)=>void ):Control<undefined>;
   btns( btns:Record<string, (name?:string)=>void>, label?:string ): void;
   select<T>( label: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>;
   radios<T>( label: string, o: Record<string, T> | T[]/*, thumbnailResolver?: (v:T)=>string*/ ):Control<T>;
