@@ -6,7 +6,7 @@ import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 import SpotLight from "nanogl-pbr/lighting/SpotLight"
-import FloorPlane from "@webgl/engine/FloorPlane"
+import FloorPlane from "@webgl/samples/common/FloorPlane"
 import CompleteLightSetup from "../common/CompleteLightSetup"
 import Bounds from "nanogl-pbr/Bounds"
 
@@ -44,8 +44,8 @@ export default class LightsScene implements IScene {
 
     
     /*
-    * add a floor plane for fun
-    */
+     * add a floor plane for fun
+     */
     this.floor = new FloorPlane( renderer.gl )
     this.lighting.setupMaterial(this.floor.material)
     this.floor.node.setScale(2)

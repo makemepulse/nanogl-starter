@@ -13,6 +13,9 @@ const V3 = vec3.create()
 const XZPlane = new Plane()
 const ray = new Ray()
 
+/**
+ * illustrate usage of Pointers class
+ */
 export default class PickFloorSample implements IScene {
 
   readonly gl: GLContext
@@ -35,6 +38,7 @@ export default class PickFloorSample implements IScene {
         DebugDraw.drawGuizmo(V3)
         DebugDraw.drawLine(ORIGIN, V3)
         V3[1] += 1
+
         const text = `${name}
 ${pointer.lastEvent?.isPrimary}
 ${pointer.lastEvent?.type}

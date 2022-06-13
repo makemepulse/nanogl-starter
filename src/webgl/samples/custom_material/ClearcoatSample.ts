@@ -9,7 +9,7 @@ import { ClearcoatMetalness } from "./clearcoat/ClearcoatPass"
 import { Uniform } from "nanogl-pbr/Input"
 import gui from "@webgl/dev/gui"
 import CompleteLightSetup from "../common/CompleteLightSetup"
-import FloorPlane from "@webgl/engine/FloorPlane"
+import FloorPlane from "@webgl/samples/common/FloorPlane"
 import Bounds from "nanogl-pbr/Bounds"
 
 const GltfPath = "gltfs/suzanne/Suzanne.gltf"
