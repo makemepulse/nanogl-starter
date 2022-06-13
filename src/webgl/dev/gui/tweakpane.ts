@@ -201,14 +201,14 @@ function _factory( pane : FolderApi ){
     },
     
     
-    btns( btns:Record<string, (name?:string)=>void> ): void {
+    btns( btns:Record<string, (name?:string)=>void>, label = '' ): void {
 
       const cells = Object.entries(btns).map( v=>({title:v[0], cbk:v[1]}))
       const grid:any = pane.addBlade({
         view: 'buttongrid',
         size: [cells.length, 1],
         cells: (x:number) => cells[x],
-        label: '',
+        label,
       })
 
       grid.on('click', (ev:any) => {

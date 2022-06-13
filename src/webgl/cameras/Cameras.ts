@@ -28,7 +28,17 @@ export default class Cameras {
     
     /// #if DEBUG
     /** enable debug cameras */
-    this.registerCamera( createDevCamera(renderer), 'dev' )
+    const devCamera = createDevCamera(renderer)
+    this.registerCamera( devCamera, 'dev' )
+
+    if( localStorage.getItem('devcam_matrix') ){
+      const m = JSON.parse( localStorage.getItem('devcam_matrix') )
+      devCamera.camera.setMatrix( m )
+    }
+    if( localStorage.getItem('devcam_fov') ){
+      const fov = JSON.parse( localStorage.getItem('devcam_fov') )
+      devCamera.camera.lens.fov = fov
+    }
     // this.registerCamera( createBlenderCamera(renderer), '' )
     this._gui()
     this.use( 'dev' )
@@ -108,6 +118,23 @@ export default class Cameras {
     g.btn( 'place devcam to main', ()=>{
       this._managers.get( 'dev' ).camera.setMatrix( this.mainCamera._matrix )
     })
+    g.btns({
+      'store': ()=>{
+        const camera = this._managers.get( 'dev' ).camera
+        localStorage.setItem('devcam_matrix', JSON.stringify(Array.from(camera._matrix ) ) )
+        localStorage.setItem('devcam_fov', JSON.stringify(this._managers.get( 'dev' ).camera.lens.fov ) )
+      },
+      'clear': ()=>{
+        localStorage.removeItem('devcam_matrix')
+        localStorage.removeItem('devcam_fov')
+      }
+    }, 'devcam pos')
+    // g.btn( 'store camera position', ()=>{
+    //   localStorage.setItem('devcam_matrix', JSON.stringify(Array.from(this._managers.get( 'dev' ).camera._matrix ) ) )
+    // })
+    // g.btn( 'clear camera position', ()=>{
+    //   localStorage.removeItem('devcam_matrix')
+    // })
   }
 
   private _cguiCtrls:Control<unknown>[] = []

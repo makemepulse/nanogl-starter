@@ -58,7 +58,7 @@ export default class TexturesSample implements IScene {
   
   constructor( private renderer:Renderer ){
 
-    this.gl = renderer.gl
+    const gl = this.gl = renderer.gl
     this.root       = new Node()
 
 
@@ -66,7 +66,7 @@ export default class TexturesSample implements IScene {
       /*
        * simple TextureResource loaded from string url
        */
-      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this.gl ),
+      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl ),
 
       /*
        * manually create a LODed texture resource
@@ -82,27 +82,27 @@ export default class TexturesSample implements IScene {
             ],
           }
         ]
-      }, this.gl ),
+      }, gl ),
 
 
 
       // all textures created from WebglAssets.getTexture() automatically benefit from hmr / hot reload
       // this should load compressed texture 
-      WebglAssets.getTexture( 'texture1', this.gl ),
+      WebglAssets.getTexture( 'texture1', gl ),
 
 
       // with some options 
-      WebglAssets.getTexture( 'avatar', this.gl, {
+      WebglAssets.getTexture( 'avatar', gl, {
         alpha: true,
         smooth: false,
       } ),
       
       // other way to set options on loaded texture
-      WebglAssets.getTexture( 'avatar', this.gl ).setTransparent().clamp().setFilter( true, false, false ),
+      WebglAssets.getTexture( 'avatar', gl ).setTransparent().clamp().setFilter( true, false, false ),
 
 
       // example with all options available
-      WebglAssets.getTexture( 'matcap_white', this.gl, {
+      WebglAssets.getTexture( 'matcap_white', gl, {
         smooth: true,
         mipmap: true, 
         miplinear: true,
@@ -110,8 +110,10 @@ export default class TexturesSample implements IScene {
         aniso: 16,
         alpha: false,
       } ),
-  
+
       
+      // texture from external url with options
+      new TextureResource( 'https://picsum.photos/128/128', gl ),
 
     ]
 
