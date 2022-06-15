@@ -4,9 +4,12 @@ import KHR_texture_transform from "nanogl-gltf/lib/extensions/EXT_texture_webp";
 import KHR_lights_punctual from "nanogl-gltf/lib/extensions/KHR_lights_punctual";
 import KHR_materials_pbrSpecularGlossiness from "nanogl-gltf/lib/extensions/KHR_materials_pbrSpecularGlossiness";
 import KHR_materials_unlit from "nanogl-gltf/lib/extensions/KHR_materials_unlit";
+
 import { TextureCodecs } from "./resources/TextureCodec";
 import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
 import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";
+import TextureCodecBasis from "./resources/TextureCodecBasis";
+
 import './dev/console';
 
 //==============================
@@ -20,11 +23,12 @@ Program.debug = true;
 Program.debug = false;
 /// #endif
 
-TextureCodecs.registerCodec( new TextureCodecStd() );
-TextureCodecs.registerCodec( new TextureCodecWebp() );
-TextureCodecs.registerCodec( new TextureCodecDxt() );
-TextureCodecs.registerCodec( new TextureCodecEtc() );
-TextureCodecs.registerCodec( new TextureCodecPvr() );
+TextureCodecs.registerCodec( new TextureCodecStd  () );
+TextureCodecs.registerCodec( new TextureCodecWebp () );
+TextureCodecs.registerCodec( new TextureCodecDxt  () );
+TextureCodecs.registerCodec( new TextureCodecEtc  () );
+TextureCodecs.registerCodec( new TextureCodecPvr  () );
+TextureCodecs.registerCodec( new TextureCodecBasis() );
 
 
 

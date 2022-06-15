@@ -18,7 +18,6 @@ class ModuleIO extends WebImpl {
     if (baseurl !== undefined ){
       path =  baseurl + '/' + path;
     }
-    console.log(`resolvePath ${path}`);
     return WebglAssets.getAssetPath(decodeURI(path))
   }
   
@@ -44,8 +43,6 @@ export default class GltfResource extends Resource<Gltf>{
 
 
   async doLoad(): Promise<Gltf> {
-    console.log('req', this.request);
-    
     const loader = new GltfLoader( this._io, this.request, {
       ...this.opts,
       abortSignal: this.abortSignal

@@ -32,7 +32,7 @@ class ResourceTester {
 
   public set running(value: boolean) {
     if (value !== this._running && value === true) {
-      this.doLoadUnload()
+      this.doLoadUnload().catch(e=>e);
     }
     this._running = value
   }
@@ -46,12 +46,13 @@ class ResourceTester {
 
 
 
-  async doLoadUnload() {
+  private async doLoadUnload() {
 
     const abortCtrl = new AbortController()
     const res = this.factory()
 
     res.load(abortCtrl.signal)
+    
     await Delay(Math.random() * this.abortDelay)
 
     abortCtrl.abort()
@@ -60,7 +61,7 @@ class ResourceTester {
     await Delay(50)
 
     if (this.running)
-      this.doLoadUnload()
+      this.doLoadUnload().catch(e=>e)
   }
 
 

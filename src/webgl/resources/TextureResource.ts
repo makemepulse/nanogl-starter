@@ -11,7 +11,7 @@ import ResourceGroup, { ResourceOrGroup } from "./ResourceGroup";
 import Capabilities from "@webgl/core/Capabilities";
 import Deferred from "@/core/Deferred";
 import { AbortController, AbortSignal } from "@azure/abort-controller";
-import { throwIfAborted } from "@/core/AbortSignalUtils";
+import { isAbortError, throwIfAborted } from "@/core/AbortSignalUtils";
 import { cubeFaceForSurface, FaceIndex } from "./TextureData";
 
 
@@ -101,7 +101,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
   private _doLoadLevel(level: number): void {
     this._loadLevelAbortCtrl?.abort()
     this._loadLevelAbortCtrl = new AbortController( this.abortSignal )
-    this.loadLevelAsync( level, this._loadLevelAbortCtrl.signal ).then( this._loadLevelDeferred.resolve )
+    this.loadLevelAsync( level, this._loadLevelAbortCtrl.signal )
+      .then ( this._loadLevelDeferred.resolve )
+      .catch( this._loadLevelDeferred.reject )
   }
 
 
@@ -134,7 +136,9 @@ export abstract class BaseTextureResource<T extends Texture = Texture> extends R
       loader.upload(this as unknown as BaseTextureResource<Texture>, textureDatas);
 
     } catch(e){
-      console.error( `can't decode `, source );
+      if( !isAbortError(e) ){
+        console.error( `can't decode `, source );
+      }
       throw e
     }
 

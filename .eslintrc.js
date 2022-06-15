@@ -17,6 +17,6 @@ module.exports = {
     '@typescript-eslint/no-var-requires': 'off'
   },
   ignorePatterns: [ 
-    '**/src/webgl/lib/nanogl-gltf/**/*.ts', 'build/**'
+    '**/src/webgl/lib/nanogl-gltf/**/*.ts', 'build/**', 'public/**'
   ]
 }

@@ -63,22 +63,24 @@ function parsePath( initialPath: string, path: string  ): FileInfos {
 
 
 const CODECS_PRIORITY: Record<string, number> = {
-  'astc':0,
-  'pvr' :1,
-  'dxt' :1,
-  'etc' :1,
-  'webp':2,
-  'std' :3,
+  'astc'  :0,
+  'pvr'   :1,
+  'dxt'   :1,
+  'etc'   :1,
+  'basis' :2,
+  'webp'  :3,
+  'std'   :4,
 }
 
 function getTextureCodec( fileInfos : FileInfos ): string {
   switch (fileInfos.meta) {
-    case 'astc.ktx': return 'astc'
-    case 'pvr.ktx' : return 'pvr'
-    case 'dxt.ktx' : return 'dxt'
-    case 'etc.ktx' : return 'etc'
-    case 'webp'    : return 'webp'
-    case undefined : return 'std'
+    case 'astc.ktx'   : return 'astc'
+    case 'pvr.ktx'    : return 'pvr'
+    case 'dxt.ktx'    : return 'dxt'
+    case 'etc.ktx'    : return 'etc'
+    case 'basis.ktx2' : return 'basis'
+    case 'webp'       : return 'webp'
+    case undefined    : return 'std'
   }
   throw new Error("unsupported file "+fileInfos.initialPath);
 }

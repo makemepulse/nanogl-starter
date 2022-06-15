@@ -24,12 +24,11 @@ export default class ReourceGroupSample implements IScene {
 
   constructor(renderer: Renderer) {
     const gl = renderer.gl
+    this.resources.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", gl), 'suzanne')
     this.resources.add(this.textures)
 
     this.textures.add( new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl), 'suzanne_color' )
     this.textures.add( new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_MetallicRoughness.png"), gl), 'suzanne_mr' )
-
-    this.resources.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", gl))
   }
 
   load(): Promise<void> {
@@ -43,6 +42,7 @@ export default class ReourceGroupSample implements IScene {
   onLoaded = ()=>{
     console.log( this.textures.get('suzanne_color') )
     console.log( this.textures.get('suzanne_mr') )
+    console.log( this.resources.get('suzanne') )
   }
 
   render(): void {

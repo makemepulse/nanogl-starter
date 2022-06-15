@@ -1,9 +1,11 @@
 
 <template>
-  <div class="selector" :class={opened} >
-    <h1 @click="toggle">{{currentScene}}</h1>
+  <div class="selector" ref="root" :class="{opened}" >
+
+    <h1 @click="toggle" >{{currentScene}}</h1>
+    
     <div class="list" v-if="opened">
-      <a href="#" class="item" v-for="scene in scenes" :key="scene" @click.prevent="setScene(scene)">
+      <a href="#" class="item" :class="{selected:scene===currentScene}" v-for="scene in scenes" :key="scene" @click.prevent="setScene(scene)">
         {{scene}}
       </a>
     </div>
@@ -16,23 +18,36 @@
 <script lang="ts" setup>
 
 import { ref } from "@vue/reactivity";
-import { onMounted } from "@vue/runtime-core";
+import { onBeforeUnmount, onMounted } from "@vue/runtime-core";
 import GLApp from "@webgl/GLApp";
 import { SampleScenes, SceneTypes } from "@webgl/samples/SamplesSelector";
 
 const Ids: SceneTypes[] = Object.keys(SampleScenes) as SceneTypes[]
 
+const root = ref( null as HTMLDivElement | null )
 const opened = ref( false )
 const scenes = ref( Ids )
 const currentScene = ref( Ids[0] )
 
+
+const close = ()=>{
+  opened.value = false
+}
+
 onMounted(() => {
+  
   let sn = decodeURI(window.location.hash.substring(1)) as SceneTypes
   if( !Ids.includes(sn) ) {
     sn = 'Materials - Clearcoat'
   }
   currentScene.value = sn
   setScene( sn )
+
+  document.addEventListener('click', close, true )
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', close, true)
 })
 
 const setScene = ( scene: SceneTypes )=>{
@@ -70,7 +85,7 @@ const toggle = ()=>{
     pointer-events: auto
     font-size 1.5em
     cursor pointer
-    padding 20px
+    padding 10px 30px
 
 .list
 
@@ -84,7 +99,11 @@ const toggle = ()=>{
     text-decoration none
     border-top 1px solid rgba(white,.1)
 
-    &:hover
+    &.selected
+      font-weight bold
+      background rgba(white,.1)
+      
+    &:hover 
       background rgba(white,.1)
 
 </style>

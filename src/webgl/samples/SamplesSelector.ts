@@ -23,6 +23,8 @@ import PickFloorSample from "./interactions/PickFloorSample"
 import ReourceGroupSample from "./resources/ResourceGroupSample"
 import TextureCubeSample from "./resources/TextureCubeSample"
 import GuiSample from "./devtools/GuiSample"
+import BasisSample from "./resources/BasisSample"
+
 
 export const SampleScenes = {
   'Gltf - Adam'              : AdamScene             ,
@@ -34,6 +36,7 @@ export const SampleScenes = {
   'Resources - Groups'       : ReourceGroupSample    ,
   'Resources - Textures'     : TexturesSample        ,
   'Resources - Cubemaps'     : TextureCubeSample     ,
+  'Resources - Basis'        : BasisSample           ,
   'Lights'                   : LightsScene           ,
   'Materials - Clearcoat'    : ClearcoatSample       ,
   'Materials - Disolve'      : DisolveSample         ,
@@ -44,6 +47,7 @@ export const SampleScenes = {
   'Minimal Drawcall'         : MinimalDrawcallSample ,
   'Pointers - Picking'       : PickFloorSample       ,
 } as const
+
 
 export type SceneTypes = keyof typeof SampleScenes
 

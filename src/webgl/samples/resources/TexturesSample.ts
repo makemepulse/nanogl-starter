@@ -14,7 +14,7 @@ import Delay from "@/core/Delay"
 import gui from "@webgl/dev/gui"
 
 
-class TextureSample {
+export class TextureSample {
   
   plane: FloorPlane
   unlitPass: UnlitPass
@@ -113,7 +113,8 @@ export default class TexturesSample implements IScene {
 
       
       // texture from external url with options
-      new TextureResource( 'https://picsum.photos/128/128', gl ),
+      // new TextureResource( 'https://picsum.photos/128/128', gl ),
+      new TextureResource( require('@/assets/webgl/sample/avatar_LOD1.png').default, gl ),
 
     ]
 
