@@ -29,12 +29,23 @@ class PendingDecodingRequest {
 }
 
 export default class BasisDecoder {
+  
+
+  private static _instance : BasisDecoder;
+  static getInstance( ) : BasisDecoder {
+    if( this._instance === undefined ){
+      this._instance = new BasisDecoder()
+    }
+    return this._instance
+  }
+
 
   private pendingTextures: Record<number, PendingDecodingRequest> = {};
   
   private nextPendingTextureId = 1;
   private allowSeparateAlpha = false;
   private worker: Worker;
+
   
   constructor( workerUrl?: string ) {
 
@@ -44,9 +55,9 @@ export default class BasisDecoder {
     this.worker = new Worker( workerUrl );
 
     this.worker.onmessage = (msg : MessageEvent<WorkerResponse>) => {
+
       // Find the pending texture associated with the data we just received
       // from the worker.
-      console.log(msg);
       
       const response = msg.data;
       const pendingTexture = this.pendingTextures[msg.data.id];
@@ -90,7 +101,7 @@ export default class BasisDecoder {
   }
 
 
-  setupTexture(data: DecodingResponse, texture: Texture2D): void {
+  static setupTexture(data: DecodingResponse, texture: Texture2D): void {
 
     const gl = texture.gl;
     const {

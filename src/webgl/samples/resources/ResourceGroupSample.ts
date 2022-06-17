@@ -1,7 +1,7 @@
 import Renderer from "@webgl/Renderer"
 import ResourceGroup from "@webgl/resources/ResourceGroup"
 import { TextureResource } from "@webgl/resources/TextureResource"
-import WebglAssets from "@webgl/resources/WebglAssets"
+import AssetDatabase from "@webgl/resources/AssetDatabase"
 import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Texture2D from "nanogl/texture-2d"
@@ -27,8 +27,8 @@ export default class ReourceGroupSample implements IScene {
     this.resources.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", gl), 'suzanne')
     this.resources.add(this.textures)
 
-    this.textures.add( new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl), 'suzanne_color' )
-    this.textures.add( new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_MetallicRoughness.png"), gl), 'suzanne_mr' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl), 'suzanne_color' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_MetallicRoughness.png"), gl), 'suzanne_mr' )
   }
 
   load(): Promise<void> {

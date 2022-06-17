@@ -30,6 +30,7 @@ import "reflect-metadata"
  * store all gui configured for given class properties (using @Gui )
  */
 const guisMetadataKey = Symbol("guis");
+
 /**
  * store the folder name configured for a given class (using @GuiFolder )
  */
@@ -56,8 +57,6 @@ function addGui(target:any, propertyKey:string, creationFunction: GuiCreationFun
 function getFolder( targetInst : any, opts?:GuiOpts ): GuiApi {
     /// #if DEBUG
   let id = Reflect.getOwnMetadata(guisFolderKey, targetInst.constructor) || '';
-  console.log("getFolder", id, targetInst);
-  
   if( opts && opts.folder){
     if( id !== '' ) id += '/'
     id += opts.folder
@@ -145,7 +144,6 @@ export function GuiBtn(target:any, name:any, descriptor:any):void;
 export function GuiBtn(opts?:GuiOpts): MethodDecoratorFunction;
 
 export function GuiBtn(targetOrOpts?:any, name?:any){
-  console.log( "GuiBtn",  targetOrOpts )
 
   const f = createDecoratorWithInitFunction((_target:any, _name:any):Control<any>=>{
     let opts : GuiOpts
@@ -171,7 +169,6 @@ export function GuiBtn(targetOrOpts?:any, name?:any){
 
 export function GuiFolder(name:string) {
   /// #if DEBUG
-  console.log("@GuiFolder", name);
   return Reflect.metadata( guisFolderKey, name )
   /// #endif
 }
@@ -181,7 +178,6 @@ export function GuiFolder(name:string) {
   
   export function CreateGui(target:any):GuiApi {
     const guis: GuiCreationCommand[] =  Reflect.getMetadata(guisMetadataKey, target);
-    console.log( guis )
     target[guisTargetKey] = guis.map( cmd => cmd.creationFunction(target, cmd.propertyKey) )
     return getFolder(target)
   }

@@ -34,28 +34,41 @@ function decompose(m4: mat4, p: vec3, q: quat, s: vec3) {
 /**
  * Copy X Vector of the given matrix to out vector
  */
-function getXaxis(out: vec3, m: mat4): void {
+function getXaxis(out: vec3, m: mat4): vec3 {
   out[0] = m[0]
   out[1] = m[1]
   out[2] = m[2]
+  return out
 }
 
 /**
  * Copy Y Vector of the given matrix to out vector
  */
-function getYaxis(out: vec3, m: mat4): void {
+function getYaxis(out: vec3, m: mat4): vec3 {
   out[0] = m[4]
   out[1] = m[5]
   out[2] = m[6]
+  return out
 }
 
 /**
  * Copy Z Vector of the given matrix to out vector
  */
-function getZaxis(out: vec3, m: mat4): void {
+function getZaxis(out: vec3, m: mat4): vec3 {
   out[0] = m[8]
   out[1] = m[9]
   out[2] = m[10]
+  return out
+}
+
+/**
+ * Copy Z Vector of the given matrix to out vector
+ */
+function getOrigin(out: vec3, m: mat4): vec3 {
+  out[0] = m[12]
+  out[1] = m[13]
+  out[2] = m[14]
+  return out
 }
 
 
@@ -139,6 +152,7 @@ const MatrixUtils = {
   getXaxis,
   getYaxis,
   getZaxis,
+  getOrigin,
   mat4Lerp,
   mat4LookAt,
   mat4Unscale,

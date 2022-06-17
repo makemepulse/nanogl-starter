@@ -9,7 +9,7 @@
       "border": "1px solid #ad6d1a",
       "overviewRulerColor": "grey",
       "fontWeight":"bold",
-      "isWholeLine": true,
+      "isWholeLine": false,
     },
     {
       "text": "/// #endif",
@@ -18,7 +18,7 @@
       "border": "1px solid #ad6d1a",
       "overviewRulerColor": "grey",
       "fontWeight":"bold",
-      "isWholeLine": true,
+      "isWholeLine": false,
     },
     {
       "text": "TODO:",

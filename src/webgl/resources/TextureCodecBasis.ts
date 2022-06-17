@@ -7,7 +7,6 @@ import BasisDecoder from "./basis/BasisDecoder";
 import Capabilities from "@webgl/core/Capabilities";
 
 
-const _Decoder = new BasisDecoder()
 
 
 export default class TextureCodecBasis implements ITextureCodec {
@@ -21,7 +20,7 @@ export default class TextureCodecBasis implements ITextureCodec {
   async decodeLod(source: ITextureRequestSource, lod: number, buffers: ArrayBuffer[]): Promise<TextureData> {
 
 
-    const res = await _Decoder.decode(this.gl, buffers[0])
+    const res = await BasisDecoder.getInstance().decode(this.gl, buffers[0])
     const mips: TextureMip<ArrayBufferView>[] = res.mipLevels.map(l => {
       return {
         width: l.width,

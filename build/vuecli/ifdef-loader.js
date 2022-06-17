@@ -16,13 +16,15 @@ for (const key in process.env) {
   }
 }
 
-const ifdefOpts = {
+const ifdefLoaderOptions = {
   ...defs,
   "ifdef-uncomment-prefix": "/// #code "
 }
 
 
-module.exports = function tapIfdefLoader( rule ){
+module.exports = ifdefLoaderOptions
+
+function tapIfdefLoader( rule ){
 
   rule
     .use('ifdef-loader')

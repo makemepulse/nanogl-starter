@@ -6,7 +6,7 @@ import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import gui from "@webgl/dev/gui"
 import MatcapPass from "./matcap/MatcapPass"
-import WebglAssets from "@webgl/resources/WebglAssets"
+import AssetDatabase from "@webgl/resources/AssetDatabase"
 
 const GltfPath = "gltfs/suzanne/Suzanne.gltf"
 
@@ -37,7 +37,7 @@ export default class MatcapSample implements IScene {
     
 
     /// #if DEBUG
-    const matcaps = WebglAssets.getAssets().map(a=>a.name).filter( n=>n.startsWith('matcap'))
+    const matcaps = AssetDatabase.getAssets().map(a=>a.name).filter( n=>n.startsWith('matcap'))
     gui.folder('Matcap')
       .select('matcap', matcaps ).onChange(v=>this.loadMatcap(v))
     /// #endif
@@ -61,7 +61,7 @@ export default class MatcapSample implements IScene {
   }
 
   async loadMatcap(name:string){
-    const matcap = WebglAssets.getTexture( name, this.gl )
+    const matcap = AssetDatabase.getTexture( name, this.gl )
     await matcap.load()
     this.matcapPass.matcap = matcap.texture
   }

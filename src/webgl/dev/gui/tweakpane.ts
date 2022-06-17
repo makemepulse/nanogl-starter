@@ -322,8 +322,6 @@ function _factory( pane : FolderApi ){
 
 
     _createFolder(name:string): TPGui {
-      console.log('_createFolder', name);
-      
       let folder = _folders.get( name );
       if( !folder ){
         folder = _factory( pane.addFolder({

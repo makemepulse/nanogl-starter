@@ -4,7 +4,7 @@ import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { IScene } from "@webgl/engine/IScene"
 import { TextureCubeResource } from "@webgl/resources/TextureResource"
-import WebglAssets from "@webgl/resources/WebglAssets"
+import AssetDatabase from "@webgl/resources/AssetDatabase"
 import Rect from "nanogl-primitives-2d/rect"
 import Programs from "@webgl/glsl/programs"
 import Program from "nanogl/program"
@@ -35,12 +35,12 @@ export default class TextureCubeSample implements IScene {
           codec: 'std', lods: [
             {
               files: [
-                WebglAssets.getAssetPath('sample/cube_car/posx.jpg'),
-                WebglAssets.getAssetPath('sample/cube_car/posy.jpg'),
-                WebglAssets.getAssetPath('sample/cube_car/posz.jpg'),
-                WebglAssets.getAssetPath('sample/cube_car/negx.jpg'),
-                WebglAssets.getAssetPath('sample/cube_car/negy.jpg'),
-                WebglAssets.getAssetPath('sample/cube_car/negz.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/posx.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/posy.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/posz.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/negx.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/negy.jpg'),
+                AssetDatabase.getAssetPath('sample/cube_car/negz.jpg'),
               ]
             }
           ]

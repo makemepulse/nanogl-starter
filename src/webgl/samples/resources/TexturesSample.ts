@@ -3,53 +3,19 @@ import Renderer from "@webgl/Renderer"
 import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { IScene } from "@webgl/engine/IScene"
-import FloorPlane from "@webgl/samples/common/FloorPlane"
-import UnlitPass from "nanogl-pbr/UnlitPass"
-import Texture2D from "nanogl/texture-2d"
 import { TextureResource } from "@webgl/resources/TextureResource"
-import WebglAssets from "@webgl/resources/WebglAssets"
-import TexCoord from "nanogl-pbr/TexCoord"
-import { Sampler } from "nanogl-pbr/Input"
+import AssetDatabase from "@webgl/resources/AssetDatabase"
 import Delay from "@/core/Delay"
 import gui from "@webgl/dev/gui"
+import { TexturedQuad } from "../common/TexturedQuad"
 
-
-export class TextureSample {
-  
-  plane: FloorPlane
-  unlitPass: UnlitPass
-  
-  constructor( gl : GLContext ) {
-    this.plane = new FloorPlane( gl )
-    this.unlitPass = new UnlitPass()
-    this.unlitPass.glconfig
-      .enableDepthTest()
-      .enableBlend()
-      .blendFunc( gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA )
-    this.unlitPass.alphaMode.set("BLEND")
-
-    this.plane.material.addPass( this.unlitPass )
-  }
-
-  setTexture(t:Texture2D ){
-    const sampler = new Sampler('color', TexCoord.create('aTexCoord') )
-    sampler.set( t )
-    this.unlitPass.baseColor.attach( sampler, 'rgb' )
-    this.unlitPass.alpha.attach( sampler, 'a' )
-  }
-
-  render(context: RenderContext) {
-    this.plane.render(context)
-  }
-
-}
 
 export default class TexturesSample implements IScene {
 
   readonly gl : GLContext
   
   root              : Node
-  planes            : TextureSample  [] = []
+  planes            : TexturedQuad  [] = []
   textures          : TextureResource[]
   lodTex: TextureResource
 
@@ -61,12 +27,13 @@ export default class TexturesSample implements IScene {
     const gl = this.gl = renderer.gl
     this.root       = new Node()
 
-
     this.textures = [
+
+
       /*
        * simple TextureResource loaded from string url
        */
-      new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl ),
+      new TextureResource( AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl ),
 
       /*
        * manually create a LODed texture resource
@@ -76,9 +43,9 @@ export default class TexturesSample implements IScene {
           {
             codec: 'std',
             lods: [
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD0.png")]},
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD1.png")]},
-              {files: [WebglAssets.getAssetPath("sample/avatar_LOD2.png")]},
+              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD0.png")]},
+              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD1.png")]},
+              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD2.png")]},
             ],
           }
         ]
@@ -86,23 +53,23 @@ export default class TexturesSample implements IScene {
 
 
 
-      // all textures created from WebglAssets.getTexture() automatically benefit from hmr / hot reload
+      // all textures created from AssetDatabase.getTexture() automatically benefit from hmr / hot reload
       // this should load compressed texture 
-      WebglAssets.getTexture( 'texture1', gl ),
+      AssetDatabase.getTexture( 'texture1', gl ),
 
 
       // with some options 
-      WebglAssets.getTexture( 'avatar', gl, {
+      AssetDatabase.getTexture( 'avatar', gl, {
         alpha: true,
         smooth: false,
       } ),
       
       // other way to set options on loaded texture
-      WebglAssets.getTexture( 'avatar', gl ).setTransparent().clamp().setFilter( true, false, false ),
+      AssetDatabase.getTexture( 'avatar', gl ).setTransparent().clamp().setFilter( true, false, false ),
 
 
       // example with all options available
-      WebglAssets.getTexture( 'matcap_white', gl, {
+      AssetDatabase.getTexture( 'matcap_white', gl, {
         smooth: true,
         mipmap: true, 
         miplinear: true,
@@ -120,14 +87,14 @@ export default class TexturesSample implements IScene {
 
     // stress test to validate unload effectivness
     // for (let i = 0; i < 50; i++) {
-    //   this.textures.push(new TextureResource(WebglAssets.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this.gl ))
+    //   this.textures.push(new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), this.gl ))
     // }
 
 
     for (let i = 0; i < this.textures.length; i++) {
       const t = this.textures[i];
 
-      const s = new TextureSample( this.renderer.gl )
+      const s = new TexturedQuad( this.renderer.gl )
       this.planes.push( s )
       s.plane.node.x = i*1.2
       s.plane.node.y = .1

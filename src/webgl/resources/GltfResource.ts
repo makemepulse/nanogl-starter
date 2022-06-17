@@ -3,7 +3,7 @@ import { WebImpl } from "nanogl-gltf/lib/io/web";
 import { GltfLoaderOptions } from "nanogl-gltf/lib/io/GltfLoaderOptions";
 import GltfLoader from "nanogl-gltf/lib/io/GltfLoader";
 import Gltf from "nanogl-gltf/lib/Gltf";
-import WebglAssets from "./WebglAssets";
+import AssetDatabase from "./AssetDatabase";
 import IOInterface from "nanogl-gltf/lib/io/IOInterface";
 import { GLContext } from "nanogl/types";
 
@@ -18,7 +18,7 @@ class ModuleIO extends WebImpl {
     if (baseurl !== undefined ){
       path =  baseurl + '/' + path;
     }
-    return WebglAssets.getAssetPath(decodeURI(path))
+    return AssetDatabase.getAssetPath(decodeURI(path))
   }
   
   

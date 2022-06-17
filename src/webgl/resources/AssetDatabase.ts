@@ -1,22 +1,17 @@
 
-import { GLContext } from "nanogl/types"
-import { ITextureRequest, ITextureOptions, ITextureRequestSource } from "./TextureRequest"
+import type { GLContext } from "nanogl/types"
+import type { ITextureRequest, ITextureOptions, ITextureRequestSource } from "./TextureRequest"
 import { TextureResource } from "./TextureResource"
 
 
-function getFileContext(){
-  return require.context( '@/assets/webgl/', true, /.*/i )
-}
-
-const _files = getFileContext()
-const _contextId = _files.id
-
-const _assetsByPath:Map<string, FileInfos> = new Map()
-const _assetsByName:Map<string, FileInfos> = new Map()
-const _assets:FileInfos[] = []
-const _textures:Map<string, TextureAsset> = new Map()
-
-
+/// #if GENERATE_ASSETS_IDS
+import { AssetName, AssetPath, TextureName, TexturePath } from "./AssetsIdentifiers"
+export type AssetIdent = AssetName | AssetPath
+export type TextureIdent = TextureName | TexturePath
+/// #else
+/// #code export type AssetIdent = string
+/// #code export type TextureIdent = string
+/// #endif
 
 
 type FileInfos = {
@@ -28,6 +23,25 @@ type FileInfos = {
   meta ?: string
   lod   : number
 }
+
+
+
+
+function getFileContext(){
+  return require.context( '@/assets/webgl/', true, /.*/i )
+}
+
+
+const _files = getFileContext()
+const _contextId = _files.id
+
+const _assetsByPath:Map<string, FileInfos> = new Map()
+const _assetsByName:Map<string, FileInfos> = new Map()
+const _assets:FileInfos[] = []
+const _textures:Map<string, TextureAsset> = new Map()
+
+
+
 
 
 function parsePath( initialPath: string, path: string  ): FileInfos {
@@ -117,7 +131,6 @@ class TextureAsset implements ITextureRequest {
     this.sources.sort( sortTexSources )
   }
 
-
 }
 
 function isTexture(fileInfos: FileInfos) {
@@ -148,13 +161,7 @@ function handleTexture(fileInfos: FileInfos) {
 }
 
 
-
-// const _textures
-
-
-
-
-function getAssetInfos( filenameOrName: string ): FileInfos {
+function getAssetInfos( filenameOrName: AssetIdent | string ): FileInfos {
   let res = _assetsByPath.get(filenameOrName)
   if ( !res ) {
     res = _assetsByName.get(filenameOrName)
@@ -165,36 +172,58 @@ function getAssetInfos( filenameOrName: string ): FileInfos {
   return res
 }
 
-function getAssetPath( filename: string): string {
-  return getAssetInfos(filename).path
-}
 
-function getAssets(): FileInfos[] {
-  return _assets.concat()
-}
 
-function getTexture( filename: string, gl:GLContext, options?: Partial<ITextureOptions> ): TextureResource {
-  const infos = getAssetInfos(filename)
-  const res = _textures.get(infos.group+'/'+infos.name)
-  if ( !res ) {
-    console.error(`can't find texture ${filename}`);
+
+
+
+
+
+export default class AssetDatabase {
+
+  static getAssets():FileInfos[]{
+    return _assets.concat()
   }
-  const tr = new TextureResource( res, gl, options )
 
-  /// #if DEBUG
-  res._resources.push(tr)
-  /// #endif
+  static getAssetPath(filename: AssetIdent):string
+  static getAssetPath(filename: string):string;
+  static getAssetPath(filename: AssetIdent|string):string{
+    return getAssetInfos(filename).path
+  }
 
-  return tr
+
+  static getTexture(filename: TextureIdent, gl: GLContext, options?: Partial<ITextureOptions>):TextureResource;
+  static getTexture(filename: string, gl: GLContext, options?: Partial<ITextureOptions>):TextureResource;
+  static getTexture(filename: TextureIdent|string, gl: GLContext, options?: Partial<ITextureOptions>):TextureResource{
+    const infos = getAssetInfos(filename)
+    const res = _textures.get(infos.group+'/'+infos.name)
+    if ( !res ) {
+      console.error(`can't find texture ${filename}`);
+    }
+    const tr = new TextureResource( res, gl, options )
+  
+    /// #if DEBUG
+    res._resources.push(tr)
+    /// #endif
+  
+    return tr
+  }
+  
+  /**
+   * Debug only, print informations on assets available in WebglAssets
+   */
+  static printAssets():void {
+    /// #if DEBUG
+    const tables:Record<string, FileInfos> = {}
+    for (const asset of _assets) {
+      tables[asset.name] = asset
+    }
+    console.table(_assets)
+    console.log( _assetsByPath.keys())
+    /// #endif
+  }
 }
 
-const WebglAssets = {
-  getAssets,
-  getAssetPath,
-  getTexture
-}
-
-export default WebglAssets;
 
 
 const deps:string[] = []

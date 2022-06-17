@@ -1,12 +1,12 @@
 /* eslint-disable */
 const path = require('path')
-const tapIfdefLoader = require( './build/vuecli/ifdef-loader')
+const GenerateAssetsIds = require('./build/gen-assets-ids')
+const ifdefOpts = require( './build/vuecli/ifdef-loader')
 
 
 const https = process.env.DEV_SERVE_HTTPS === 'true'
 const cert  = process.env.DEV_HTTPS_CERT
 const key   = process.env.DEV_HTTPS_KEY
-
 
 module.exports = {
   lintOnSave: false,
@@ -32,11 +32,17 @@ module.exports = {
 
   },
 
+
+
   chainWebpack(config){
 
-    tapIfdefLoader(config.module.rule('ts'))
+    config.module.rule('ts')
+      .use('ifdef-loader')
+        .loader('ifdef-loader')
+        .options(ifdefOpts)
+      .end()
 
-    config.resolve
+      config.resolve
       .alias
         .set('@webgl', path.resolve( __dirname, 'src/webgl'))
 
@@ -46,13 +52,19 @@ module.exports = {
 
 
     config.module.rule('glsl')
+
       .test(/\.(vert|frag|glsl)$/ )
-    
-    tapIfdefLoader(config.module.rule('glsl'))
-        .use( 'shader-hmr' )
+
+      .use('ifdef-loader')
+        .loader('ifdef-loader')
+        .options(ifdefOpts)
+      .end()
+      
+      .use( 'shader-hmr' )
         .loader( path.resolve( __dirname, 'build/shader-hmr/index.js') )
       .end()
-        .use( 'nanogl-template' )
+      
+      .use( 'nanogl-template' )
         .loader( 'nanogl-template/lib/compiler' )
       .end()
     
@@ -64,7 +76,7 @@ module.exports = {
       .end()
 
 
-    config.module.rule('webgl-file')
+    config.module.rule('webgl-assets')
       .test(/\.(glb|gltf|bin|ktx|ktx2|jpg|jpeg|png|webp|basis)$/ )
       .include
         .add( path.resolve( __dirname, 'src/assets/webgl' ) )
@@ -75,6 +87,14 @@ module.exports = {
             name: 'assets/webgl/[name].[hash:8].[ext]',
             esModule: true
           })
+          
+    if( process.env.VUE_APP_GENERATE_ASSETS_IDS === 'true' ){
+      config
+        .plugin('gen-asset-ids')
+        .use( GenerateAssetsIds, [{
+          output:path.resolve( __dirname, 'src/webgl/resources/AssetsIdentifiers.ts')
+        }]);
+    }
   }
 
 }

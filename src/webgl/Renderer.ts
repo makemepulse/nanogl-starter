@@ -12,6 +12,7 @@ import GLView from "./GLView";
 import { IScene } from "./engine/IScene";
 import SamplesSelector from "./samples/SamplesSelector";
 import Pointers from "./core/Pointers";
+import AssetDatabase from "./resources/AssetDatabase";
 
 export default class Renderer {
 
@@ -56,6 +57,8 @@ export default class Renderer {
     this.samples  = new SamplesSelector( this )
 
     Capabilities(this.gl).report()
+    AssetDatabase.printAssets()
+    
   }
 
   get gl(): GLContext{
