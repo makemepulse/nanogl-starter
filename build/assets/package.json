@@ -9,10 +9,15 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@gltf-transform/core": "^2.1.7",
+    "@gltf-transform/functions": "^2.1.7",
     "hdr": "^0.6.1",
     "jpeg-js": "^0.3.7",
     "pngjs": "^3.4.0",
     "when": "^3.7.8",
     "xyz-utils": "^0.5.2"
+  },
+  "dependencies": {
+    "tmp": "^0.2.1"
   }
 }

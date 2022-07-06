@@ -190,7 +190,7 @@ export default class Quality<TLevel> {
 
 
 
-  async startAutoLevel(psignal: AbortSignal, policy: QualityPolicy = QualityPolicy.DEGRADE) {
+  async startAutoLevel(psignal?: AbortSignal, policy: QualityPolicy = QualityPolicy.DEGRADE) {
 
     this._autoLevelAbortCtrl = new AbortController( psignal )
     const signal = this._autoLevelAbortCtrl.signal

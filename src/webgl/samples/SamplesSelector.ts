@@ -24,6 +24,8 @@ import ReourceGroupSample from "./resources/ResourceGroupSample"
 import TextureCubeSample from "./resources/TextureCubeSample"
 import GuiSample from "./devtools/GuiSample"
 import BasisSample from "./resources/BasisSample"
+import UnlitSample from "./custom_material/UnlitSample"
+import LightmapSample from "./custom_material/LightmapSample"
 
 
 export const SampleScenes = {
@@ -42,6 +44,8 @@ export const SampleScenes = {
   'Materials - Disolve'      : DisolveSample         ,
   'Materials - Spherize'     : SpherizeSample        ,
   'Materials - Matcap'       : MatcapSample          ,
+  'Materials - Lightmap'     : LightmapSample        ,
+  'Materials - Unlit'        : UnlitSample           ,
   'RTT - Basic'              : RttSample             ,
   'RTT - Msaa'               : MsaaSample            ,
   'Minimal Drawcall'         : MinimalDrawcallSample ,

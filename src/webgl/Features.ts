@@ -4,6 +4,7 @@ import KHR_texture_transform from "nanogl-gltf/lib/extensions/EXT_texture_webp";
 import KHR_lights_punctual from "nanogl-gltf/lib/extensions/KHR_lights_punctual";
 import KHR_materials_pbrSpecularGlossiness from "nanogl-gltf/lib/extensions/KHR_materials_pbrSpecularGlossiness";
 import KHR_materials_unlit from "nanogl-gltf/lib/extensions/KHR_materials_unlit";
+import KHR_texture_basisu from "nanogl-gltf/lib/extensions/KHR_texture_basisu";
 
 import { TextureCodecs } from "./resources/TextureCodec";
 import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
@@ -11,6 +12,7 @@ import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";
 import TextureCodecBasis from "./resources/TextureCodecBasis";
 
 import './dev/console';
+import BasisDecoder from "./resources/basis/BasisDecoder";
 
 //==============================
 // code here is called before GLApp is defined
@@ -36,3 +38,4 @@ Gltf.addExtension(new KHR_texture_transform());
 Gltf.addExtension(new KHR_lights_punctual());
 Gltf.addExtension(new KHR_materials_unlit());
 Gltf.addExtension(new KHR_materials_pbrSpecularGlossiness());
+Gltf.addExtension(new KHR_texture_basisu( BasisDecoder.getInstance() ));

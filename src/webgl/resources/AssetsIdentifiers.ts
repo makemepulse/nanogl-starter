@@ -1,7 +1,10 @@
 
 export type TextureName = 
   "avatar" | 
+  "bg" | 
   "env" | 
+  "env_hi" | 
+  "lightmap" | 
   "matcap_clay" | 
   "matcap_red_plastic" | 
   "matcap_white" | 
@@ -41,11 +44,17 @@ export type TexturePath =
   "sample/texture1.jpg.etc.ktx" | 
   "sample/texture1.jpg.pvr.ktx" | 
   "sample/texture1.jpg.webp" | 
-  "sample/texture2.jpg"
+  "sample/texture2.jpg" | 
+  "samples/room/env/bg.jpg" | 
+  "samples/room/env/env_hi.png" | 
+  "samples/room/env/env.png" | 
+  "samples/room/lightmap.jpg" | 
+  "samples/room/lightmap.jpg.webp"
 ;
 
 
 export type OtherAssetName = 
+  "room" | 
   "sh" | 
   "Suzanne" | 
   "tex"
@@ -56,7 +65,9 @@ export type OtherAssetPath =
   "gltfs/suzanne/Suzanne.bin" | 
   "gltfs/suzanne/Suzanne.gltf" | 
   "ibl/Helipad/sh.bin" | 
-  "sample/cube_car/tex.etc.ktx"
+  "sample/cube_car/tex.etc.ktx" | 
+  "samples/room/env/sh.bin" | 
+  "samples/room/room.glb"
 ;
 
 

@@ -6,14 +6,19 @@ OUTDIR=$2
 EXPO=$3
 # INPUT="rgb_dir_test.hdr"
 
+source ./build/assets/config.sh
+
+alias cmft=$cmftExe
+alias hdr2png=$hdr2pngExe
+
 mkdir $OUTDIR
 
 CFMT_BASE_ARGS="\
-  --numCpuProcessingThreads 0 \
-  --useOpenCL true \
-  --deviceType gpu \
+  --numCpuProcessingThreads 8 \
+  --useOpenCL false \
   --silent \
   --mipCount 0"
+  # --deviceType gpu \
 
 
 
@@ -58,7 +63,7 @@ genGlossLevel(){
   # GLOSS=$( getGloss $ANGLE )
   GLOSS=$2
   OUTNAME=$OUTDIR/level$LVL
-
+  echo $2
 
   cmft \
     $CFMT_BASE_ARGS \
@@ -119,7 +124,6 @@ genSH(){
 
 }
 
-
 genHd
 genBaseLevel
 genGlossLevel 1 11.038118968108332
@@ -140,8 +144,6 @@ montage $OUTDIR/level[0-7].png -tile x8 -geometry 512x256 -background none $OUTD
 
 rm $OUTDIR/level*.png
 rm $OUTDIR/*.hdr
-
-
 
 
 echo "done"

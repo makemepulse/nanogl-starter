@@ -20,7 +20,8 @@ export class GltfScene extends GLTFResource {
     this.overrides = new MaterialOverrideExtension()
 
     this.opts = {
-      extensions: [this.overrides]
+      extensions: [this.overrides],
+      defaultTextureFilter:gl.LINEAR_MIPMAP_LINEAR
     }
 
   }

@@ -2,7 +2,7 @@ import Deferred from "@/core/Deferred";
 import PublicPath from "@/core/PublicPath";
 import Texture2D from "nanogl/texture-2d";
 import { GLContext } from "nanogl/types";
-import { DecodingError, DecodingResponse, SupportedFormats, WorkerResponse } from "./types";
+import { DecodingError, DecodingResponse, IBasisDecoder, SupportedFormats, WorkerResponse } from "./types";
 
 
 /**
@@ -28,7 +28,7 @@ class PendingDecodingRequest {
 
 }
 
-export default class BasisDecoder {
+export default class BasisDecoder implements IBasisDecoder {
   
 
   private static _instance : BasisDecoder;

@@ -3,14 +3,11 @@ import getInstancingImplementation, { InstancingImpl } from "./Instancing";
 import TextureExtensions from "./TextureExtensions";
 
 
-
 function _hasPrecision( gl:GLContext, p : GLenum ): boolean {
   const hv = gl.getShaderPrecisionFormat( gl.VERTEX_SHADER,   p );
   const hf = gl.getShaderPrecisionFormat( gl.FRAGMENT_SHADER, p );
   return  hf.precision > 0 && hv.precision > 0;
 }
-
-
 
 
 
@@ -44,9 +41,9 @@ export class CapabilitiesImpl {
     this.textureExtensions = new TextureExtensions( gl )
 
     this.extAniso =
+      gl.getExtension("EXT_texture_filter_anisotropic") ||
       gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ||
-      gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
-      gl.getExtension("EXT_texture_filter_anisotropic");
+      gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
 
     this.extIndexUint = gl.getExtension('OES_element_index_uint');
 
@@ -79,12 +76,10 @@ export class CapabilitiesImpl {
       ['instancing'            ]: this.instancing.isSupported  ,
       ['hasStandardDerivatives']: this.hasStandardDerivatives  ,
       ['support32BitIndices'   ]: this.support32BitIndices     ,
-      ['support DXT'           ]: this.textureExtensions.dxt !== null  ,
-      ['support PVR'           ]: this.textureExtensions.pvr !== null  ,
-      ['support ETC'           ]: this.textureExtensions.etc !== null  ,
+      ['support DXT'           ]: this.textureExtensions.dxt  !== null ,
+      ['support PVR'           ]: this.textureExtensions.pvr  !== null ,
+      ['support ETC'           ]: this.textureExtensions.etc  !== null ,
       ['support ASTC'          ]: this.textureExtensions.astc !== null ,
-
-
     })
   }
   /// #else

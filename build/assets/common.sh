@@ -6,7 +6,6 @@ if [ -z "$GLOB" ]
     GLOB=''
 fi
 
-
 source ./build/assets/config.sh
 
 
@@ -119,7 +118,7 @@ compress(){
 
   if [[ $FORMATS == *"jpg"* ]]; then
     printf 'jpg'
-    convert -quality 100 -format JPG -set colorspace sRGB -colorspace RGB $PFLIP $INPUT_TGA $OUTPUT
+    convert -quality 100 -format JPG $PFLIP $INPUT_TGA $OUTPUT
     printf ' ✓ '
   fi
 

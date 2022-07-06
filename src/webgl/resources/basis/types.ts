@@ -1,3 +1,4 @@
+import { GLContext } from "nanogl/types"
 
 
 export type SupportedFormats = {
@@ -41,3 +42,7 @@ export type DecodingError = {
 }
 
 export type WorkerResponse = DecodingResponse | DecodingError
+
+export interface IBasisDecoder {
+  decode(gl : GLContext, buffer: ArrayBuffer) : Promise<DecodingResponse>
+}

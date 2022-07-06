@@ -199,7 +199,7 @@ function transcode(id, arrayBuffer, supportedFormats, allowSeparateAlpha=false) 
   // Transcode each mip level into the appropriate section of the overall buffer.
   for (let mipLevel of mipLevels) {
     let levelData = new Uint8Array(transcodeData.buffer, mipLevel.offset, mipLevel.size);
-    if (!ktx2File.transcodeImage(levelData, IMAGE_INDEX, mipLevel.level, 0, basisFormat, 0, -1, -1)) {
+    if (!ktx2File.transcodeImage(levelData, mipLevel.level, 0, 0, basisFormat, 0, -1, -1)) {
       basisFileFail(id, ktx2File, 'transcodeImage failed');
       return;
     }
