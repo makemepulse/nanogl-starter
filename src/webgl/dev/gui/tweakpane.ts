@@ -8,6 +8,7 @@ import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import {RadioGridBladeParams} from '@tweakpane/plugin-essentials/dist/types/radio-grid/blade-plugin'
 import * as TweakpaneRotationInputPlugin from '@0b5vr/tweakpane-plugin-rotation'
 import { quat } from "gl-matrix";
+import { InputChunkPlugin } from "./plugins/input-binding";
 // import * as TweakpaneThumbnailListPlugin from 'tweakpane-plugin-thumbnail-list'
 // import { Thumbnail } from "tweakpane-plugin-thumbnail-list/src/controller";
 
@@ -37,6 +38,7 @@ function deleteAllEmptyFolders(){
 }
 
 root.registerPlugin( {plugin:VecColorInputPlugin} )
+root.registerPlugin( {plugin:InputChunkPlugin} )
 root.registerPlugin( EssentialsPlugin )
 root.registerPlugin( TweakpaneRotationInputPlugin )
 // root.registerPlugin( TweakpaneThumbnailListPlugin )

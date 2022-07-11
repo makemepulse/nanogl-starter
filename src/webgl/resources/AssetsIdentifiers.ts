@@ -1,10 +1,8 @@
 
 export type TextureName = 
   "avatar" | 
-  "bg" | 
   "env" | 
-  "env_hi" | 
-  "lightmap" | 
+  "lightmap_hdr" | 
   "matcap_clay" | 
   "matcap_red_plastic" | 
   "matcap_white" | 
@@ -45,11 +43,9 @@ export type TexturePath =
   "sample/texture1.jpg.pvr.ktx" | 
   "sample/texture1.jpg.webp" | 
   "sample/texture2.jpg" | 
-  "samples/room/env/bg.jpg" | 
-  "samples/room/env/env_hi.png" | 
   "samples/room/env/env.png" | 
-  "samples/room/lightmap.jpg" | 
-  "samples/room/lightmap.jpg.webp"
+  "samples/room/lightmap_hdr.png" | 
+  "samples/room/lightmap_hdr.png.webp"
 ;
 
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Color, InputBindingPlugin, ColorController, CompositeColorParser, BindingTarget } from "@tweakpane/core";
+import { Color, InputBindingPlugin, ColorController, CompositeColorParser, BindingTarget, createColorStringParser } from "@tweakpane/core";
 import { BindingWriter } from "@tweakpane/core/dist/cjs/common/binding/binding";
 import { ColorComponents3, ColorComponents4 } from "@tweakpane/core/dist/cjs/input-binding/color/model/color-model";
 import { parseColorInputParams } from "@tweakpane/core/dist/cjs/input-binding/color/util";
@@ -107,9 +107,10 @@ export const VecColorInputPlugin: InputBindingPlugin<
       ? colorToVecRgbaString
       : colorToVecRgbString;
     return new ColorController(args.document, {
+      colorType: 'float',
       expanded: expanded ?? false,
       formatter: formatter,
-      parser: CompositeColorParser,
+      parser: createColorStringParser('float'),
       pickerLayout: picker ?? 'popup',
       supportsAlpha: supportsAlpha,
       value: args.value,

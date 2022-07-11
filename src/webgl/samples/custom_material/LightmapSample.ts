@@ -12,25 +12,52 @@ import Chunk from "nanogl-pbr/Chunk"
 import Input, { ShaderType } from "nanogl-pbr/Input"
 import ChunksSlots from "nanogl-pbr/ChunksSlots"
 import gui from "@webgl/dev/gui"
+import { CreateGui, GuiFolder, RangeGui } from "@webgl/dev/gui/decorators"
 
-
+@GuiFolder('Lightmap')
 class LightmapChunk extends Chunk {
   
   readonly lightmapInput: Input
 
+  @RangeGui(0, 2)
+  readonly lightmapExposure: Input
+  
+  @RangeGui(0, 2)
+  readonly iblCutoffMult  : Input
+
+  @RangeGui(0, 1)
+  readonly iblCutoffOffset: Input
+
+
+
   constructor() {
     super(true, false);
-    this.lightmapInput = new Input('lightmapInput', 3,  ShaderType.FRAGMENT )
+    this.lightmapInput    = new Input('lightmapInput'    , 4, ShaderType.FRAGMENT )
+    this.lightmapExposure = new Input('lightmapExpo'     , 1, ShaderType.FRAGMENT )
+    this.iblCutoffMult   = new Input('lmIblCutoffMult'  , 1, ShaderType.FRAGMENT )
+    this.iblCutoffOffset = new Input('lmIblCutoffOffset', 1, ShaderType.FRAGMENT )
+
     this.addChild( this.lightmapInput )
+    this.addChild( this.lightmapExposure )
+    this.addChild( this.iblCutoffMult )
+    this.addChild( this.iblCutoffOffset )
+
+    this.lightmapExposure.attachConstant(1)
+    this.iblCutoffMult   .attachConstant(1)
+    this.iblCutoffOffset .attachConstant(0)
+
   }
   
   
   protected _genCode(slots: ChunksSlots): void {
     const code = `
-    vec3 lmvalue = pow(lightmapInput(), vec3(2.2));
-    float occlu = saturate( dot( lmvalue, vec3(1.0) )-0.15 );
+    vec4 rgbm = lightmapInput();
+    vec3 lmvalue = ( rgbm.rgb * 16.0 * rgbm.a );
+    // vec3 lmvalue = pow(lightmapInput(), vec3(3.2));
+    float occlu = saturate( dot( lmvalue*lmIblCutoffMult(), vec3(1.0) )-lmIblCutoffOffset() );
     lightingData.lightingColor *= occlu;
-    lightingData.lightingColor += brdfData.diffuse * lmvalue;
+    lightingData.lightingColor += brdfData.diffuse * lmvalue * lightmapExpo() ;
+    // lightingData.lightingColor = lightingData.lightingColor * 0.0001 + occlu;
     `
     slots.add( 'postlightsf', code )
   }
@@ -47,6 +74,7 @@ export default class LightmapSample implements IScene {
   unlitPass: UnlitPass
   lighting: Lighting
   lightmapChunk: LightmapChunk
+
 
   constructor(renderer: Renderer) {
     this.gl = renderer.gl
@@ -68,6 +96,9 @@ export default class LightmapSample implements IScene {
     this.gltfSample = new GltfScene( 'samples/room/room.glb', this.gl, this.lighting, this.root)
     
     this.lightmapChunk = new LightmapChunk()
+    this.lightmapChunk.lightmapExposure.attachConstant(1.2)
+    this.lightmapChunk.iblCutoffMult   .attachConstant(1.2)
+    this.lightmapChunk.iblCutoffOffset .attachConstant(.75)
     
     /**
      * add lightmap chunk to every metrials
@@ -86,9 +117,9 @@ export default class LightmapSample implements IScene {
     f.range( this.lighting.ibl, 'x', -1, 1 ).setLabel('origin x')
     f.range( this.lighting.ibl, 'y', 0, 3 ).setLabel('origin y')
     f.range( this.lighting.ibl, 'z', -1, 1 ).setLabel('origin z')
-
-
-
+    
+    
+    CreateGui( this.lightmapChunk );
 
   }
 
@@ -119,7 +150,8 @@ export default class LightmapSample implements IScene {
   }
 
   async loadLightmap(){
-    const lightmap = AssetDatabase.getTexture( 'samples/room/lightmap.jpg', this.gl )
+    // const lightmap = AssetDatabase.getTexture( 'samples/room/lightmap.jpg', this.gl )
+    const lightmap = AssetDatabase.getTexture( 'samples/room/lightmap_hdr.png', this.gl, {alpha:true} )
     await lightmap.load()
     const tc = TexCoord.create('aTexCoord1')
     this.lightmapChunk.lightmapInput.attachSampler('basecolor', tc ).set( lightmap.texture )

@@ -128,6 +128,7 @@ function createParams(slots, channels, size, logger, numTextures, options) {
 
   if (slots.find(slot => micromatch.isMatch(slot, '*normal*', MICROMATCH_OPTIONS))) {
     params.push('-normal_map');
+    params.push('-uastc_level'); params.push('4');
   }
 
   // if (slots.length && !slots.find(slot => micromatch.isMatch(slot, '*{color,emissive}*', MICROMATCH_OPTIONS))) {

@@ -154,7 +154,7 @@ void EnvironmentBRDF(BRDFData brdfData, GeometryData geometryData, inout Lightin
 {
 
   vec3 indirectDiffuse = ComputeIBLDiffuse( geometryData.worldNrm );
-  vec3 indirectSpecular = SpecularIBL( geometryData.worldReflect, brdfData.perceptualRoughness );
+  vec3 indirectSpecular = SpecularIBL( geometryData.worldReflect, brdfData.perceptualRoughness, geometryData.worldPos );
 
   float NoV = sdot( geometryData.viewDir, geometryData.worldNrm );
   float fresnelTerm = pow( 1.0-NoV, 5.0 );
@@ -165,7 +165,7 @@ void EnvironmentBRDF(BRDFData brdfData, GeometryData geometryData, inout Lightin
   vec3 color = indirectDiffuse * brdfData.diffuse + indirectSpecular*specularTerm;
 
   // add Clearcoat
-  vec3 indirectSpecular_CC = SpecularIBL( geometryData.worldReflect, brdfData.perceptualRoughness_CC );
+  vec3 indirectSpecular_CC = SpecularIBL( geometryData.worldReflect, brdfData.perceptualRoughness_CC, geometryData.worldPos );
 
   surfaceReduction = 1.0 / (brdfData.roughness2_CC + 1.0);
   float specularTerm_CC = surfaceReduction * mix(DIELECTRIC_SPEC, brdfData.grazingTerm_CC, fresnelTerm);
