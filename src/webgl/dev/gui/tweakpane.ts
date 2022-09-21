@@ -87,6 +87,13 @@ class TweakControl<T> implements Control<T>{
     return this;
   }
 
+  setHint( s:string ): this{
+    const el = this.input.controller_.view.element;
+    const input = el.querySelector( 'input, button' ) as HTMLElement
+    if( input ) input.title = s
+    return this;
+  }
+
   remove(): void {
     this.input.dispose()
     deleteAllEmptyFolders()

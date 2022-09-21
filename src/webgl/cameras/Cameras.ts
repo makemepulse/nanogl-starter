@@ -112,12 +112,12 @@ export default class Cameras {
   private _gui(){
     const g = gui.folder( 'Cameras' )
     const names = Array.from(this._managers.keys())
-    g.radios<CameraName>( 'camera', names).onChange( name=>this.use(name) )
+    g.radios<CameraName>( 'camera', names ).onChange( name=>this.use(name) )
     g.btn( 'log matrix', ()=>console.log( Array.from(this.camera._matrix )))
     g.btn( 'log position', ()=>console.log( Array.from(this.camera._wposition )))
     g.btn( 'place devcam to main', ()=>{
       this._managers.get( 'dev' ).camera.setMatrix( this.mainCamera._matrix )
-    })
+    }).setHint('Move dev camera to main camera position')
     g.btns({
       'store': ()=>{
         const camera = this._managers.get( 'dev' ).camera

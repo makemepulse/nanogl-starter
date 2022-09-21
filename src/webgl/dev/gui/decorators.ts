@@ -184,6 +184,10 @@ export function GuiFolder(name:string) {
   
   export function DeleteGui(target:any):void {
     const controls: Control<any>[] = target[guisTargetKey]
+    if( !controls ) {
+      console.warn('[DeleteGui] No gui created for the given target: ', target)
+      return
+    }
     controls.forEach( ctrl => ctrl.remove() )
   }
   /// #else

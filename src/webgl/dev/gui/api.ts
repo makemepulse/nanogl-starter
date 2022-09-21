@@ -8,6 +8,7 @@ export interface Control<T = any> {
   value: T
   onChange( cb: (v:T)=>void ):this
   setLabel( s:string ): this
+  setHint( s:string ): this
   remove():void
 }
 

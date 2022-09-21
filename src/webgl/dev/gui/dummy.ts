@@ -9,10 +9,6 @@ class DummyControl<T> implements Control<T>{
 
   constructor( private _value: T){}
   
-  setLabel(s: string): this {
-    s; return this;
-  }
-  
   valueOf(): T {
     return this._value
   }
@@ -20,8 +16,10 @@ class DummyControl<T> implements Control<T>{
   get value(): T {
     return this._value
   }
-
+  
   onChange(): this {0;return this;}
+  setLabel(s: string): this {s; return this;}
+  setHint(s: string): this {s; return this;}
   remove(): void {0;}
 
 }

@@ -4,12 +4,6 @@ import { Gui, RangeGui, GuiFolder, ColorGui, CreateGui, DeleteGui, Monitor, GuiB
 @GuiFolder('Gui Test Object')
 export default class GuiTestObject {
 
-  ilayer    : HTMLElement
-  root      : Node
-
-
-  skipRender = false
-
   @Gui
   someFlags = false
 

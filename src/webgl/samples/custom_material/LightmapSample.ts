@@ -12,7 +12,7 @@ import Chunk from "nanogl-pbr/Chunk"
 import Input, { ShaderType } from "nanogl-pbr/Input"
 import ChunksSlots from "nanogl-pbr/ChunksSlots"
 import gui from "@webgl/dev/gui"
-import { CreateGui, GuiFolder, RangeGui } from "@webgl/dev/gui/decorators"
+import { CreateGui, DeleteGui, GuiFolder, RangeGui } from "@webgl/dev/gui/decorators"
 
 @GuiFolder('Lightmap')
 class LightmapChunk extends Chunk {
@@ -34,8 +34,8 @@ class LightmapChunk extends Chunk {
     super(true, false);
     this.lightmapInput    = new Input('lightmapInput'    , 4, ShaderType.FRAGMENT )
     this.lightmapExposure = new Input('lightmapExpo'     , 1, ShaderType.FRAGMENT )
-    this.iblCutoffMult   = new Input('lmIblCutoffMult'  , 1, ShaderType.FRAGMENT )
-    this.iblCutoffOffset = new Input('lmIblCutoffOffset', 1, ShaderType.FRAGMENT )
+    this.iblCutoffMult    = new Input('lmIblCutoffMult'  , 1, ShaderType.FRAGMENT )
+    this.iblCutoffOffset  = new Input('lmIblCutoffOffset', 1, ShaderType.FRAGMENT )
 
     this.addChild( this.lightmapInput )
     this.addChild( this.lightmapExposure )
@@ -157,7 +157,10 @@ export default class LightmapSample implements IScene {
     this.lightmapChunk.lightmapInput.attachSampler('basecolor', tc ).set( lightmap.texture )
   }
   
-  unload(): void {0}
+  unload(): void {
+    DeleteGui( this.lightmapChunk )
+    gui.clearFolder('box projection')
+  }
   
   rttPass(): void {0}
 }
