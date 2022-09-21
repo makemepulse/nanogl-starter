@@ -31,12 +31,12 @@ export default class TextureCodecBasis implements ITextureCodec {
 
     const datas: TextureData = {
       datatype: (res.webglFormat.uncompressed===true) ? TextureDataType.RAW: TextureDataType.RAW_COMPRESSED,
-      textureType: TextureType.TEXTURE_2D,
-      width: res.mipLevels[0].width,
-      height: res.mipLevels[0].height,
-      internalformat: res.webglFormat.format,
-      format: res.webglFormat.format,
-      type: res.webglFormat.type,
+      textureType   : TextureType.TEXTURE_2D           ,
+      width         : res.mipLevels[0].width ,
+      height        : res.mipLevels[0].height,
+      internalformat: res.webglFormat.format   ,
+      format        : res.webglFormat.format   ,
+      type          : res.webglFormat.type     ,
 
       requireMipmapGen :false,
 

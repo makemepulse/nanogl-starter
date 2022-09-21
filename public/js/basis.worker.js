@@ -34,6 +34,12 @@ const BASIS_FORMAT = {
 }
 
 
+const GL_RGBA = 0x1908;
+const GL_RGB = 0x1907;
+const GL_UNSIGNED_BYTE = 0x1401;
+const GL_UNSIGNED_SHORT_5_6_5 = 0x8363;
+const GL_UNSIGNED_SHORT_4_4_4_4 = 0x8033;
+
 // WebGL compressed formats types, from:
 // http://www.khronos.org/registry/webgl/extensions/
 
@@ -85,9 +91,9 @@ BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFASTC_4x4_RGBA ] = { format: COMPRESSED_R
 BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFPVRTC1_4_RGB  ] = { format: COMPRESSED_RGB_PVRTC_4BPPV1_IMG  };
 BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFPVRTC1_4_RGBA ] = { format: COMPRESSED_RGBA_PVRTC_4BPPV1_IMG };
 // Uncompressed formats 
-BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGBA32  ] = { uncompressed: true, format: WebGLRenderingContext.RGBA, type: WebGLRenderingContext.UNSIGNED_BYTE          };
-BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGB565  ] = { uncompressed: true, format: WebGLRenderingContext.RGB , type: WebGLRenderingContext.UNSIGNED_SHORT_5_6_5   };
-BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGBA4444] = { uncompressed: true, format: WebGLRenderingContext.RGBA, type: WebGLRenderingContext.UNSIGNED_SHORT_4_4_4_4 };
+BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGBA32  ] = { uncompressed: true, format: GL_RGBA, type: GL_UNSIGNED_BYTE          };
+BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGB565  ] = { uncompressed: true, format: GL_RGB , type: GL_UNSIGNED_SHORT_5_6_5   };
+BASIS_WEBGL_FORMAT_MAP[ BASIS_FORMAT.cTFRGBA4444] = { uncompressed: true, format: GL_RGBA, type: GL_UNSIGNED_SHORT_4_4_4_4 };
 
 // Notifies the main thread when a texture has failed to load for any reason.
 function fail(id, errorMsg) {
