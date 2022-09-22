@@ -8,24 +8,26 @@ import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
-import CancellationSample from "./resources/CancellationSample"
-import DevtoolsScene from "./devtools/DebugDrawSample"
-import TexturesSample from "./resources/TexturesSample"
-import LightsScene from "./lights"
-import ClearcoatSample from "./custom_material/ClearcoatSample"
-import DisolveSample from "./custom_material/DisolveSample"
-import RttSample from "./rtt/RttSample"
-import MsaaSample from "./rtt/MsaaSample"
+
+import LightsScene           from "./lights"
+import RttSample             from "./rtt/RttSample"
+import MsaaSample            from "./rtt/MsaaSample"
 import MinimalDrawcallSample from "./minimal_drawcall"
-import MatcapSample from "./custom_material/MatcapSample"
-import SpherizeSample from "./custom_material/SpherizeSample"
-import PickFloorSample from "./interactions/PickFloorSample"
-import ReourceGroupSample from "./resources/ResourceGroupSample"
-import TextureCubeSample from "./resources/TextureCubeSample"
-import GuiSample from "./devtools/GuiSample"
-import BasisSample from "./resources/BasisSample"
-import UnlitSample from "./custom_material/UnlitSample"
-import LightmapSample from "./custom_material/LightmapSample"
+import PickFloorSample       from "./interactions/PickFloorSample"
+import GuiSample             from "./devtools/GuiSample"
+import DevtoolsScene         from "./devtools/DebugDrawSample"
+import CancellationSample    from "./resources/CancellationSample"
+import TexturesSample        from "./resources/TexturesSample"
+import ReourceGroupSample    from "./resources/ResourceGroupSample"
+import TextureCubeSample     from "./resources/TextureCubeSample"
+import MinimalResourceSample from "./resources/MinimalResourceSample"
+import BasisSample           from "./resources/BasisSample"
+import ClearcoatSample       from "./custom_material/ClearcoatSample"
+import DisolveSample         from "./custom_material/DisolveSample"
+import MatcapSample          from "./custom_material/MatcapSample"
+import SpherizeSample        from "./custom_material/SpherizeSample"
+import UnlitSample           from "./custom_material/UnlitSample"
+import LightmapSample        from "./custom_material/LightmapSample"
 
 
 export const SampleScenes = {
@@ -34,6 +36,7 @@ export const SampleScenes = {
   'Gltf - Suzanne'           : SuzanneScene          ,
   'Devtools - DebugDraw'     : DevtoolsScene         ,
   'Devtools - Gui'           : GuiSample             ,
+  'Resources - Minimal'      : MinimalResourceSample ,
   'Resources - Cancellation' : CancellationSample    ,
   'Resources - Groups'       : ReourceGroupSample    ,
   'Resources - Textures'     : TexturesSample        ,

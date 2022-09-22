@@ -4,12 +4,12 @@ import { StandardPass } from "nanogl-pbr/StandardPass";
 
 import vShader from "nanogl-pbr/glsl/standard.vert"
 import fShader from "./clearcoat.frag"
-import LiveShader from "@webgl/core/LiveShader";
+import CreateShader from "@webgl/core/CreateProgram";
 
 /**
  * create Hot-reloadable shaders
  */
-const FragCode = LiveShader(fShader)
+const FragCode = CreateShader(fShader)
 
 
 /**

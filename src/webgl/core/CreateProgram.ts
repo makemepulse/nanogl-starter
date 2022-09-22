@@ -9,7 +9,7 @@ import { GLContext } from "nanogl/types";
  * @param glslModule 
  * @returns 
  */
-export default function LiveShader(glslModule:GlslModule ): GlslModule {
+export default function CreateShader(glslModule:GlslModule ): GlslModule {
   let uptodateModule = glslModule
   glslModule.onHmr(m=>uptodateModule=m)
   const fn:GlslModule = function(o?:unknown){
@@ -21,17 +21,17 @@ export default function LiveShader(glslModule:GlslModule ): GlslModule {
 }
 
 /**
- * Return a program which automatically recompile when one of its shader is updated by HMR
+ * Return a program which automatically recompile when one of its shader is updated by HMR.
  * @param gl 
  * @param vert 
  * @param frag 
  * @param defs 
  * @returns 
  */
-export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program {
+export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program {
   const prg = new Program(gl)
-  const lv = LiveShader(vert)
-  const lf = LiveShader(frag)
+  const lv = CreateShader(vert)
+  const lf = CreateShader(frag)
   const compile = ()=>prg.compile(lv(), lf(), defs)
   compile()
   lv.onHmr(compile)
@@ -41,6 +41,8 @@ export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, def
 
 
 /// #else
-/// #code export default function LiveShader(glslModule:GlslModule ): GlslModule { return glslModule }
-/// #code export function LiveProgram( gl:GLContext, vert:GlslModule, frag:GlslModule ): Program { return new Program(gl, vert(), frag()); }
+
+/// #code export default function CreateShader(glslModule:GlslModule ): GlslModule { return glslModule }
+/// #code export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program { return new Program(gl, vert(), frag(), defs); }
+
 /// #endif

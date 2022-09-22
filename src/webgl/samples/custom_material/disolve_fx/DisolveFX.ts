@@ -1,4 +1,4 @@
-import LiveShader from "@webgl/core/LiveShader";
+import CreateShader from "@webgl/core/CreateProgram";
 import Chunk from "nanogl-pbr/Chunk";
 import ChunksSlots from "nanogl-pbr/ChunksSlots";
 import Input, { ShaderType } from "nanogl-pbr/Input";
@@ -8,7 +8,7 @@ import FragModule from './disolve_fx.frag'
 /**
  * this shader can be edited live and hot reloaded in place
  */
-const FragCode = LiveShader(FragModule)
+const FragCode = CreateShader(FragModule)
 
 
 
@@ -33,8 +33,8 @@ export default class DisolveFX extends Chunk {
     this.threshold.attachConstant(.1)
 
     /**
-     * ivalidate this chunk's code when live reloading the glsl module
-     * noop in production release
+     * invalidate this chunk's code when live reloading the glsl module
+     * `onHmr` noop in non DEBUG mode
      */
     FragCode.onHmr(()=>this.invalidateCode())
     

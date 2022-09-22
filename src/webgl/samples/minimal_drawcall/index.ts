@@ -4,7 +4,7 @@ import { RenderContext } from "@webgl/core/Renderer";
 import { IScene } from "@webgl/engine/IScene";
 import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
-import { LiveProgram } from '@webgl/core/LiveShader';
+import { CreateProgram } from '@webgl/core/CreateProgram';
 
 import vShader from './shader.vert'
 import fShader from './shader.frag'
@@ -36,10 +36,10 @@ export default class MinimalDrawcallSample implements IScene {
       .attrib('aAngle', 1, gl.FLOAT)
 
     /*
-     * LiveProgram utility provide a WebglProgram which update automatically 
+     * CreateProgram utility provide a WebglProgram which update automatically 
      * when one of it's shader is updated (using webpack HMR)
      */
-    this.prg = LiveProgram(gl, vShader, fShader)
+    this.prg = CreateProgram(gl, vShader, fShader)
 
 
     CreateGui(this)
