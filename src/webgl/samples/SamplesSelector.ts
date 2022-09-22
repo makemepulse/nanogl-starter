@@ -9,10 +9,10 @@ import SuzanneScene from "./suzane"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
 
+
 import LightsScene           from "./lights"
 import RttSample             from "./rtt/RttSample"
 import MsaaSample            from "./rtt/MsaaSample"
-import MinimalDrawcallSample from "./minimal_drawcall"
 import PickFloorSample       from "./interactions/PickFloorSample"
 import GuiSample             from "./devtools/GuiSample"
 import DevtoolsScene         from "./devtools/DebugDrawSample"
@@ -28,6 +28,8 @@ import MatcapSample          from "./custom_material/MatcapSample"
 import SpherizeSample        from "./custom_material/SpherizeSample"
 import UnlitSample           from "./custom_material/UnlitSample"
 import LightmapSample        from "./custom_material/LightmapSample"
+import MinimalDrawcallSample from "./lowlevel/MinimalDrawcallSample"
+import GLStateSample         from "./lowlevel/GLStateSample"
 
 
 export const SampleScenes = {
@@ -51,7 +53,8 @@ export const SampleScenes = {
   'Materials - Unlit'        : UnlitSample           ,
   'RTT - Basic'              : RttSample             ,
   'RTT - Msaa'               : MsaaSample            ,
-  'Minimal Drawcall'         : MinimalDrawcallSample ,
+  'Low Level - Drawcall'     : MinimalDrawcallSample ,
+  'Low Level - GL State'     : GLStateSample         ,
   'Pointers - Picking'       : PickFloorSample       ,
 } as const
 

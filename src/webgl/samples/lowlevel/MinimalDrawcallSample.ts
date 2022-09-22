@@ -6,15 +6,19 @@ import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
 import { CreateProgram } from '@webgl/core/CreateProgram';
 
-import vShader from './shader.vert'
-import fShader from './shader.frag'
+import vShader from './circle.vert'
+import fShader from './circle.frag'
 import RenderMask from '@webgl/core/RenderMask';
 import { CreateGui, DeleteGui, GuiFolder, RangeGui } from '@webgl/dev/gui/decorators';
 
-
-@GuiFolder('DrawcallSample')
+/**
+ * Most basic, low level draw call using just core nanogl features
+ * It draw a disc made of 64 vertices.
+ * It create an ArrayBuffer of 64 vertices containing a single float attribute, the angle for 0 to 2PI of the vertex on the disc and render it use a custom Program
+ */
+@GuiFolder('Minimal Drawcall Sample')
 export default class MinimalDrawcallSample implements IScene {
-
+  
   private geom: GLArrayBuffer;
 
   private prg: Program;
@@ -25,6 +29,7 @@ export default class MinimalDrawcallSample implements IScene {
   @RangeGui(0, 2)
   radius = 1.0
 
+  
   constructor(private renderer : Renderer ){
     const gl = renderer.gl
 
@@ -42,6 +47,9 @@ export default class MinimalDrawcallSample implements IScene {
     this.prg = CreateProgram(gl, vShader, fShader)
 
 
+    /*
+     * Create the GUI defined by @decorators
+     */
     CreateGui(this)
     
   }
@@ -49,12 +57,21 @@ export default class MinimalDrawcallSample implements IScene {
   
   
   render(context: RenderContext): void {
-    if( context.mask !== RenderMask.OPAQUE ) return
-    
+    /*
+     * only draw during the Opaque render queue
+     */
+    if( (context.mask & RenderMask.OPAQUE) === 0 ) return
+
+    /*
+     * Use and setup the program's uniforms
+     */
     this.prg.use()
     this.prg.uMVP( context.camera._viewProj )
     this.prg.uParams(this.radius, this.arc)
     
+    /*
+     * bind the geometry and draw it 
+     */
     this.geom.attribPointer(this.prg)
     this.geom.drawTriangleFan()
   }
@@ -62,6 +79,9 @@ export default class MinimalDrawcallSample implements IScene {
   
   
   unload(): void {
+    /*
+     * delete the GUI defined by @decorators
+     */
     DeleteGui(this)
   }
   
