@@ -43,8 +43,22 @@ Some examples are available [here](src/webgl/samples/devtools/GuiTestObject.ts)
 
 The renderer have initilly 2 cameras, a main camera and a debug one. You can switch camera in the Gui. The Debug camera provide 2 different control scheme (3DSMax and Blender) you can change the scheme in the .env  files by editing `VUE_APP_DEV_CAMERA_SCHEME` var.
    
-#### HMR (textures, shaders)
+#### Shaders and programs live reload
 
+Glsl can be imported as modules, and provide HMR fonctionnalities. 
+
+The [Minimal drawcall](src/webgl/samples/lowlevel/MinimalDrawcallSample.ts) sample create a program which recompile when the glsl file are edited.
+The [Disolve FX](src/webgl/samples/custom_material/disolve_fx/DisolveFX.ts) show how to implement shader HMR when using shader Chunk on materials
+
+#### Assets loading
+
+Textures and Gltfs can be loaded as Resource objects. ( See the resources API `src/resources`). 
+
+  - A `Resource` manage it's loading lifecycle. It can be loaded, cancelled and unloaded. See a basic loading the [Minimal Sample](src/webgl/samples/resources/MinimalResourceSample.ts), anf more advanced cancellation managment in [Cancelation Sample](src/webgl/samples/resources/CancellationSample.ts)
+  - Resources can be grouped in ResourceGroup to simplify loading of multiple resources
+  - TextureResources implement the source-set concept. Various formats of a texture can be provided. The first one available will be used. This is managed automatically for textures in the `src/assets` folder, loaded with `AssetDatabase.getTexture()`. 
+  - Currently supported texture formats are jpg, png, webp, basis, etc1(ktx), dxt5/bc3(ktx), pvrtc(ktx)
+  - `TextureResources` created using `AssetDatabase.getTexture()` provide HMR functionality. They can be edited and hot reloaded. See the [Minimal Sample](src/webgl/samples/resources/MinimalResourceSample.ts). Note that only jpg/png version is reloaded.
 
 
 #### Samples
