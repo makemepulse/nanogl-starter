@@ -30,6 +30,8 @@ import UnlitSample           from "./custom_material/UnlitSample"
 import LightmapSample        from "./custom_material/LightmapSample"
 import MinimalDrawcallSample from "./lowlevel/MinimalDrawcallSample"
 import GLStateSample         from "./lowlevel/GLStateSample"
+import SkyboxSample          from "./lowlevel/SkyboxSample"
+
 
 
 export const SampleScenes = {
@@ -55,6 +57,7 @@ export const SampleScenes = {
   'RTT - Msaa'               : MsaaSample            ,
   'Low Level - Drawcall'     : MinimalDrawcallSample ,
   'Low Level - GL State'     : GLStateSample         ,
+  'Low Level - Skybox'       : SkyboxSample          ,
   'Pointers - Picking'       : PickFloorSample       ,
 } as const
 
