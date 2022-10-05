@@ -15,6 +15,7 @@ import gui from '../gui';
 import { CreateGui, Gui, GuiFolder, RangeGui } from '../gui/decorators';
 import { Control } from '../gui/api';
 import Points from './Points';
+import GLState from 'nanogl-state/GLState';
 
 
 const Orange = 0xfe9f2c
@@ -207,6 +208,8 @@ class DebugDrawImpl {
     this.lines.render(ctx.camera)
     this.points.render(ctx.camera)
     this.textRenderer.draw(ctx)
+
+    GLState.get(ctx.gl).apply()
 
   }
 

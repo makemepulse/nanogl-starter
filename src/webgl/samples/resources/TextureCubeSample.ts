@@ -35,12 +35,12 @@ export default class TextureCubeSample implements IScene {
           codec: 'std', lods: [
             {
               files: [
-                AssetDatabase.getAssetPath('sample/cube_car/posx.jpg'),
-                AssetDatabase.getAssetPath('sample/cube_car/posy.jpg'),
-                AssetDatabase.getAssetPath('sample/cube_car/posz.jpg'),
-                AssetDatabase.getAssetPath('sample/cube_car/negx.jpg'),
-                AssetDatabase.getAssetPath('sample/cube_car/negy.jpg'),
-                AssetDatabase.getAssetPath('sample/cube_car/negz.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/posx.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/posy.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/posz.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/negx.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/negy.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/cube_car/negz.jpg'),
               ]
             }
           ]

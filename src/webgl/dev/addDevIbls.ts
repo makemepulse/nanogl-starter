@@ -1,4 +1,5 @@
 import Lighting from "@webgl/engine/Lighting";
+import IblResource from "@webgl/resources/IblResource";
 
 
 /// #if DEBUG
@@ -13,10 +14,15 @@ async function _addDevIbls( lighting : Lighting ):Promise<void> {
   
   const list = await loadJson( DevIblDir + '/list.json' )
 
+  let res: IblResource = null
+
   gui.folder('Lighting').select( 'ibls', list ).onChange( ibl=>{
-    const env = `${DevIblDir}/${ibl}/env.png`
-    const sh = `${DevIblDir}/${ibl}/sh.bin`
-    lighting.ibl.load( env, sh )
+    res?.unload()
+    res = new IblResource({
+      path: `${DevIblDir}/${ibl}`,
+      ibl: lighting.ibl,
+    }, lighting.gl )
+    res.load()
   })
 
 }

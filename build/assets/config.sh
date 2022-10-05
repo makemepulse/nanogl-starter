@@ -3,10 +3,10 @@ TMPDIR=./tmp
 BLIB=./build/assets
 
 pvrcompres=/Applications/Imagination/PVRTexTool/CLI/OSX_x86/PVRTexToolCLI
+cmgen=/Users/plepers/work/workspaces/c/filament/out/cmake-release/tools/cmgen/cmgen
 astccompress=astcenc
 FBX2glTF=$BLIB/bin/FBX2glTF
 gltfOptim=$BLIB/gltf-optim-cli
-cmftExe=$BLIB/bin/cmft
 hdr2pngExe=$BLIB/bin/hdr2png
 
 EXPORT_BBC=true

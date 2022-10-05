@@ -8,7 +8,7 @@ import gui from "@webgl/dev/gui"
 import MatcapPass from "./matcap/MatcapPass"
 import AssetDatabase from "@webgl/resources/AssetDatabase"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 
 /**
  * Illustrate creation of a MaterialPass from scratch
@@ -33,7 +33,7 @@ export default class MatcapSample implements IScene {
     /**
      * completely replace the gltf material with les clearcoat one
      */
-    this.gltfSample.overrides.overridePass("Suzanne", this.matcapPass)
+    this.gltfSample.overrides.overridePass("suzanne_gold", this.matcapPass)
     
 
     /// #if DEBUG

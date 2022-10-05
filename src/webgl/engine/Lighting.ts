@@ -11,6 +11,7 @@ import BaseMaterial from "nanogl-pbr/BaseMaterial";
 import RenderPass from "@webgl/core/RenderPass";
 import Node from "nanogl-node";
 import LightmapRenderer, { LightmapRenderFunction } from "@webgl/core/LightmapRenderer";
+import IblResource from "@webgl/resources/IblResource";
 
 
 const EXPO = 1.0
@@ -61,10 +62,12 @@ export default class Lighting {
 
 
 
-  constructor( private gl: GLContext ){
+  constructor( readonly gl: GLContext ){
     this.root = new Node()
-    this.ibl = new IblLight( gl )
+    this.ibl = new IblLight()
     this.ibl.enableRotation = true
+    
+
     this.lightSetup = new LightSetup()
     this.lightSetup.add( this.ibl )
     this.lightSetup.bounds.fromMinMax([-1,-1,-1],[1,1,1])
@@ -124,11 +127,11 @@ export default class Lighting {
 
 
   load(): Promise<void> {
-    return this.ibl.load(
-      require( "@/assets/webgl/ibl/Helipad/env.png").default,
-      require( "@/assets/webgl/ibl/Helipad/sh.bin").default
-    )
+    return new IblResource({
+      path: 'ibl/Harbour_2', useAssetDatabase: true, ibl: this.ibl
+    }, this.gl ).load().then()
   }
+ 
 
   dispose(): void {
     gui.clearFolder('Lighting')

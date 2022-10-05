@@ -11,7 +11,7 @@ export interface ITextureCodec {
   // createTextureData( textureResource : BaseTextureResource, source : ITextureRequestSource ) : TextureData;
   decodeLod( source : ITextureRequestSource, lod:number, buffers: ArrayBuffer[], options: ITextureOptions, gl:GLContext ) : Promise<TextureData>;
   // buffers per lod, per faces 
-  decodeCube(source : ITextureRequestSource, buffers: ArrayBuffer[][], options: ITextureOptions, gl:GLContext ): Promise<TextureData>;
+  decodeCube(source : ITextureRequestSource, buffers: ArrayBuffer[], options: ITextureOptions, gl:GLContext ): Promise<TextureData>;
 
 }
 

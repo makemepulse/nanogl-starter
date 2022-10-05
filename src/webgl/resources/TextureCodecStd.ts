@@ -93,8 +93,14 @@ export default class TextureCodecStd implements ITextureCodec {
 
   }
 
-
-  async decodeCube(source: ITextureRequestSource, buffers: ArrayBuffer[][], options: ITextureOptions) : Promise<TextureData>{
+  /**
+   * 
+   * @param source the request source
+   * @param buffers the files for faces/miplevels, must be a multiple of 6 in format face+X/l0, face-X/l0, face+Y/l0, face-Y/l0, face+Z/l0, face-Z/l0, face+X/l1, face-X/l1, face+Y/l1, face-Y/l1, face+Z/l1, face-Z/l1, ...
+   * @param options 
+   * @returns 
+   */
+  async decodeCube(source: ITextureRequestSource, buffers: ArrayBuffer[], options: ITextureOptions) : Promise<TextureData>{
 
     const fmt = options.alpha ? 0x1908 : 0x1907;
 
@@ -114,18 +120,28 @@ export default class TextureCodecStd implements ITextureCodec {
       }]
     } 
 
-    for(let i = 0; i < 6; i++){
-  
-      const image = await this.decodeImage( buffers[0][i] );
-  
-      const mip : TextureMip<TexImageSource> = {
-        width  : image.width,
-        height : image.height,
-        data : image
-      }
+    const mips = buffers.length / 6;
+    if( mips !== Math.floor(mips) ){
+      throw new Error(`${buffers.length} is invalid number of buffers for cube texture, must be a multiple of 6`);
+    }
 
-      datas.sources[0].surfaces.push([mip]);
+    datas.sources[0].surfaces = [[], [], [], [], [], []];
+
+    for (let mip = 0; mip < mips; mip++) {
       
+      for(let face = 0; face < 6; face++){
+        
+        const image = await this.decodeImage( buffers[face+mip*6] );
+        
+        const img : TextureMip<TexImageSource> = {
+          width  : image.width,
+          height : image.height,
+          data : image
+        }
+        
+        datas.sources[0].surfaces[face].push(img);
+        
+      }
     }
 
     return Promise.resolve(datas)

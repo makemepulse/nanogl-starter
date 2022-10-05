@@ -7,6 +7,7 @@ if [ -z "$GLOB" ]
 fi
 
 source ./build/assets/config.sh
+source ./build/assets/gen_ibl.sh
 
 
 match(){

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Color, InputBindingPlugin, ColorController, CompositeColorParser, BindingTarget, createColorStringParser } from "@tweakpane/core";
+import { Color, InputBindingPlugin, ColorController, BindingTarget, createColorStringParser } from "@tweakpane/core";
 import { BindingWriter } from "@tweakpane/core/dist/cjs/common/binding/binding";
 import { ColorComponents3, ColorComponents4 } from "@tweakpane/core/dist/cjs/input-binding/color/model/color-model";
 import { parseColorInputParams } from "@tweakpane/core/dist/cjs/input-binding/color/util";

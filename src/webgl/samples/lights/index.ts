@@ -10,7 +10,7 @@ import FloorPlane from "@webgl/samples/common/FloorPlane"
 import CompleteLightSetup from "../common/CompleteLightSetup"
 import Bounds from "nanogl-pbr/Bounds"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 // const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "gltfs/ground_control_station_for_uav/scene.gltf"
 

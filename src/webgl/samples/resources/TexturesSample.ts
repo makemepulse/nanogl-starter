@@ -33,7 +33,7 @@ export default class TexturesSample implements IScene {
       /*
        * simple TextureResource loaded from string url
        */
-      new TextureResource( AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl ),
+      new TextureResource( AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl ),
 
       /*
        * manually create a LODed texture resource
@@ -43,9 +43,9 @@ export default class TexturesSample implements IScene {
           {
             codec: 'std',
             lods: [
-              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD0.png")]},
-              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD1.png")]},
-              {files: [AssetDatabase.getAssetPath("sample/avatar_LOD2.png")]},
+              {files: [AssetDatabase.getAssetPath("samples/textures/avatar_LOD0.png")]},
+              {files: [AssetDatabase.getAssetPath("samples/textures/avatar_LOD1.png")]},
+              {files: [AssetDatabase.getAssetPath("samples/textures/avatar_LOD2.png")]},
             ],
           }
         ]
@@ -81,7 +81,7 @@ export default class TexturesSample implements IScene {
       
       // texture from external url with options
       // new TextureResource( 'https://picsum.photos/128/128', gl ),
-      new TextureResource( require('@/assets/webgl/sample/avatar_LOD1.png').default, gl ),
+      new TextureResource( require('@/assets/webgl/samples/textures/avatar_LOD1.png').default, gl ),
 
     ]
 

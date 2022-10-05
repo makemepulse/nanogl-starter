@@ -21,6 +21,8 @@ import BasisDecoder from "./resources/basis/BasisDecoder";
 
 /// #if DEBUG
 Program.debug = true;
+console.log(Program);
+
 /// #else
 Program.debug = false;
 /// #endif

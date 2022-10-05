@@ -47,7 +47,7 @@ module.exports = {
         .set('@webgl', path.resolve( __dirname, 'src/webgl'))
 
         // .set('nanogl', path.resolve( __dirname, '../../nanogl/nanogl'))
-        // .set('nanogl-pbr', path.resolve( __dirname, '../../nanogl/nanogl-pbr'))
+        .set('nanogl-pbr', path.resolve( __dirname, '../../nanogl/nanogl-pbr'))
 
 
 
@@ -77,7 +77,7 @@ module.exports = {
 
 
     config.module.rule('webgl-assets')
-      .test(/\.(glb|gltf|bin|ktx|ktx2|jpg|jpeg|png|webp|basis)$/ )
+      .test(/\.(glb|gltf|bin|ktx|ktx2|jpg|jpeg|png|webp|basis|txt)$/ )
       .include
         .add( path.resolve( __dirname, 'src/assets/webgl' ) )
         .end()

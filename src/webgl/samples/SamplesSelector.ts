@@ -2,7 +2,6 @@
 import Delay from "@/core/Delay"
 import gui from "@webgl/dev/gui"
 import { Monitor } from "@webgl/dev/gui/decorators"
-import Program from "nanogl/program"
 import { IScene } from "../engine/IScene"
 import RobotScene from "./robot"
 import SuzanneScene from "./suzane"
@@ -31,6 +30,8 @@ import LightmapSample        from "./custom_material/LightmapSample"
 import MinimalDrawcallSample from "./lowlevel/MinimalDrawcallSample"
 import GLStateSample         from "./lowlevel/GLStateSample"
 import SkyboxSample          from "./lowlevel/SkyboxSample"
+import PmremIblSample        from "./ibl/PmremIblSample"
+import OctaIblSample from "./ibl/OctaIblSample"
 
 
 
@@ -53,6 +54,8 @@ export const SampleScenes = {
   'Materials - Matcap'       : MatcapSample          ,
   'Materials - Lightmap'     : LightmapSample        ,
   'Materials - Unlit'        : UnlitSample           ,
+  'Ibl - Webgl2 (Pmrem)'     : PmremIblSample        ,
+  'Ibl - Webgl1 (Octa)'      : OctaIblSample         ,
   'RTT - Basic'              : RttSample             ,
   'RTT - Msaa'               : MsaaSample            ,
   'Low Level - Drawcall'     : MinimalDrawcallSample ,
@@ -109,7 +112,6 @@ export default class SamplesSelector {
     this._current = null
     if( scene ){
       await scene.load()
-      Program.debug = true;
       this._current = scene
     }
   }

@@ -13,6 +13,8 @@ import { IScene } from "./engine/IScene";
 import SamplesSelector from "./samples/SamplesSelector";
 import Pointers from "./core/Pointers";
 import AssetDatabase from "./resources/AssetDatabase";
+import Program from "nanogl/program";
+import GLState from "nanogl-state/GLState";
 
 export default class Renderer {
 
@@ -58,6 +60,7 @@ export default class Renderer {
 
     Capabilities(this.gl).report()
     AssetDatabase.printAssets()
+    console.log( Program.debug )
     
   }
 
@@ -85,6 +88,13 @@ export default class Renderer {
     this.renderScene( this.samples.current )
     DebugDraw.render(this.context)
     this.pointers.endFrame()
+
+
+    /// #if DEBUG
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((GLState.get(this.gl).cfgStack as any)._ptr > 0) { throw new Error('glstate overflow') }
+    /// #endif
+
   }
   
   

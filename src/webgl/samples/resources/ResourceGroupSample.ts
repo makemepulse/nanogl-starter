@@ -24,11 +24,11 @@ export default class ReourceGroupSample implements IScene {
 
   constructor(renderer: Renderer) {
     const gl = renderer.gl
-    this.resources.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", gl), 'suzanne')
+    this.resources.add(new GltfScene("samples/suzanne/suzanne.gltf", gl), 'suzanne')
     this.resources.add(this.textures)
 
-    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl), 'suzanne_color' )
-    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_MetallicRoughness.png"), gl), 'suzanne_mr' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl), 'suzanne_color' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/roughness.png"), gl), 'suzanne_mr' )
   }
 
   load(): Promise<void> {

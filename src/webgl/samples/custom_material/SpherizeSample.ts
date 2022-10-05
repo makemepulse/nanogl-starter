@@ -13,7 +13,7 @@ import Bounds from "nanogl-pbr/Bounds"
 import DepthPass from "nanogl-pbr/DepthPass"
 import Spherize from "./spherize_fx/Spherize"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 
 
 

@@ -12,7 +12,7 @@ import GLState from "nanogl-state/GLState"
 import { MsaaFbo } from "@webgl/core/MsaaFbo"
 import gui from "@webgl/dev/gui"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 
 const FBO_SIZE = 512
 export default class MsaaSample implements IScene {

@@ -11,7 +11,7 @@ import RenderPass from "@webgl/core/RenderPass"
 import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import GLState from "nanogl-state/GLState"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 
 const FBO_SIZE = 512
 export default class RttSample implements IScene {

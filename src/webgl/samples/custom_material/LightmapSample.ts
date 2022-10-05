@@ -13,6 +13,7 @@ import Input, { ShaderType } from "nanogl-pbr/Input"
 import ChunksSlots from "nanogl-pbr/ChunksSlots"
 import gui from "@webgl/dev/gui"
 import { CreateGui, DeleteGui, GuiFolder, RangeGui } from "@webgl/dev/gui/decorators"
+import IblResource from "@webgl/resources/IblResource"
 
 @GuiFolder('Lightmap')
 class LightmapChunk extends Chunk {
@@ -82,6 +83,7 @@ export default class LightmapSample implements IScene {
 
     this.lighting   = new Lighting( this.gl )
     this.lighting.ibl.ambientExposure = 0
+    
     this.root.add( this.lighting.root)
 
     this.lighting.ibl.enableBoxProjection = true
@@ -143,10 +145,11 @@ export default class LightmapSample implements IScene {
   }
 
   loadLighting() {
-    this.lighting.ibl.load(
-      require( "@/assets/webgl/samples/room/env/env.png").default,
-      require( "@/assets/webgl/samples/room/env/sh.bin").default
-    )
+    return new IblResource({
+      path: 'samples/room/env',
+      useAssetDatabase: true,
+      ibl: this.lighting.ibl,
+    }, this.gl).load()
   }
 
   async loadLightmap(){

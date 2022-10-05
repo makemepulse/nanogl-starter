@@ -1,14 +1,14 @@
 import { RenderContext } from "@webgl/core/Renderer"
 import Renderer from "@webgl/Renderer"
-import Node from "nanogl-node"
 import { GLContext } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 
-// import Suzanne from "@/assets/webgl/gltfs/suzanne/Suzanne.gltf"
+// import Suzanne from "@/assets/webgl/samples/suzanne/suzanne.gltf"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+// const GltfPath = "samples/suzanne/suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 // const GltfPath = "webgl/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "webgl/ground_control_station_for_uav/scene.gltf"
 // const GltfPath = "webgl/meetmats/vzla/scene.gltf"
@@ -22,19 +22,16 @@ export default class SuzanneScene implements IScene {
   readonly gl : GLContext
   gltfSample : GltfScene
   lighting   : Lighting
-  root       : Node
   
   constructor( renderer:Renderer ){
     this.gl = renderer.gl
-    this.root       = new Node()
     this.lighting   = new Lighting( this.gl )
-    this.root.add( this.lighting.root )
-    this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting, this.root )
+    this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting )
   }
 
   preRender():void {
     this.gltfSample.preRender()
-    this.root.updateWorldMatrix()
+    this.lighting.root.updateWorldMatrix()
   }
 
   rttPass():void {
@@ -52,6 +49,7 @@ export default class SuzanneScene implements IScene {
 
   unload(): void {
     this.lighting.dispose()
+    this.gltfSample.unload()
   }
 
 }

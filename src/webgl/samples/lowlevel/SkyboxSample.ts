@@ -16,7 +16,7 @@ import { mat4 } from 'gl-matrix';
 const M4 = mat4.create()
 
 /**
- * 
+ * The sample display a skybox from a simple fullscreen quad and a lat/lng env map.
  */
 export default class SkyboxSample implements IScene {
 

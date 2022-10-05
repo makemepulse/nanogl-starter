@@ -11,8 +11,9 @@ import gui from "@webgl/dev/gui"
 import CompleteLightSetup from "../common/CompleteLightSetup"
 import FloorPlane from "@webgl/samples/common/FloorPlane"
 import Bounds from "nanogl-pbr/Bounds"
+import { StandardMetalness } from "nanogl-pbr/StandardPass"
 
-const GltfPath = "gltfs/suzanne/Suzanne.gltf"
+const GltfPath = "samples/suzanne/suzanne.gltf"
 // const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
 // const GltfPath = "gltfs/ground_control_station_for_uav/scene.gltf"
 // const GltfPath = "gltfs/meetmats/astronaut/scene.gltf"
@@ -29,7 +30,6 @@ export default class ClearcoatSample implements IScene {
   lighting: Lighting
   root: Node
   clearcoatPass: ClearcoatMetalness
-  // clearcoatPass: StandardMetalness
   ccSmoothness: Uniform
   smoothness: Uniform
   metalness: Uniform
@@ -53,22 +53,25 @@ export default class ClearcoatSample implements IScene {
     this.gltfSample = new GltfScene(GltfPath, this.gl, this.lighting, this.root)
 
 
-
+    
     /**
-     * completely replace the gltf material with les clearcoat one
+     * replace material color pass by clearcoat pass, 
+     * use surface parameters from the original pass (occlusion for example)
      */
-    this.gltfSample.overrides.overridePass("Suzanne", this.clearcoatPass)
-   
-
+    this.gltfSample.overrides.overridePass("suzanne_gold", (ctx, material) => {
+      const pass = material.getPass('color').pass as StandardMetalness
+      // this.clearcoatPass.normal.proxy(pass.normal)
+      this.clearcoatPass.occlusion.proxy(pass.occlusion)
+      this.clearcoatPass.occlusionStrength.proxy(pass.occlusionStrength)
+      return this.clearcoatPass
+    })
+    
+  
     /**
-     * alternatively, use surface parameters from the original pass
+     * alternatively we can completely replace the gltf material with les clearcoat one
      */
-    // this.gltfSample.overrides.overridePass("Suzanne", (ctx, material) => {
-    //   const pass = material.getPass('color').pass as StandardMetalness
-    //   this.clearcoatPass.setSurface(pass.surface)
-    //   return this.clearcoatPass
-    // })
-
+    // this.gltfSample.overrides.overridePass("suzanne_gold", this.clearcoatPass)
+      
 
 
     /*
@@ -103,7 +106,7 @@ export default class ClearcoatSample implements IScene {
 
     // set red color as glsl constant
     // could attach a uniform if animated, or sampler or geomatry custom attribute here
-    this.clearcoatPass.surface.baseColor.attachConstant([.8, .1, .1])
+    this.clearcoatPass.surface.baseColor.attachConstant([.7, .1, .1])
     
 
 
@@ -112,7 +115,7 @@ export default class ClearcoatSample implements IScene {
     this.metalness = this.clearcoatPass.surface.metalness.attachUniform()
 
     this.ccSmoothness.set(1)
-    this.smoothness.set(.75)
+    this.smoothness.set(.35)
     this.metalness.set(1)
 
     const f = gui.folder('Clearcoat')

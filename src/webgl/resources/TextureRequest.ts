@@ -36,7 +36,10 @@ export interface ITextureRequestLod {
 }
 
 export interface ITextureRequestSource {
-  codec : string
+  codec : string,
+  /*
+   * various resolution of the texture, can be used to preload low res and ghost load hi res, or accomodate perf/memory capabilities...
+   */
   lods : ITextureRequestLod[],
   // datas : TextureData | null
 }

@@ -294,8 +294,7 @@ export class TextureCubeResource extends BaseTextureResource<TextureCube> {
     const [codec, source] = await TextureCodecs.getCodecForRequest(this._request, gl);
 
 
-    const promises = source.lods.map( l=>this.loadSourceLod(l, signal))
-    const buffers = await Promise.all(promises)
+    const buffers = await this.loadSourceLod(source.lods[level], signal)
     // run codec to create or setup TextureData
     const datas = await codec.decodeCube(source, buffers, options, gl);
     throwIfAborted(signal)

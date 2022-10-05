@@ -97,15 +97,15 @@ export default class CancellationSample implements IScene {
     const gl = renderer.gl
     this.testers = [
 
-      new ResourceTester('texture'  , () => new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl   )),
+      new ResourceTester('texture'  , () => new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl   )),
       new ResourceTester('timport'  , () => AssetDatabase.getTexture( 'texture1', gl )),
-      new ResourceTester('gltf'     , () => new GltfResource   ("gltfs/suzanne/Suzanne.gltf"         , gl   )),
-      new ResourceTester('gltfScene', () => new GltfScene      ("gltfs/suzanne/Suzanne.gltf"         , gl)),
+      new ResourceTester('gltf'     , () => new GltfResource   ("samples/suzanne/suzanne.gltf"         , gl   )),
+      new ResourceTester('gltfScene', () => new GltfScene      ("samples/suzanne/suzanne.gltf"         , gl)),
       new ResourceTester('group', () => {
         const group = new ResourceGroup()
-        group.add(new TextureResource(AssetDatabase.getAssetPath("gltfs/suzanne/Suzanne_BaseColor.png"), gl))
-        group.add(new GltfResource("gltfs/suzanne/Suzanne.gltf", gl))
-        group.add(new GltfScene("gltfs/suzanne/Suzanne.gltf", gl))
+        group.add(new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl))
+        group.add(new GltfResource("samples/suzanne/suzanne.gltf", gl))
+        group.add(new GltfScene("samples/suzanne/suzanne.gltf", gl))
         return group;
       }),
 

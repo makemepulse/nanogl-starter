@@ -48,8 +48,6 @@ IN mediump vec3 vWorldBitangent;
 #endif 
 
 
-
-
 struct GeometryData
 {
     vec3  worldPos;
@@ -176,6 +174,7 @@ void main( void ){
 
   #pragma SLOT postf
 
+  // FragColor.rgb = FragColor.rgb * 0.0001 + surface.occlusion;
 
 
 }

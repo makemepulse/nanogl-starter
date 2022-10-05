@@ -13,7 +13,7 @@ export default class MinimalResourceSample implements IScene {
   resource: Resource
 
   constructor(private renderer: Renderer) {
-    this.resource = AssetDatabase.getTexture('sample/matcap_white.jpg', this.renderer.gl)
+    this.resource = AssetDatabase.getTexture('samples/textures/matcap_white.jpg', this.renderer.gl)
   }
   
   load(): Promise<void> {

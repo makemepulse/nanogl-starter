@@ -25,7 +25,7 @@ export default class BasisSample implements IScene {
   
   
   async load(): Promise<void> {
-    const url = AssetDatabase.getAssetPath('sample/matcap_clay.jpg.basis.ktx2')
+    const url = AssetDatabase.getAssetPath('samples/textures/matcap_clay.jpg.basis.ktx2')
     const buffer = await loadBytes(url)
     const res = await BasisDecoder.getInstance().decode(this.gl, buffer)
     BasisDecoder.setupTexture( res, this.tex )
