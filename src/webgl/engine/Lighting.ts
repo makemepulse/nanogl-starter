@@ -128,7 +128,7 @@ export default class Lighting {
 
   load(): Promise<void> {
     return new IblResource({
-      path: 'ibl/Harbour_2', useAssetDatabase: true, ibl: this.ibl
+      path: 'ibls/Harbour_2', useAssetDatabase: true, ibl: this.ibl
     }, this.gl ).load().then()
   }
  

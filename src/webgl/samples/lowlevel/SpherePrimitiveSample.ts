@@ -5,22 +5,23 @@ import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
 import { CreateProgram } from '@webgl/core/CreateProgram';
 
-import vShader from './skybox.vert'
-import fShader from './skybox.frag'
+import vShader from './sphere.vert'
+import fShader from './sphere.frag'
 import RenderMask from '@webgl/core/RenderMask';
-import Rect from 'nanogl-primitives-2d/rect';
 import AssetDatabase from '@webgl/resources/AssetDatabase';
 import { TextureResource } from '@webgl/resources/TextureResource';
-import { mat4 } from 'gl-matrix';
+import SpherePrimitive from "../common/SpherePrimitive";
+import GLState from "nanogl-state/GLState";
+import GLConfig from "nanogl-state/GLConfig";
 
-const M4 = mat4.create()
 
 /**
- * The sample display a skybox from a simple fullscreen quad and a lat/lng env map.
+ * demonstarte construction of a simple primitive geometry in SphereGeometry
+ * and basic draw call with it
  */
-export default class SkyboxSample implements IScene {
+export default class SpherePrimitiveSample implements IScene {
 
-  private quad: Rect;
+  private sphere: SpherePrimitive;
 
   private prg: Program;
   private envmap: TextureResource;
@@ -28,10 +29,12 @@ export default class SkyboxSample implements IScene {
   constructor(private renderer: Renderer) {
     const gl = renderer.gl
 
-    this.quad = new Rect(gl)
+    this.sphere = new SpherePrimitive(gl, 16, 24)
     this.prg = CreateProgram(gl, vShader, fShader)
 
     this.envmap = AssetDatabase.getTexture('samples/textures/skybox_ditch_river.jpg', gl)
+
+
   }
 
 
@@ -39,21 +42,18 @@ export default class SkyboxSample implements IScene {
   render(context: RenderContext): void {
     if ((context.mask & RenderMask.OPAQUE) === 0) return
 
-    /**
-     * create inverse view projection matrix with origin at O
-     * Used to transform screen space positions of the full screen quad, to world space view-directions
-     */
-    M4.set( context.camera._viewProj );
-    M4[12] = M4[13] = M4[14] = 0;
-    mat4.invert(M4, M4);
+    const glstate = GLState.get(context.gl)
+
+    glstate.push(new GLConfig().enableDepthTest())
+    glstate.apply()
     
-
     this.prg.use()
-    this.prg.uInverseViewProj(M4)
-    this.prg.tEnv(this.envmap.texture)
-
-    this.quad.attribPointer(this.prg)
-    this.quad.render()
+    this.prg.uMVP(context.camera._viewProj)
+    this.prg.tTex(this.envmap.texture)
+    
+    this.sphere.prepare(this.prg)
+    this.sphere.draw()
+    glstate.pop()
   }
 
 

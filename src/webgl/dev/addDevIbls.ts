@@ -6,13 +6,15 @@ import IblResource from "@webgl/resources/IblResource";
 //*
 
 const DevIblDir = "https://mmp-labs.s3.eu-west-1.amazonaws.com/resources/ibls"
-import { loadJson } from "@webgl/resources/Net";
+import { loadJson, loadText } from "@webgl/resources/Net";
 import gui from "./gui";
 
 
 async function _addDevIbls( lighting : Lighting ):Promise<void> {
   
-  const list = await loadJson( DevIblDir + '/list.json' )
+  const listFile = await loadText( DevIblDir + '/list.txt' )
+  
+  const list = listFile.split('\n').filter( (s)=>s.length>0 ).sort( (a,b)=>a.localeCompare(b) )
 
   let res: IblResource = null
 

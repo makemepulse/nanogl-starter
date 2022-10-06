@@ -168,20 +168,20 @@
 	],
 	"images":[
 		{
-			"uri":"albedo.png",
-			"mimeType":"image/png"
+			"uri":"albedo.jpg",
+			"mimeType":"image/jpeg"
 		},
 		{
-			"uri":"roughness.png",
-			"mimeType":"image/png"
+			"uri":"roughness.jpg",
+			"mimeType":"image/jpeg"
 		},
 		{
-			"uri":"normal.png",
-			"mimeType":"image/png"
+			"uri":"normal.jpg",
+			"mimeType":"image/jpeg"
 		},
 		{
-			"uri":"ao.png",
-			"mimeType":"image/png"
+			"uri":"ao.jpg",
+			"mimeType":"image/jpeg"
 		}
 	],
 	"scene":0

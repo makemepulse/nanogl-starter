@@ -35,7 +35,6 @@ export default class RobotScene implements IScene {
 
     this.gltfSample.preRender()
     
-
     for (const node of this.gltfSample.gltf.nodes ) {
       if( node.renderable )
       DebugDraw.drawText( node.name, node._wposition as vec3 )
@@ -56,8 +55,8 @@ export default class RobotScene implements IScene {
       DebugDraw.drawPoint( V3 )
     }
       
-
     this.root.updateWorldMatrix()
+
   }
 
   rttPass():void {

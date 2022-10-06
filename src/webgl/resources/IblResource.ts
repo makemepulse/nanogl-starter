@@ -9,6 +9,11 @@ import { TextureCubeResource, TextureResource } from "./TextureResource";
 import { loadText } from "./Net";
 import nativeAbortSignal from "@/core/AbortSignalUtils";
 
+type PMREMSize = 64 | 128 | 256 | 512 | 1024 | 2048 | 4096
+
+const DEFAULT_PMREM_SIZE : PMREMSize = 256
+const DEFAULT_PMREM_LODS = 5
+const DEFAULT_OCTA_LODS = 8
 
 export type IblRequest = {
 
@@ -36,7 +41,39 @@ export type IblRequest = {
    */
   useAssetDatabase?: boolean
 
+  /**
+   * Size of the PMREM texture Lod 0
+   * @default 256
+   */
+  pmremSize?: PMREMSize
+
+  /**
+   * Number of PMREM Mipmaps levels
+   * @default 5
+   * 
+   */
+  pmremMipLevels?: number
+
+  /**
+   * number of levels in Octahedral envs maps
+   * @default 8
+   */
+  octaMipLevels?: number
+
 }
+
+
+
+const DEFAULT_REQUEST: Required<IblRequest> = {
+  path: '',
+  ibl: undefined,
+  forceOctahedronFormat: false,
+  useAssetDatabase: false,
+  pmremSize: DEFAULT_PMREM_SIZE,
+  pmremMipLevels: DEFAULT_PMREM_LODS,
+  octaMipLevels: DEFAULT_OCTA_LODS
+}
+
 
 class ModuleIO extends WebImpl {
 
@@ -51,7 +88,6 @@ class ModuleIO extends WebImpl {
 }
 
 
-const PMREM_MIPLEVELS = 5
 
 export const _stdIO = new WebImpl();
 export const _moduleIO = new ModuleIO();
@@ -63,11 +99,9 @@ export default class IblResource extends Resource<IblLight>{
 
   private _usePmrem = false
 
-  private _bundlePath: string = null
+  private _ibl: IblLight;
 
-  private _useAssetDatabase = false
-  
-  private _ibl: IblLight = null
+  private readonly _request: Required<IblRequest>;
 
   get usePmrem() {
     return this._usePmrem
@@ -80,18 +114,18 @@ export default class IblResource extends Resource<IblLight>{
   constructor(protected request: IblRequest, protected gl: GLContext) {
     super()
 
-    this._bundlePath = request.path
-    if (this._bundlePath.endsWith('/')) {
-      this._bundlePath = this._bundlePath.slice(0, -1)
+    this._request = resolveRequest(request);
+
+    if (this._request.path.endsWith('/')) {
+      this._request.path = this._request.path.slice(0, -1)
     }
 
-    this._useAssetDatabase = request.useAssetDatabase ?? false
 
     this._usePmrem = isWebgl2(gl) && (request.forceOctahedronFormat !== true)
-
-    this._ibl = request.ibl || new IblLight()
+    this._ibl = this._request.ibl || new IblLight()
     
     this._ibl.iblFormat   = this._usePmrem ? 'PMREM' : 'OCTA'
+    this._ibl.mipLevels   = this._usePmrem ? this._request.pmremMipLevels : this._request.octaMipLevels;
     this._ibl.shFormat    = 'SH9'
     this._ibl.hdrEncoding = 'RGBM'
   }
@@ -133,8 +167,8 @@ export default class IblResource extends Resource<IblLight>{
    * @returns 
    */
   private resolveBundlePath(name: string): string {
-    const filename = `${this._bundlePath}/${name}`
-    if (this._useAssetDatabase)
+    const filename = `${this._request.path}/${name}`
+    if (this._request.useAssetDatabase)
       return AssetDatabase.getAssetPath(filename)
     else
       return filename
@@ -143,7 +177,8 @@ export default class IblResource extends Resource<IblLight>{
   /**
    * create list of filenames to load a pmremcubmap
    */
-  private createPmremFilenames(mips = 5, ext = ""): string[] {
+  private createPmremFilenames(ext = ""): string[] {
+    const mips = this._request.pmremMipLevels
     const faces = ['px', 'py', 'pz', 'nx', 'ny', 'nz']
 
     const res: string[] = []
@@ -159,7 +194,8 @@ export default class IblResource extends Resource<IblLight>{
 
 
   /**
-   * load a 256x pmrem cubemap with 5 mip levels
+   * load all the levels of the pmrem cubemap, using webp if available
+   * fill remaining mip level with empty data
    * @param dir 
    * @param mips 
    */
@@ -169,8 +205,8 @@ export default class IblResource extends Resource<IblLight>{
 
     const pmremRes = new TextureCubeResource({
       sources: [
-        {codec: 'webp', lods: [{files: this.createPmremFilenames(PMREM_MIPLEVELS, '.webp')}]},
-        {codec: 'std' , lods: [{files: this.createPmremFilenames(PMREM_MIPLEVELS         )}]},
+        {codec: 'webp', lods: [{files: this.createPmremFilenames('.webp')}]},
+        {codec: 'std' , lods: [{files: this.createPmremFilenames(       )}]},
       ]
     }, this.gl, {
       alpha: true,
@@ -181,7 +217,7 @@ export default class IblResource extends Resource<IblLight>{
 
     const gl = this.gl;
     /*
-      Add missing miplevels
+      Add missing miplevels, eg
 
       uploaded
       dim 256, 128, 64, 32, 16
@@ -191,10 +227,13 @@ export default class IblResource extends Resource<IblLight>{
       dim  8, 4, 2, 1
       lvl  5, 6, 7, 8
     */
+    
+    const exp = Math.log2(pmremTex.width)
 
     for (let i = 0; i < 6; i++) {
-      for (let level = 5; level < 9; level++) {
-        const size = 1 << (8 - level)
+
+      for (let level = this._request.pmremMipLevels; level <= exp; level++) {
+        const size = 1 << (exp - level)
         const faceTarget = cubeFaceForSurface(i as FaceIndex);
         this.gl.texImage2D(faceTarget, level, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
       }
@@ -215,7 +254,9 @@ export default class IblResource extends Resource<IblLight>{
         {codec: 'std' , lods: [{files: [this.resolveBundlePath('octa.rgbm.png'     )]}]},
       ]
     }, this.gl, {
+      mipmap: false,
       alpha: true,
+      wrap: 'clamp',
     })
 
     this._ibl.env = await octaRes.load( this.abortSignal )
@@ -228,7 +269,12 @@ export default class IblResource extends Resource<IblLight>{
 }
 
 
-
+function resolveRequest(request: IblRequest): Required<IblRequest> {
+  return {
+    ...DEFAULT_REQUEST,
+    ...request
+  }
+}
 
 
 /**

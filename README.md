@@ -61,6 +61,21 @@ Textures and Gltfs can be loaded as Resource objects. ( See the resources API `s
   - `TextureResources` created using `AssetDatabase.getTexture()` provide HMR functionality. They can be edited and hot reloaded. See the [Minimal Sample](src/webgl/samples/resources/MinimalResourceSample.ts). Note that only jpg/png version is reloaded.
 
 
+#### Image based lighting (Ibls)
+
+The project is setup to support 2 formats of Ibl textures. 
+  - A PMREM format: 256x256, RGBM16, 5 mip levels. Loaded as 30 webp or png files. Only supported on Webgl2
+  - A 2:1 ration octahedral format (OCTA): 8levels of 512x256 RGBM16, assembled in a single 512x2048 texture (webp/png). Used as fallback
+
+Additionaly, Irradiance data is provided as a 3 bands Spherical Harmonics in a txt file.
+
+API:
+  `IblLight`: represent an IBL in a `LightSetup`, can be added like other Punctual Lights. A `LightSetup` suport only one IblLight.
+  `IblResource`: a `Resource<IblLight>` to help you load Ibls. It handle octa/pmrem and png/webp switch based on capabilities. 
+
+Examples: 
+  [PmremIblSample](src/webgl/samples/ibl/PmremIblSample.ts) and [OctaIblSample](src/webgl/samples/ibl/OctaIblSample.ts)
+
 #### Samples
 
 

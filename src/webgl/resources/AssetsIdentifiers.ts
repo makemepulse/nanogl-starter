@@ -27,10 +27,10 @@ export type TexturePath =
   "samples/room/lightmap_hdr.png.webp" | 
   "samples/room/lightmap.jpg" | 
   "samples/room/lightmap.jpg.webp" | 
-  "samples/suzanne/albedo.png" | 
-  "samples/suzanne/ao.png" | 
-  "samples/suzanne/normal.png" | 
-  "samples/suzanne/roughness.png" | 
+  "samples/suzanne/albedo.jpg" | 
+  "samples/suzanne/ao.jpg" | 
+  "samples/suzanne/normal.jpg" | 
+  "samples/suzanne/roughness.jpg" | 
   "samples/textures/avatar_LOD0.png" | 
   "samples/textures/avatar_LOD1.png" | 
   "samples/textures/avatar_LOD2.png" | 
@@ -97,69 +97,69 @@ export type OtherAssetName =
 
 
 export type OtherAssetPath = 
-  "ibl/Harbour_2/m0_nx.rgbm.png" | 
-  "ibl/Harbour_2/m0_nx.rgbm.png.webp" | 
-  "ibl/Harbour_2/m0_ny.rgbm.png" | 
-  "ibl/Harbour_2/m0_ny.rgbm.png.webp" | 
-  "ibl/Harbour_2/m0_nz.rgbm.png" | 
-  "ibl/Harbour_2/m0_nz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m0_px.rgbm.png" | 
-  "ibl/Harbour_2/m0_px.rgbm.png.webp" | 
-  "ibl/Harbour_2/m0_py.rgbm.png" | 
-  "ibl/Harbour_2/m0_py.rgbm.png.webp" | 
-  "ibl/Harbour_2/m0_pz.rgbm.png" | 
-  "ibl/Harbour_2/m0_pz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_nx.rgbm.png" | 
-  "ibl/Harbour_2/m1_nx.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_ny.rgbm.png" | 
-  "ibl/Harbour_2/m1_ny.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_nz.rgbm.png" | 
-  "ibl/Harbour_2/m1_nz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_px.rgbm.png" | 
-  "ibl/Harbour_2/m1_px.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_py.rgbm.png" | 
-  "ibl/Harbour_2/m1_py.rgbm.png.webp" | 
-  "ibl/Harbour_2/m1_pz.rgbm.png" | 
-  "ibl/Harbour_2/m1_pz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_nx.rgbm.png" | 
-  "ibl/Harbour_2/m2_nx.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_ny.rgbm.png" | 
-  "ibl/Harbour_2/m2_ny.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_nz.rgbm.png" | 
-  "ibl/Harbour_2/m2_nz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_px.rgbm.png" | 
-  "ibl/Harbour_2/m2_px.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_py.rgbm.png" | 
-  "ibl/Harbour_2/m2_py.rgbm.png.webp" | 
-  "ibl/Harbour_2/m2_pz.rgbm.png" | 
-  "ibl/Harbour_2/m2_pz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_nx.rgbm.png" | 
-  "ibl/Harbour_2/m3_nx.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_ny.rgbm.png" | 
-  "ibl/Harbour_2/m3_ny.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_nz.rgbm.png" | 
-  "ibl/Harbour_2/m3_nz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_px.rgbm.png" | 
-  "ibl/Harbour_2/m3_px.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_py.rgbm.png" | 
-  "ibl/Harbour_2/m3_py.rgbm.png.webp" | 
-  "ibl/Harbour_2/m3_pz.rgbm.png" | 
-  "ibl/Harbour_2/m3_pz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_nx.rgbm.png" | 
-  "ibl/Harbour_2/m4_nx.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_ny.rgbm.png" | 
-  "ibl/Harbour_2/m4_ny.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_nz.rgbm.png" | 
-  "ibl/Harbour_2/m4_nz.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_px.rgbm.png" | 
-  "ibl/Harbour_2/m4_px.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_py.rgbm.png" | 
-  "ibl/Harbour_2/m4_py.rgbm.png.webp" | 
-  "ibl/Harbour_2/m4_pz.rgbm.png" | 
-  "ibl/Harbour_2/m4_pz.rgbm.png.webp" | 
-  "ibl/Harbour_2/octa.rgbm.png" | 
-  "ibl/Harbour_2/octa.rgbm.png.webp" | 
-  "ibl/Harbour_2/sh.txt" | 
+  "ibls/Harbour_2/m0_nx.rgbm.png" | 
+  "ibls/Harbour_2/m0_nx.rgbm.png.webp" | 
+  "ibls/Harbour_2/m0_ny.rgbm.png" | 
+  "ibls/Harbour_2/m0_ny.rgbm.png.webp" | 
+  "ibls/Harbour_2/m0_nz.rgbm.png" | 
+  "ibls/Harbour_2/m0_nz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m0_px.rgbm.png" | 
+  "ibls/Harbour_2/m0_px.rgbm.png.webp" | 
+  "ibls/Harbour_2/m0_py.rgbm.png" | 
+  "ibls/Harbour_2/m0_py.rgbm.png.webp" | 
+  "ibls/Harbour_2/m0_pz.rgbm.png" | 
+  "ibls/Harbour_2/m0_pz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_nx.rgbm.png" | 
+  "ibls/Harbour_2/m1_nx.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_ny.rgbm.png" | 
+  "ibls/Harbour_2/m1_ny.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_nz.rgbm.png" | 
+  "ibls/Harbour_2/m1_nz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_px.rgbm.png" | 
+  "ibls/Harbour_2/m1_px.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_py.rgbm.png" | 
+  "ibls/Harbour_2/m1_py.rgbm.png.webp" | 
+  "ibls/Harbour_2/m1_pz.rgbm.png" | 
+  "ibls/Harbour_2/m1_pz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_nx.rgbm.png" | 
+  "ibls/Harbour_2/m2_nx.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_ny.rgbm.png" | 
+  "ibls/Harbour_2/m2_ny.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_nz.rgbm.png" | 
+  "ibls/Harbour_2/m2_nz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_px.rgbm.png" | 
+  "ibls/Harbour_2/m2_px.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_py.rgbm.png" | 
+  "ibls/Harbour_2/m2_py.rgbm.png.webp" | 
+  "ibls/Harbour_2/m2_pz.rgbm.png" | 
+  "ibls/Harbour_2/m2_pz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_nx.rgbm.png" | 
+  "ibls/Harbour_2/m3_nx.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_ny.rgbm.png" | 
+  "ibls/Harbour_2/m3_ny.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_nz.rgbm.png" | 
+  "ibls/Harbour_2/m3_nz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_px.rgbm.png" | 
+  "ibls/Harbour_2/m3_px.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_py.rgbm.png" | 
+  "ibls/Harbour_2/m3_py.rgbm.png.webp" | 
+  "ibls/Harbour_2/m3_pz.rgbm.png" | 
+  "ibls/Harbour_2/m3_pz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_nx.rgbm.png" | 
+  "ibls/Harbour_2/m4_nx.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_ny.rgbm.png" | 
+  "ibls/Harbour_2/m4_ny.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_nz.rgbm.png" | 
+  "ibls/Harbour_2/m4_nz.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_px.rgbm.png" | 
+  "ibls/Harbour_2/m4_px.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_py.rgbm.png" | 
+  "ibls/Harbour_2/m4_py.rgbm.png.webp" | 
+  "ibls/Harbour_2/m4_pz.rgbm.png" | 
+  "ibls/Harbour_2/m4_pz.rgbm.png.webp" | 
+  "ibls/Harbour_2/octa.rgbm.png" | 
+  "ibls/Harbour_2/octa.rgbm.png.webp" | 
+  "ibls/Harbour_2/sh.txt" | 
   "samples/room/env/m0_nx.rgbm.png" | 
   "samples/room/env/m0_nx.rgbm.png.webp" | 
   "samples/room/env/m0_ny.rgbm.png" | 

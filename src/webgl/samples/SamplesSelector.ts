@@ -4,7 +4,7 @@ import gui from "@webgl/dev/gui"
 import { Monitor } from "@webgl/dev/gui/decorators"
 import { IScene } from "../engine/IScene"
 import RobotScene from "./robot"
-import SuzanneScene from "./suzane"
+import SimpleGltfSample from "./gltfs/SimpleGltfSample"
 import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
 
@@ -31,37 +31,41 @@ import MinimalDrawcallSample from "./lowlevel/MinimalDrawcallSample"
 import GLStateSample         from "./lowlevel/GLStateSample"
 import SkyboxSample          from "./lowlevel/SkyboxSample"
 import PmremIblSample        from "./ibl/PmremIblSample"
-import OctaIblSample from "./ibl/OctaIblSample"
+import OctaIblSample         from "./ibl/OctaIblSample"
+import SpherePrimitiveSample from "./lowlevel/SpherePrimitiveSample"
+import PackshotSample from "./gltfs/dome/PackshotSample"
 
 
 
 export const SampleScenes = {
-  'Gltf - Adam'              : AdamScene             ,
-  'Gltf - Robot'             : RobotScene            ,
-  'Gltf - Suzanne'           : SuzanneScene          ,
-  'Devtools - DebugDraw'     : DevtoolsScene         ,
-  'Devtools - Gui'           : GuiSample             ,
-  'Resources - Minimal'      : MinimalResourceSample ,
-  'Resources - Cancellation' : CancellationSample    ,
-  'Resources - Groups'       : ReourceGroupSample    ,
-  'Resources - Textures'     : TexturesSample        ,
-  'Resources - Cubemaps'     : TextureCubeSample     ,
-  'Resources - Basis'        : BasisSample           ,
-  'Lights'                   : LightsScene           ,
-  'Materials - Clearcoat'    : ClearcoatSample       ,
-  'Materials - Disolve'      : DisolveSample         ,
-  'Materials - Spherize'     : SpherizeSample        ,
-  'Materials - Matcap'       : MatcapSample          ,
-  'Materials - Lightmap'     : LightmapSample        ,
-  'Materials - Unlit'        : UnlitSample           ,
-  'Ibl - Webgl2 (Pmrem)'     : PmremIblSample        ,
-  'Ibl - Webgl1 (Octa)'      : OctaIblSample         ,
-  'RTT - Basic'              : RttSample             ,
-  'RTT - Msaa'               : MsaaSample            ,
-  'Low Level - Drawcall'     : MinimalDrawcallSample ,
-  'Low Level - GL State'     : GLStateSample         ,
-  'Low Level - Skybox'       : SkyboxSample          ,
-  'Pointers - Picking'       : PickFloorSample       ,
+  'Gltf - Adam'                  : AdamScene             ,
+  'Gltf - Robot'                 : RobotScene            ,
+  'Gltf - Suzanne'               : SimpleGltfSample      ,
+  'Gltf - Packshot'              : PackshotSample        ,
+  'Devtools - DebugDraw'         : DevtoolsScene         ,
+  'Devtools - Gui'               : GuiSample             ,
+  'Resources - Minimal'          : MinimalResourceSample ,
+  'Resources - Cancellation'     : CancellationSample    ,
+  'Resources - Groups'           : ReourceGroupSample    ,
+  'Resources - Textures'         : TexturesSample        ,
+  'Resources - Cubemaps'         : TextureCubeSample     ,
+  'Resources - Basis'            : BasisSample           ,
+  'Lights'                       : LightsScene           ,
+  'Materials - Clearcoat'        : ClearcoatSample       ,
+  'Materials - Disolve'          : DisolveSample         ,
+  'Materials - Spherize'         : SpherizeSample        ,
+  'Materials - Matcap'           : MatcapSample          ,
+  'Materials - Lightmap'         : LightmapSample        ,
+  'Materials - Unlit'            : UnlitSample           ,
+  'Ibl - Webgl2 (Pmrem)'         : PmremIblSample        ,
+  'Ibl - Webgl1 (Octa)'          : OctaIblSample         ,
+  'RTT - Basic'                  : RttSample             ,
+  'RTT - Msaa'                   : MsaaSample            ,
+  'Low Level - Drawcall'         : MinimalDrawcallSample ,
+  'Low Level - GL State'         : GLStateSample         ,
+  'Low Level - Skybox'           : SkyboxSample          ,
+  'Low Level - Sphere Primitive' : SpherePrimitiveSample ,
+  'Pointers - Picking'           : PickFloorSample       ,
 } as const
 
 
@@ -138,7 +142,7 @@ export default class SamplesSelector {
         await this._setScene(null)
         if( !this._memTestRunning ) break
       } else {
-        await this._setScene(this.current?null:new SuzanneScene(this.renderer))
+        await this._setScene(this.current?null:new SimpleGltfSample(this.renderer))
         this._memTestCount = this._memTestCount+1
       }
       await Delay(250)
