@@ -31,7 +31,7 @@ export default class UnlitSample implements IScene {
     this.gltfSample = new GltfScene( 'samples/room/room.glb', this.gl, null, this.root)
 
     /**
-     * completely replace the gltf material with les clearcoat one
+     * completely replace the gltf materials with an unlit pass
      */
     this.gltfSample.overrides.overridePass("", this.unlitPass)
     

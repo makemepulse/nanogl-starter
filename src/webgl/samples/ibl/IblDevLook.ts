@@ -4,7 +4,7 @@ import { GLContext, isWebgl2 } from "nanogl/types"
 import { Uniform } from "nanogl-pbr/Input"
 import { StandardMetalness } from "nanogl-pbr/StandardPass"
 import SpherePrimitive from "../common/SpherePrimitive"
-import BaseMaterial from "nanogl-pbr/BaseMaterial"
+import Material from "nanogl-pbr/Material"
 import Lighting from "@webgl/engine/Lighting"
 import GLState from "nanogl-state/GLState"
 
@@ -18,7 +18,7 @@ export default class IblDevLook {
   root: Node
   sphereNode: Node
   materialPass: StandardMetalness
-  material: BaseMaterial
+  material: Material
 
   color     : Uniform
   roughness: Uniform
@@ -73,7 +73,7 @@ export default class IblDevLook {
     this.metalness.set(0)
 
 
-    this.material = new BaseMaterial(this.gl)
+    this.material = new Material(this.gl)
     this.material.addPass(this.materialPass)
 
   }

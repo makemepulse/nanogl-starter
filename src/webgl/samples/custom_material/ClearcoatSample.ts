@@ -31,7 +31,7 @@ export default class ClearcoatSample implements IScene {
   root: Node
   clearcoatPass: ClearcoatMetalness
   ccSmoothness: Uniform
-  smoothness: Uniform
+  roughness: Uniform
   metalness: Uniform
   completeLightSetup: CompleteLightSetup
   floor: FloorPlane
@@ -111,15 +111,15 @@ export default class ClearcoatSample implements IScene {
 
 
     this.ccSmoothness = this.clearcoatPass.clearcoatSmoothness.attachUniform()
-    this.smoothness = this.clearcoatPass.surface.roughness.attachUniform()
+    this.roughness = this.clearcoatPass.surface.roughness.attachUniform()
     this.metalness = this.clearcoatPass.surface.metalness.attachUniform()
 
     this.ccSmoothness.set(1)
-    this.smoothness.set(.35)
+    this.roughness.set(.5)
     this.metalness.set(1)
 
     const f = gui.folder('Clearcoat')
-    f.range(this.smoothness, 'x', 0, 1).setLabel('Roughness')
+    f.range(this.roughness, 'x', 0, 1).setLabel('Roughness')
     f.range(this.metalness, 'x', 0, 1).setLabel('Metalness')
     f.range(this.ccSmoothness, 'x', 0, 1).setLabel('CC Smoothness')
 

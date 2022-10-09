@@ -27,8 +27,8 @@ export default class ReourceGroupSample implements IScene {
     this.resources.add(new GltfScene("samples/suzanne/suzanne.gltf", gl), 'suzanne')
     this.resources.add(this.textures)
 
-    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl), 'suzanne_color' )
-    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/roughness.png"), gl), 'suzanne_mr' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/albedo.jpg"), gl), 'suzanne_color' )
+    this.textures.add( new TextureResource(AssetDatabase.getAssetPath("samples/suzanne/roughness.jpg"), gl), 'suzanne_mr' )
   }
 
   load(): Promise<void> {

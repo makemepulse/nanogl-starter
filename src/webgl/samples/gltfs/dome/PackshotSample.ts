@@ -6,6 +6,7 @@ import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
 import Dome from "./Dome"
 import Bounds from "nanogl-pbr/Bounds"
+import ShadowCatcher from "../shadow_catcher/ShadowCatcher"
 
 // import Suzanne from "@/assets/webgl/samples/suzanne/suzanne.gltf"
 
@@ -25,26 +26,33 @@ export default class PackshotSample implements IScene {
   gltfSample : GltfScene
   lighting   : Lighting
   dome: Dome
+  shadowcatcher: ShadowCatcher
   
   constructor( renderer:Renderer ){
     this.gl = renderer.gl
     this.lighting   = new Lighting( this.gl )
     this.gltfSample = new GltfScene( GltfPath, this.gl, this.lighting )
     this.dome = new Dome( this.gl, this.lighting.ibl )
+    this.shadowcatcher = new ShadowCatcher( this.gl)
   }
 
   preRender():void {
     this.gltfSample.preRender()
     this.lighting.root.updateWorldMatrix()
+    this.shadowcatcher.updateWorldMatrix()
   }
 
   rttPass():void {
     this.lighting.lightSetup.prepare(this.gl);
+    this.shadowcatcher.renderShadowmap( ( ctx:RenderContext )=>{
+      this.render(ctx)
+    })
   }
 
   render( context: RenderContext ):void {
-    this.gltfSample.render( context )
-    this.dome.render( context )
+    this.gltfSample   .render( context )
+    this.dome         .render( context )
+    this.shadowcatcher.render( context )
   }
 
   load() :Promise<void> {
@@ -65,6 +73,7 @@ export default class PackshotSample implements IScene {
 
   unload(): void {
     this.lighting.dispose()
+    this.shadowcatcher.dispose()
     this.gltfSample.unload()
   }
 

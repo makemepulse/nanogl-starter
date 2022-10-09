@@ -54,7 +54,6 @@ export abstract class TextureCodecBBC implements ITextureCodec {
 }
 
 
-
 export class TextureCodecDxt extends TextureCodecBBC {
   name: 'dxt' = 'dxt';
   isSupported(gl:GLContext): Promise<boolean> {
@@ -75,5 +74,13 @@ export class TextureCodecPvr extends TextureCodecBBC {
   name: 'pvr' = 'pvr';
   isSupported(gl:GLContext): Promise<boolean> {
     return Promise.resolve(Capabilities(gl).textureExtensions.pvr != null);
+  }
+}
+
+
+export class TextureCodecAstc extends TextureCodecBBC {
+  name: 'astc' = 'astc';
+  isSupported(gl:GLContext): Promise<boolean> {
+    return Promise.resolve(Capabilities(gl).textureExtensions.astc != null);
   }
 }

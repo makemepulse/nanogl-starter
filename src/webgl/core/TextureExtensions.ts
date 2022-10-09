@@ -39,26 +39,26 @@ const ASTC_EXTS = [
 
 export default class TextureExtensions {
 
-  readonly dxt : WEBGL_compressed_texture_s3tc
-  readonly pvr : WEBGL_compressed_texture_pvrtc
-  readonly etc : WEBGL_compressed_texture_etc1
-  readonly astc: WEBGL_compressed_texture_astc
+  readonly pvr      : WEBGL_compressed_texture_pvrtc
+  readonly etc      : WEBGL_compressed_texture_etc1
+  readonly astc     : WEBGL_compressed_texture_astc
+  readonly dxt      : WEBGL_compressed_texture_s3tc
 
 
 
   constructor( readonly gl : GLContext ){
 
-    this.dxt  = this.pickExtension( DXT_EXTS  );
-    this.pvr  = this.pickExtension( PVR_EXTS  );
-    this.etc  = this.pickExtension( ETC1_EXTS  );
-    this.astc = this.pickExtension( ASTC_EXTS );
+    this.pvr      = this.pickExtension( PVR_EXTS      );
+    this.etc      = this.pickExtension( ETC1_EXTS     );
+    this.astc     = this.pickExtension( ASTC_EXTS     );
+    this.dxt      = this.pickExtension( DXT_EXTS      );
   }
 
 
-  pickExtension( extnames : typeof DXT_EXTS  ) : WEBGL_compressed_texture_s3tc  | null;
-  pickExtension( extnames : typeof PVR_EXTS  ) : WEBGL_compressed_texture_pvrtc | null;
-  pickExtension( extnames : typeof ETC1_EXTS ) : WEBGL_compressed_texture_etc1  | null;
-  pickExtension( extnames : typeof ASTC_EXTS ) : WEBGL_compressed_texture_astc  | null;
+  pickExtension( extnames : typeof PVR_EXTS      ) : WEBGL_compressed_texture_pvrtc     | null;
+  pickExtension( extnames : typeof ETC1_EXTS     ) : WEBGL_compressed_texture_etc1      | null;
+  pickExtension( extnames : typeof ASTC_EXTS     ) : WEBGL_compressed_texture_astc      | null;
+  pickExtension( extnames : typeof DXT_EXTS      ) : WEBGL_compressed_texture_s3tc      | null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   pickExtension( extnames : readonly string[] ) : any {

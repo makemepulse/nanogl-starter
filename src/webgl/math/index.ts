@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 
 const PI2 = Math.PI*2.0;
 
@@ -40,6 +41,16 @@ export function mapUnit( p: number, s: number, e: number ): number{
 
 export function randomFloat (minValue: number, maxValue: number):number {
   return Math.min(minValue + (Math.random() * (maxValue - minValue)), maxValue)
+}
+
+export function randomUnitVector(out: vec3){
+  const u = Math.random();
+  const v = Math.random();
+  const theta = 2 * Math.PI * u;
+  const phi = Math.acos(2 * v - 1);
+  out[0] = (Math.sin(phi) * Math.cos(theta));
+  out[1] = (Math.sin(phi) * Math.sin(theta));
+  out[2] = (Math.cos(phi));
 }
 
 /**

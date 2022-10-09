@@ -6,7 +6,11 @@ varying highp vec3 vDirection;
 uniform samplerCube tTex;
 #endif
 
+{{ require( "nanogl-pbr/glsl/includes/ibl-rotation.glsl" )() }}
+
 #if IBL_FORMAT == OCTA
+
+
 
 {{ require( "nanogl-pbr/glsl/includes/octwrap-decode.glsl" )() }}
 uniform sampler2D tTex;
@@ -22,15 +26,17 @@ uniform sampler2D tTex;
 
 void main(void){
 
+  vec3 skyDir = IblRotateDir(normalize(vDirection));
+
   #if IBL_FORMAT == PMREM
-    vec3 colorLinear = DECODE_HDR(textureCube(tTex, normalize(vDirection)));
+    vec3 colorLinear = DECODE_HDR(textureCube(tTex, skyDir));
     vec3 color = pow( colorLinear, vec3(1.0/2.2) );
     gl_FragColor = vec4( color, 1.0 );
   #endif
 
   #if IBL_FORMAT == OCTA
 
-  vec2 tc = octwrapDecode(normalize(vDirection));
+  vec2 tc = octwrapDecode(skyDir);
 
   const vec2 _IBL_UVM = vec2(
     0.25*(255.0/256.0),

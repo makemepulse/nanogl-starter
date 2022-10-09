@@ -9,63 +9,65 @@ import AdamScene from "./adam"
 import Renderer from "@webgl/Renderer"
 
 
-import LightsScene           from "./lights"
-import RttSample             from "./rtt/RttSample"
-import MsaaSample            from "./rtt/MsaaSample"
-import PickFloorSample       from "./interactions/PickFloorSample"
-import GuiSample             from "./devtools/GuiSample"
-import DevtoolsScene         from "./devtools/DebugDrawSample"
-import CancellationSample    from "./resources/CancellationSample"
-import TexturesSample        from "./resources/TexturesSample"
-import ReourceGroupSample    from "./resources/ResourceGroupSample"
-import TextureCubeSample     from "./resources/TextureCubeSample"
-import MinimalResourceSample from "./resources/MinimalResourceSample"
-import BasisSample           from "./resources/BasisSample"
-import ClearcoatSample       from "./custom_material/ClearcoatSample"
-import DisolveSample         from "./custom_material/DisolveSample"
-import MatcapSample          from "./custom_material/MatcapSample"
-import SpherizeSample        from "./custom_material/SpherizeSample"
-import UnlitSample           from "./custom_material/UnlitSample"
-import LightmapSample        from "./custom_material/LightmapSample"
-import MinimalDrawcallSample from "./lowlevel/MinimalDrawcallSample"
-import GLStateSample         from "./lowlevel/GLStateSample"
-import SkyboxSample          from "./lowlevel/SkyboxSample"
-import PmremIblSample        from "./ibl/PmremIblSample"
-import OctaIblSample         from "./ibl/OctaIblSample"
-import SpherePrimitiveSample from "./lowlevel/SpherePrimitiveSample"
-import PackshotSample from "./gltfs/dome/PackshotSample"
+import LightsScene              from "./lights"
+import RttSample                from "./rtt/RttSample"
+import MsaaSample               from "./rtt/MsaaSample"
+import PickFloorSample          from "./interactions/PickFloorSample"
+import GuiSample                from "./devtools/GuiSample"
+import DevtoolsScene            from "./devtools/DebugDrawSample"
+import CancellationSample       from "./resources/CancellationSample"
+import TexturesSample           from "./resources/TexturesSample"
+import ReourceGroupSample       from "./resources/ResourceGroupSample"
+import TextureCubeSample        from "./resources/TextureCubeSample"
+import MinimalResourceSample    from "./resources/MinimalResourceSample"
+import BasisSample              from "./resources/BasisSample"
+import ClearcoatSample          from "./custom_material/ClearcoatSample"
+import DisolveSample            from "./custom_material/DisolveSample"
+import MatcapSample             from "./custom_material/MatcapSample"
+import SpherizeSample           from "./custom_material/SpherizeSample"
+import UnlitSample              from "./custom_material/UnlitSample"
+import LightmapSample           from "./custom_material/LightmapSample"
+import MinimalDrawcallSample    from "./lowlevel/MinimalDrawcallSample"
+import GLStateSample            from "./lowlevel/GLStateSample"
+import SkyboxSample             from "./lowlevel/SkyboxSample"
+import PmremIblSample           from "./ibl/PmremIblSample"
+import OctaIblSample            from "./ibl/OctaIblSample"
+import SpherePrimitiveSample    from "./lowlevel/SpherePrimitiveSample"
+import PackshotSample           from "./gltfs/dome/PackshotSample"
+import TexturesAllFormatsSample from "./resources/TexturesAllFormatsSample"
 
 
 
 export const SampleScenes = {
-  'Gltf - Adam'                  : AdamScene             ,
-  'Gltf - Robot'                 : RobotScene            ,
-  'Gltf - Suzanne'               : SimpleGltfSample      ,
-  'Gltf - Packshot'              : PackshotSample        ,
-  'Devtools - DebugDraw'         : DevtoolsScene         ,
-  'Devtools - Gui'               : GuiSample             ,
-  'Resources - Minimal'          : MinimalResourceSample ,
-  'Resources - Cancellation'     : CancellationSample    ,
-  'Resources - Groups'           : ReourceGroupSample    ,
-  'Resources - Textures'         : TexturesSample        ,
-  'Resources - Cubemaps'         : TextureCubeSample     ,
-  'Resources - Basis'            : BasisSample           ,
-  'Lights'                       : LightsScene           ,
-  'Materials - Clearcoat'        : ClearcoatSample       ,
-  'Materials - Disolve'          : DisolveSample         ,
-  'Materials - Spherize'         : SpherizeSample        ,
-  'Materials - Matcap'           : MatcapSample          ,
-  'Materials - Lightmap'         : LightmapSample        ,
-  'Materials - Unlit'            : UnlitSample           ,
-  'Ibl - Webgl2 (Pmrem)'         : PmremIblSample        ,
-  'Ibl - Webgl1 (Octa)'          : OctaIblSample         ,
-  'RTT - Basic'                  : RttSample             ,
-  'RTT - Msaa'                   : MsaaSample            ,
-  'Low Level - Drawcall'         : MinimalDrawcallSample ,
-  'Low Level - GL State'         : GLStateSample         ,
-  'Low Level - Skybox'           : SkyboxSample          ,
-  'Low Level - Sphere Primitive' : SpherePrimitiveSample ,
-  'Pointers - Picking'           : PickFloorSample       ,
+  'Gltf - Adam'                  : AdamScene                ,
+  'Gltf - Robot'                 : RobotScene               ,
+  'Gltf - Suzanne'               : SimpleGltfSample         ,
+  'Gltf - Packshot'              : PackshotSample           ,
+  'Devtools - DebugDraw'         : DevtoolsScene            ,
+  'Devtools - Gui'               : GuiSample                ,
+  'Resources - Minimal'          : MinimalResourceSample    ,
+  'Resources - Cancellation'     : CancellationSample       ,
+  'Resources - Groups'           : ReourceGroupSample       ,
+  'Resources - Textures'         : TexturesSample           ,
+  'Resources - Cubemaps'         : TextureCubeSample        ,
+  'Resources - Basis'            : BasisSample              ,
+  'Resources - AllFormats'       : TexturesAllFormatsSample ,
+  'Lights'                       : LightsScene              ,
+  'Materials - Clearcoat'        : ClearcoatSample          ,
+  'Materials - Disolve'          : DisolveSample            ,
+  'Materials - Spherize'         : SpherizeSample           ,
+  'Materials - Matcap'           : MatcapSample             ,
+  'Materials - Lightmap'         : LightmapSample           ,
+  'Materials - Unlit'            : UnlitSample              ,
+  'Ibl - Webgl2 (Pmrem)'         : PmremIblSample           ,
+  'Ibl - Webgl1 (Octa)'          : OctaIblSample            ,
+  'RTT - Basic'                  : RttSample                ,
+  'RTT - Msaa'                   : MsaaSample               ,
+  'Low Level - Drawcall'         : MinimalDrawcallSample    ,
+  'Low Level - GL State'         : GLStateSample            ,
+  'Low Level - Skybox'           : SkyboxSample             ,
+  'Low Level - Sphere Primitive' : SpherePrimitiveSample    ,
+  'Pointers - Picking'           : PickFloorSample          ,
 } as const
 
 
@@ -107,13 +109,13 @@ export default class SamplesSelector {
   }
   
   async setScene( sceneName:SceneTypes ):Promise<void>{
+    this._current?.unload()
+    this._current = null
     const scene = new SampleScenes[sceneName]( this.renderer )
     return this._setScene(scene)
   }
 
   private async _setScene( scene:IScene ):Promise<void>{
-    this._current?.unload()
-    this._current = null
     if( scene ){
       await scene.load()
       this._current = scene

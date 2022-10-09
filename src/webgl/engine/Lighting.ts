@@ -7,7 +7,7 @@ import Input, { Uniform } from "nanogl-pbr/Input";
 import { StandardPass } from "nanogl-pbr/StandardPass";
 import addDevIbls from "@webgl/dev/addDevIbls";
 import gui from "@webgl/dev/gui";
-import BaseMaterial from "nanogl-pbr/BaseMaterial";
+import Material from "nanogl-pbr/Material";
 import RenderPass from "@webgl/core/RenderPass";
 import Node from "nanogl-node";
 import LightmapRenderer, { LightmapRenderFunction } from "@webgl/core/LightmapRenderer";
@@ -111,7 +111,7 @@ export default class Lighting {
     LightmapRenderer.render( this.gl, this.lightSetup, renderFunction)
   }
 
-  setupMaterial( material : BaseMaterial ):void{
+  setupMaterial( material : Material ):void{
     const pass = material.getPass(RenderPass.COLOR).pass
     if( pass instanceof StandardPass ){
       this.setupStandardPass(pass)

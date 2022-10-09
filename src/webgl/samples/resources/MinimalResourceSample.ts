@@ -1,12 +1,12 @@
 import Renderer from "@webgl/Renderer"
 import { IScene } from "@webgl/engine/IScene"
 import AssetDatabase from "@webgl/resources/AssetDatabase"
-import DebugDraw from "@webgl/dev/debugDraw/DebugDraw"
 import { Resource } from "@webgl/resources/Resource"
+import { TexturedQuad } from "../common/TexturedQuad"
+import { RenderContext } from "@webgl/core/Renderer"
 
 /**
- * minimal example
- * @see TextureResource
+ * minimal example of TextureResource  loading
  */
 export default class MinimalResourceSample implements IScene {
 
@@ -24,8 +24,8 @@ export default class MinimalResourceSample implements IScene {
     this.resource.unload()
   }
   
-  render(): void {
-    DebugDraw.drawTexture('texture', this.resource.value)
+  render( ctx:RenderContext ): void {
+    TexturedQuad.renderQuad(ctx, this.resource.value)
   }
 
 

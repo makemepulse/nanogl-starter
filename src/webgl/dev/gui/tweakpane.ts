@@ -54,17 +54,21 @@ function registerCtrl( target:any, ctrl:Control<any> ){
   l.push(ctrl)
 }
 
+type PrimitiveValue<T> = {
+  rawValue:T
+}
+
 type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T> | MonitorBindingApi<T> | ButtonApi
 
 class TweakControl<T> implements Control<T>{
 
   _listeners: ((v:T)=>void)[] = []
 
-  constructor( private input: ControlInput<T>, private getter: ()=>T ){
+  constructor( private input: ControlInput<any>, private getter: ()=>T ){
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    input.on( 'change', (v:any)=>{
-      this._listeners.forEach( l=>l(v.value) )
+    input.on( 'change', ()=>{
+      this._listeners.forEach( l=>l(getter()) )
     })
     
   }
@@ -180,7 +184,7 @@ function _factory( pane : FolderApi ){
         picker: 'inline', // or 'popup'. optional, 'popup' by default
         expanded: true, // optional, false by default
       })
-      const ctrl = new TweakControl<quat>(input, () => tgt[prop]);
+      const ctrl = new TweakControl<quat>(input, () => tgt[prop] ) ;
       registerCtrl( tgt, ctrl )
       return ctrl
     },
@@ -282,9 +286,9 @@ function _factory( pane : FolderApi ){
         options,
         value: options[0].value,
       }
-      const list:ListApi<T> = gui._getPane().addBlade(params) as ListApi<T>;
+      const list:ListApi<PrimitiveValue<T>> = gui._getPane().addBlade(params) as ListApi<PrimitiveValue<T>>;
 
-      return new TweakControl(list, () => list.value );
+      return new TweakControl(list, () => list.value.rawValue );
     },
   
 

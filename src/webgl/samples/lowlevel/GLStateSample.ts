@@ -15,9 +15,9 @@ import GLConfig from "nanogl-state/GLConfig";
 
 const M4 = mat4.create()
 /**
- * Most basic, low level draw call using just core nanogl features
- * It draw a disc made of 64 vertices.
- * It create an ArrayBuffer of 64 vertices containing a single float attribute, the angle for 0 to 2PI of the vertex on the disc and render it use a custom Program
+ * Sample of GLState usage
+ * GLState work by tracking the compound state of a stack of configs
+ * One config define a set of state to be applied to the gl context.
  */
 export default class GLStateSample implements IScene {
   

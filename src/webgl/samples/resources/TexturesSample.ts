@@ -33,7 +33,7 @@ export default class TexturesSample implements IScene {
       /*
        * simple TextureResource loaded from string url
        */
-      new TextureResource( AssetDatabase.getAssetPath("samples/suzanne/albedo.png"), gl ),
+      new TextureResource( AssetDatabase.getAssetPath("samples/suzanne/albedo.jpg"), gl ),
 
       /*
        * manually create a LODed texture resource

@@ -41,12 +41,12 @@ export type TexturePath =
   "samples/textures/cube_car/posy.jpg" | 
   "samples/textures/cube_car/posz.jpg" | 
   "samples/textures/matcap_clay.jpg" | 
-  "samples/textures/matcap_clay.jpg.basis.ktx2" | 
   "samples/textures/matcap_red_plastic.jpg" | 
   "samples/textures/matcap_white.jpg" | 
   "samples/textures/skybox_ditch_river.jpg" | 
   "samples/textures/texture1.jpg" | 
   "samples/textures/texture1.jpg.astc.ktx" | 
+  "samples/textures/texture1.jpg.basis.ktx2" | 
   "samples/textures/texture1.jpg.dxt.ktx" | 
   "samples/textures/texture1.jpg.etc.ktx" | 
   "samples/textures/texture1.jpg.pvr.ktx" | 

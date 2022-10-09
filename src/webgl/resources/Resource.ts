@@ -43,7 +43,7 @@ export abstract class Resource<T = any>{
     this._state = ResourceState.UNLOADED;
     this._value = null;
     this._deferred = new Deferred<T>();
-    catchAbortError( this._deferred.promise );
+    // catchAbortError( this._deferred.promise );
   }
   
   

@@ -7,7 +7,7 @@ import KHR_materials_unlit from "nanogl-gltf/lib/extensions/KHR_materials_unlit"
 import KHR_texture_basisu from "nanogl-gltf/lib/extensions/KHR_texture_basisu";
 
 import { TextureCodecs } from "./resources/TextureCodec";
-import { TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
+import { TextureCodecAstc, TextureCodecDxt, TextureCodecEtc, TextureCodecPvr } from "./resources/TextureCodecBBC";
 import TextureCodecStd, { TextureCodecWebp } from "./resources/TextureCodecStd";
 import TextureCodecBasis from "./resources/TextureCodecBasis";
 
@@ -21,8 +21,6 @@ import BasisDecoder from "./resources/basis/BasisDecoder";
 
 /// #if DEBUG
 Program.debug = true;
-console.log(Program);
-
 /// #else
 Program.debug = false;
 /// #endif
@@ -32,6 +30,7 @@ TextureCodecs.registerCodec( new TextureCodecWebp () );
 TextureCodecs.registerCodec( new TextureCodecDxt  () );
 TextureCodecs.registerCodec( new TextureCodecEtc  () );
 TextureCodecs.registerCodec( new TextureCodecPvr  () );
+TextureCodecs.registerCodec( new TextureCodecAstc () );
 TextureCodecs.registerCodec( new TextureCodecBasis() );
 
 

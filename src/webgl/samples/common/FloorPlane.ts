@@ -1,6 +1,6 @@
 import { RenderContext } from "@webgl/core/Renderer";
 import Node from "nanogl-node";
-import BaseMaterial from "nanogl-pbr/BaseMaterial";
+import Material from "nanogl-pbr/Material";
 import Flag from "nanogl-pbr/Flag";
 import { StandardMetalness } from "nanogl-pbr/StandardPass";
 import Rect from "nanogl-primitives-2d/rect";
@@ -11,7 +11,7 @@ import { GLContext, isWebgl2 } from "nanogl/types";
 export default class FloorPlane {
 
   geom: Rect;
-  material: BaseMaterial;
+  material: Material;
   node: Node;
 
   constructor(private gl:GLContext ){
@@ -20,7 +20,7 @@ export default class FloorPlane {
     this.node = new Node()
     this.node.rotateX(Math.PI/2)
 
-    this.material = new BaseMaterial(gl)
+    this.material = new Material(gl)
     const pass = new StandardMetalness()
     pass.version.set( isWebgl2(gl)?"300 es":"100")
     pass.glconfig.enableDepthTest()
