@@ -93,11 +93,10 @@ compress(){
   local FLIP=$5
   local IS_NORMAL=$6
   local FORMATS=$7
+  local QUALITY=$8
 
 
-  if $MIPS  ; then mipsDDS=;        else mipsDDS=-nomips; fi
-  if $MIPS  ; then mipsPVR=-m;      else mipsPVR=; fi
-  if $MIPS  ; then mipsETC=-m;      else mipsETC=; fi
+  if $MIPS  ; then mips=-m;      else mips=; fi
 
   if [ -z "$FLIP" ]
     then
@@ -107,70 +106,66 @@ compress(){
   if $FLIP  ; then PFLIP="-flip";        else PFLIP=; fi
   if $FLIP  ; then GFLIP="-flip y";    else GFLIP=; fi # for pvrtc
 
-  DXT_TYPE='-color'
   # if $IS_NORMAL  ; then DXT_TYPE="-normal"; fi
 
   WEBP_OPTS="-define webp:lossless=false -define webp:alpha-compression=0"
 
-  echo $FORMATS
-  
   printf "> $NAME    "
-  # JPG
 
+  # JPG
   if [[ $FORMATS == *"jpg"* ]]; then
     printf 'jpg'
-    convert -quality 100 -format JPG $PFLIP $INPUT_TGA $OUTPUT
+    convert -quality $QUALITY -format JPG $PFLIP $INPUT_TGA $OUTPUT
     printf ' ✓ '
   fi
 
-
+  # WEBP
   if [[ $FORMATS == *"webp"* ]]; then
     printf 'webp'
-    magick $INPUT_TGA -quality 100 $PFLIP $WEBP_OPTS $OUTPUT.webp
+    magick $INPUT_TGA -quality $QUALITY $PFLIP $WEBP_OPTS $OUTPUT.webp
     printf ' ✓ '
   fi
   
-  if $EXPORT_BBC 
-    then
+  # PVRTC 4BPP
+  if [[ $FORMATS == *"pvr"* ]]; then
+    printf 'pvr'
+    PVRTexToolCLI -shh $mips -square $GFLIP -q $PVRQUALITY -mfilter cubic -f PVRTCI_4BPP_RGB,UBN,lRGB -ics lRGB -o $OUTPUT.pvr.ktx -i $INPUT_TGA
+    printf ' ✓ '
+  fi
+  
+  # ETC1
+  if [[ $FORMATS == *"etc"* ]]; then
+    printf 'etc'
+    PVRTexToolCLI -shh $mips $GFLIP -q $ETCQUALITY -mfilter cubic -f ETC1,UBN,lRGB -ics lRGB -o $OUTPUT.etc.ktx -i $INPUT_TGA
+    printf ' ✓ '
+  fi
 
-      convert -format PNG -define png:color-type=6 $INPUT_TGA $TMPDIR/tmp.png
+  # ASTC
+  if [[ $FORMATS == *"astc"* ]]; then
+    printf 'astc'
+    PVRTexToolCLI -shh $mips $GFLIP -q $ASTCQUALITY -mfilter cubic -f ASTC_4x4,UBN,lRGB -ics lRGB -o $OUTPUT.astc.ktx -i $INPUT_TGA
+    printf ' ✓ '
+  fi
+  
+  # DXT1
+  if [[ $FORMATS == *"dxt"* ]]; then
+    printf 'dxt'
+    PVRTexToolCLI -shh $mips $GFLIP -q $DXTQUALITY -mfilter cubic -f BC1,UBN,lRGB -ics lRGB -o $OUTPUT.dxt.ktx -i $INPUT_TGA 
+    printf ' ✓ '
+  fi
 
-      # PVR
-      if [[ $FORMATS == *"pvr"* ]]; then
-        printf 'pvr'
-        $pvrcompres -shh  $mipsPVR -square $GFLIP -q $PVRQUALITY -mfilter cubic -f PVRTC1_4_RGB,UBN,lRGB -o $OUTPUT.pvr.ktx -i $TMPDIR/tmp.png
-        printf ' ✓ '
-      fi
-      
-      # KTX
-      if [[ $FORMATS == *"etc"* ]]; then
-        printf 'etc'
-        $pvrcompres -shh  $mipsPVR -square $GFLIP -q $ETCQUALITY -mfilter cubic -f ETC1,UBN,lRGB -o $OUTPUT.etc.ktx -i $TMPDIR/tmp.png
-        printf ' ✓ '
-      fi
-
-      # ASTC
-      if [[ $FORMATS == *"astc"* ]]; then
-        printf 'astc'
-        $pvrcompres -shh  $mipsPVR -square $GFLIP -q $ASTCQUALITY -mfilter cubic -f ASTC_6x6,UBN,lRGB -o $OUTPUT.astc.ktx -i $TMPDIR/tmp.png
-        printf ' ✓ '
-      fi
-      
-      # DDS
-      if [[ $FORMATS == *"dxt"* ]]; then
-        printf 'dxt'
-        convert $PFLIP -format PNG -define png:color-type=6 $INPUT_TGA $TMPDIR/tmpdds.png
-        nvcompress -ktx $mipsDDS -silent $DXT_TYPE -bc1 $TMPDIR/tmpdds.png $OUTPUT.dxt.ktx
-        printf ' ✓ '
-      fi
-
+  # BASIS
+  if [[ $FORMATS == *"basis"* ]]; then
+    printf 'basis'
+    PVRTexToolCLI -shh $mips $GFLIP -q $BASISQUALITY -mfilter cubic -f BASISU_UASTC,UBN,sRGB -o $OUTPUT.basis.ktx2 -i $INPUT_TGA
+    printf ' ✓ '
   fi
   
   printf '\n'
 }
 
 
-toJpg(){
+texture(){
 
   local NAME=$1
 
@@ -179,6 +174,7 @@ toJpg(){
   local FLIP_Y=false
   local MIPS=false
   local SUBSCALE=0
+  local QUALITY=100
   local FORMATS="jpg,webp"
 
   while test $# -gt 0; do
@@ -188,7 +184,8 @@ toJpg(){
       -f|--flip)    FLIP_Y=true    shift ;;
       -m|--mipmap)  MIPS=true      shift ;;
       -s|--scale)   SUBSCALE=$2    shift ;;
-      -c|--codecs)  FORMATS=$2   shift ;;
+      -c|--codecs)  FORMATS=$2     shift ;;
+      -q|--quality) QUALITY=$2     shift ;;
       *) shift ;;
     esac
   done
@@ -201,7 +198,7 @@ toJpg(){
   if [ $SUBSCALE -eq 0 ] ; then        
 
     local OUTPUT=$OUTDIR/$NAME.jpg
-    compress $NAME $INPUT_TGA $OUTPUT $MIPS $FLIP_Y $IS_NORMAL $FORMATS
+    compress $NAME $INPUT_TGA $OUTPUT $MIPS $FLIP_Y $IS_NORMAL $FORMATS $QUALITY
     
   else
 
@@ -210,7 +207,7 @@ toJpg(){
     local TEMP_INPUT=$TMPDIR/tmp.tga
     convert -resize $RESIZE -format TGA $INPUT_TGA $TEMP_INPUT
     OUTPUT=$OUTDIR/$NAME.jpg
-    compress $NAME $TEMP_INPUT $OUTPUT $MIPS $FLIP_Y $IS_NORMAL $FORMATS
+    compress $NAME $TEMP_INPUT $OUTPUT $MIPS $FLIP_Y $IS_NORMAL $FORMATS $QUALITY
     
   fi
 

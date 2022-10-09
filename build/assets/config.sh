@@ -2,9 +2,6 @@
 TMPDIR=./tmp
 BLIB=./build/assets
 
-pvrcompres=/Applications/Imagination/PVRTexTool/CLI/OSX_x86/PVRTexToolCLI
-cmgen=/Users/plepers/work/workspaces/c/filament/out/cmake-release/tools/cmgen/cmgen
-astccompress=astcenc
 FBX2glTF=$BLIB/bin/FBX2glTF
 gltfOptim=$BLIB/gltf-optim-cli
 hdr2pngExe=$BLIB/bin/hdr2png
@@ -27,9 +24,11 @@ TEX_FMT_DXT=true
 # ============= PROD
 
 # PVRQUALITY=pvrtchigh
-PVRQUALITY=pvrtcbest
-ETCQUALITY=etcslow
-ASTCQUALITY=astcthorough
+PVRQUALITY=PVRTCBEST
+ETCQUALITY=ETCSLOW
+ASTCQUALITY=ASTCTHOROUGH
+DXTQUALITY=ASTCTHOROUGH
+BASISQUALITY=BASISUBEST
 
 # ============= SUPER HI
 
