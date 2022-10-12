@@ -32,19 +32,45 @@ export default class TextureCubeSample implements IScene {
     this.cubeTex = new TextureCubeResource({
       sources: [
         {
-          codec: 'std', lods: [
+          codec: 'astc', lods: [{files: [AssetDatabase.getAssetPath('samples/textures/protospace/cubemap.astc.ktx'),]}]
+        },
+        {
+          codec: 'etc', lods: [{files: [AssetDatabase.getAssetPath('samples/textures/protospace/cubemap.etc.ktx'),]}]
+        },
+        {
+          codec: 'dxt', lods: [{files: [AssetDatabase.getAssetPath('samples/textures/protospace/cubemap.dxt.ktx'),]}]
+        },
+        {
+          codec: 'pvr', lods: [{files: [AssetDatabase.getAssetPath('samples/textures/protospace/cubemap.pvr.ktx'),]}]
+        },
+        {
+          codec: 'webp', lods: [
             {
               files: [
-                AssetDatabase.getAssetPath('samples/textures/cube_car/posx.jpg'),
-                AssetDatabase.getAssetPath('samples/textures/cube_car/posy.jpg'),
-                AssetDatabase.getAssetPath('samples/textures/cube_car/posz.jpg'),
-                AssetDatabase.getAssetPath('samples/textures/cube_car/negx.jpg'),
-                AssetDatabase.getAssetPath('samples/textures/cube_car/negy.jpg'),
-                AssetDatabase.getAssetPath('samples/textures/cube_car/negz.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/px.webp'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/nx.webp'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/py.webp'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/ny.webp'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/pz.webp'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/nz.webp'),
               ]
             }
           ]
-        }
+        },
+        {
+          codec: 'std', lods: [
+            {
+              files: [
+                AssetDatabase.getAssetPath('samples/textures/protospace/px.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/nx.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/py.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/ny.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/pz.jpg'),
+                AssetDatabase.getAssetPath('samples/textures/protospace/nz.jpg'),
+              ]
+            }
+          ]
+        },
       ]
     }, this.gl)
 

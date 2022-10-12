@@ -1,7 +1,5 @@
-import { CreateProgram } from "@webgl/core/CreateProgram";
 import { RenderContext } from "@webgl/core/Renderer";
 import RenderMask from "@webgl/core/RenderMask";
-import IblLight from "@webgl/engine/IblLight";
 import SpherePrimitive from "@webgl/samples/common/SpherePrimitive";
 import GLState, { LocalConfig } from "nanogl-state/GLState";
 import Program from "nanogl/program";
@@ -12,6 +10,8 @@ import FS from "./dome.frag";
 import { CreateGui, DeleteGui, GuiFolder, RangeGui } from "@webgl/dev/gui/decorators";
 import { IblFormat } from "nanogl-pbr/lighting/IblModel";
 import { mat3 } from "gl-matrix";
+import Ibl from "nanogl-pbr/lighting/Ibl";
+import Programs from "@webgl/glsl/programs";
 
 const M3 = mat3.create();
 
@@ -41,7 +41,7 @@ export default class Dome {
 
   
 
-  constructor(private gl: GLContext, private ibl: IblLight ) {
+  constructor(private gl: GLContext, private ibl: Ibl ) {
 
     this.sphere = new SpherePrimitive(gl)
 
@@ -90,7 +90,12 @@ export default class Dome {
    */
   compilePrg(){
     if( !this.prg || this.iblFormat !== this.ibl.iblFormat ){
-      this.prg = CreateProgram(this.gl, VS, FS, `#define PMREM 0\n #define OCTA 1\n #define IBL_FORMAT ${this.ibl.iblFormat}\n #define enableRotation ${this.ibl.enableRotation ? 1 : 0}\n`)
+      this.prg = Programs(this.gl).create(VS, FS, `
+        #define PMREM 0
+        #define OCTA 1
+        #define IBL_FORMAT ${this.ibl.iblFormat}
+        #define enableRotation ${this.ibl.enableRotation ? 1 : 0}`
+      )
     }
   }
 

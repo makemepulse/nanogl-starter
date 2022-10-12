@@ -1,4 +1,4 @@
-#version {{@glslVersion}}
+{{@version}}
 
 {{ require( "nanogl-pbr/glsl/includes/glsl-compat.vert" )() }}
 

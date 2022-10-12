@@ -59,8 +59,8 @@ export function catchIfAbortError( e: any ){
 
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function catchAbortError( p: Promise<any> ):void{
-  p.catch( catchIfAbortError )
+export function catchAbortError<T=any>( p: Promise<T> ):Promise<void|T>{
+  return p.catch( catchIfAbortError )
 }
 
 /**

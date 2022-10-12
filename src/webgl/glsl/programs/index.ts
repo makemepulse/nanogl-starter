@@ -2,6 +2,7 @@ import { GlslModule } from "@webgl/glsl/glslModule"
 import Capabilities, { CapabilitiesImpl } from "@webgl/core/Capabilities"
 import Program from "nanogl/program"
 import { GLContext } from "nanogl/types"
+import { CreateProgram } from "@webgl/core/CreateProgram"
 
 
 /// #if DEBUG
@@ -78,15 +79,19 @@ export class ProgramsLib {
 
   private _programs: Map<string, Program>;
 
-  bestPrecision : PrecisionEnum = 'lowp'
-  glslVersion : string
+  highp   : PrecisionEnum = 'lowp'
+  mediump : PrecisionEnum = 'lowp'
+
+  version : string
   capabilities: CapabilitiesImpl
 
   constructor( private gl:GLContext ){
 
     this.capabilities = Capabilities( gl );
-    this.bestPrecision = this.capabilities.hasHighpPrecision ? 'highp' : (this.capabilities.hasMediumpPrecision ? 'mediump':  'lowp' )
-    this.glslVersion   = this.capabilities.isWebgl2 ? "300 es" : "100"
+
+    this.mediump = this.capabilities.hasMediumpPrecision ? 'mediump' : 'lowp'
+    this.highp   = this.capabilities.hasHighpPrecision   ? 'highp'   : this.mediump
+    this.version = `#version ${this.capabilities.isWebgl2  ? "300 es"  : "100"}`
 
     this._programs = new Map()
 
@@ -100,6 +105,10 @@ export class ProgramsLib {
       
       this._programs.set( source.id, p )
     }
+  }
+
+  create( vert:GlslModule, frag:GlslModule, prefix?:string ): Program {
+    return CreateProgram( this.gl, vert, frag, prefix, this )
   }
 
 

@@ -1,5 +1,4 @@
 import LightSetup from "nanogl-pbr/lighting/LightSetup";
-import IblLight from "./IblLight";
 import { GLContext } from "nanogl/types";
 import Enum from "nanogl-pbr/Enum";
 import { GammaModes } from "nanogl-pbr/GammaModeEnum";
@@ -12,6 +11,7 @@ import RenderPass from "@webgl/core/RenderPass";
 import Node from "nanogl-node";
 import LightmapRenderer, { LightmapRenderFunction } from "@webgl/core/LightmapRenderer";
 import IblResource from "@webgl/resources/IblResource";
+import Ibl from "nanogl-pbr/lighting/Ibl";
 
 
 const EXPO = 1.0
@@ -22,7 +22,7 @@ export default class Lighting {
   root: Node;
 
   lightSetup: LightSetup;
-  ibl: IblLight
+  ibl: Ibl
 
   gammaMode: Enum<readonly ["GAMMA_NONE", "GAMMA_STD", "GAMMA_2_2", "GAMMA_TB"]>;
   
@@ -64,7 +64,7 @@ export default class Lighting {
 
   constructor( readonly gl: GLContext ){
     this.root = new Node()
-    this.ibl = new IblLight()
+    this.ibl = new Ibl()
     this.ibl.enableRotation = true
     
 
@@ -89,7 +89,9 @@ export default class Lighting {
     const f = gui.folder('Lighting')
     f.range(this, 'exposure', 0, 3)
     f.range(this, 'gamma', .8, 4)
-    f.range(this.ibl, 'ambientExposure', 0, 3).setLabel('ambient')
+    f.range(this.ibl, 'intensity', 0, 5).setLabel('intensity')
+    f.range(this.ibl, 'ambiantIntensity', 0, 5).setLabel('ambient')
+    f.range(this.ibl, 'specularIntensity', 0, 5).setLabel('specular')
     
     const shadowFilter = this.lightSetup.stdModel.shadowFilter
     const shadowFilters = {

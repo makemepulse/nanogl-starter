@@ -2,7 +2,7 @@
 <template>
   <div class="selector" ref="root" :class="{opened}" >
 
-    <h1 @click="toggle" >{{currentScene}}</h1>
+    <h1 @click.stop="toggle" ><span style="width:20px">{{opened?'▾':'▸'}}</span>  {{currentScene}}</h1>
     
     <div class="list" v-if="opened">
       <a href="#" class="item" :class="{selected:scene===currentScene}" v-for="scene in scenes" :key="scene" @click.prevent="setScene(scene)">
@@ -43,11 +43,11 @@ onMounted(() => {
   currentScene.value = sn
   setScene( sn )
 
-  document.addEventListener('click', close, true )
+  document.addEventListener('click', close, false )
 })
 
 onBeforeUnmount(() => {
-  document.removeEventListener('click', close, true)
+  document.removeEventListener('click', close, false)
 })
 
 const setScene = ( scene: SceneTypes )=>{
@@ -60,6 +60,8 @@ const setScene = ( scene: SceneTypes )=>{
 const toggle = ()=>{
   opened.value = !opened.value
 }
+
+
 
 </script>
 
@@ -75,6 +77,7 @@ const toggle = ()=>{
   height 100%
   pointer-events none
   background transparent
+  overflow hidden
 
   &.opened
     background rgba(black,0.8)
@@ -92,6 +95,7 @@ const toggle = ()=>{
   pointer-events: auto
   display flex
   flex-direction column
+  overflow auto
 
   .item
     padding 5px 20px

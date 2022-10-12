@@ -181,10 +181,10 @@ texture(){
     case "$1" in
       -n|--normal)  IS_NORMAL=true shift ;;
       -d|--data)    IS_DATA=true   shift ;;
-      -f|--flip)    FLIP_Y=true    shift ;;
+      -x|--flip)    FLIP_Y=true    shift ;;
       -m|--mipmap)  MIPS=true      shift ;;
       -s|--scale)   SUBSCALE=$2    shift ;;
-      -c|--codecs)  FORMATS=$2     shift ;;
+      -f|--formats) FORMATS=$2     shift ;;
       -q|--quality) QUALITY=$2     shift ;;
       *) shift ;;
     esac

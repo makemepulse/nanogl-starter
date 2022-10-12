@@ -1,6 +1,6 @@
-precision mediump float;
+precision {{@mediump}} float;
 
-varying highp vec3 vDirection;
+varying {{@highp}} vec3 vDirection;
 
 #if IBL_FORMAT == PMREM
 uniform samplerCube tTex;

@@ -1,4 +1,4 @@
-precision mediump float;
+precision {{@mediump}} float;
 
 varying lowp vec3 vViewDir;
 uniform sampler2D tEnv;

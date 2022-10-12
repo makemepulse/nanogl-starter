@@ -33,14 +33,93 @@ genIbl(){
 
 }
 
-genSkybox(){
-  local SRCPATH=$1
-  local OUTDIR=$2
+cubemap(){
 
-  PVRTexToolCLI -equi2cube cubic -q $PVRQUALITY  -o $OUTDIR/tex.pvr.tex  -i $SRCPATH -f PVRTCI_4BPP_RGB,UBN,lRGB
-  PVRTexToolCLI -equi2cube cubic -q $ETCQUALITY  -o $OUTDIR/tex.etc.ktx  -i $SRCPATH -f ETC1,UBN,lRGB
-  PVRTexToolCLI -equi2cube cubic -q $ASTCQUALITY -o $OUTDIR/tex.astc.ktx -i $SRCPATH -f ASTC_4x4,UBN,lRGB
-  PVRTexToolCLI -equi2cube cubic -q $PVRQUALITY  -o $OUTDIR/tex.dxt.ktx  -i $SRCPATH -f BC3,UBN,lRGB
+  local QUALITY=100
+  local FORMATS="jpg,webp"
+
+  while test $# -gt 0; do
+    case "$1" in
+      -i|--input)   SRCPATH=$2     shift ;;
+      -o|--out)     OUTPUT=$2      shift ;;
+      -f|--formats) FORMATS=$2     shift ;;
+      -q|--quality) QUALITY=$2     shift ;;
+      *) shift ;;
+    esac
+  done
+
+
+
+
+  mkdir $OUTPUT
+
+  PVRTexToolCLI -equi2cube cubic -flip x -o $TMPDIR/tmp.ktx -i $SRCPATH -f r8g8b8,UBN,lRGB -d $TMPDIR/faces.png
+
+
+  WEBP_OPTS="-define webp:lossless=false -define webp:alpha-compression=0"
+
+  # JPG
+  if [[ $FORMATS == *"jpg"* ]]; then
+    printf 'jpg'
+    printf $OUTPUT/nx.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces.png $OUTPUT/nx.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces-Face_1.png $OUTPUT/px.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces-Face_2.png $OUTPUT/py.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces-Face_3.png $OUTPUT/ny.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces-Face_4.png $OUTPUT/pz.jpg
+    convert -quality $QUALITY -format JPG $TMPDIR/faces-Face_5.png $OUTPUT/nz.jpg
+    printf ' ✓ '
+  fi
+
+  # WEBP
+  if [[ $FORMATS == *"webp"* ]]; then
+    printf 'webp'
+    magick $TMPDIR/faces.png -quality $QUALITY $WEBP_OPTS $OUTPUT/nx.webp
+    magick $TMPDIR/faces-Face_1.png -quality $QUALITY $WEBP_OPTS $OUTPUT/px.webp
+    magick $TMPDIR/faces-Face_2.png -quality $QUALITY $WEBP_OPTS $OUTPUT/py.webp
+    magick $TMPDIR/faces-Face_3.png -quality $QUALITY $WEBP_OPTS $OUTPUT/ny.webp
+    magick $TMPDIR/faces-Face_4.png -quality $QUALITY $WEBP_OPTS $OUTPUT/pz.webp
+    magick $TMPDIR/faces-Face_5.png -quality $QUALITY $WEBP_OPTS $OUTPUT/nz.webp
+    printf ' ✓ '
+  fi
+  
+  # PVRTC 4BPP
+  if [[ $FORMATS == *"pvr"* ]]; then
+    printf 'pvr'
+    PVRTexToolCLI -equi2cube cubic -q $PVRQUALITY  -o $OUTPUT/cubemap.pvr.ktx  -i $SRCPATH -f PVRTCI_4BPP_RGB,UBN,lRGB -ics lRGB
+    printf ' ✓ '
+  fi
+  
+  # ETC1
+  if [[ $FORMATS == *"etc"* ]]; then
+    printf 'etc'
+    PVRTexToolCLI -equi2cube cubic -q $ETCQUALITY  -o $OUTPUT/cubemap.etc.ktx  -i $SRCPATH -f ETC1,UBN,lRGB -ics lRGB
+    printf ' ✓ '
+  fi
+
+  # ASTC
+  if [[ $FORMATS == *"astc"* ]]; then
+    printf 'astc'
+    PVRTexToolCLI -equi2cube cubic -q $ASTCQUALITY -o $OUTPUT/cubemap.astc.ktx -i $SRCPATH -f ASTC_4x4,UBN,lRGB -ics lRGB
+    printf ' ✓ '
+  fi
+  
+  # DXT1
+  if [[ $FORMATS == *"dxt"* ]]; then
+    printf 'dxt'
+    PVRTexToolCLI -equi2cube cubic -q $PVRQUALITY  -o $OUTPUT/cubemap.dxt.ktx  -i $SRCPATH -f BC3,UBN,lRGB -ics lRGB
+    printf ' ✓ '
+  fi
+
+  # BASIS
+  # if [[ $FORMATS == *"basis"* ]]; then
+  #   printf 'basis'
+  #   printf ' ✓ '
+  # fi
+  
+
+
+
 
 }
 

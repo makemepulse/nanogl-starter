@@ -6,6 +6,8 @@ import { TextureType } from "nanogl/texture-base";
 import { GLContext } from "nanogl/types";
 import Capabilities from "@webgl/core/Capabilities";
 
+
+
 export abstract class TextureCodecBBC implements ITextureCodec {
 
   name: string;
@@ -47,8 +49,35 @@ export abstract class TextureCodecBBC implements ITextureCodec {
 
   }
 
-  decodeCube():Promise<TextureData> {
-    throw new Error("Method not implemented.");
+  decodeCube(source : ITextureRequestSource, buffers: ArrayBuffer[]):Promise<TextureData> {
+    const image = this.parser.parse(buffers[0]);
+
+    const surfaces = image.surfaces.map(s => {
+      return s.map(l => {
+        return {
+          width: image.width,
+          height: image.height,
+          data: l
+        }
+      })
+    })
+
+    const datas: CompressedTextureData = {
+      datatype: TextureDataType.RAW_COMPRESSED,
+      textureType: TextureType.TEXTURE_CUBE,
+      width: image.width,
+      height: image.height,
+      internalformat: image.internalFormat,
+      format: image.format,
+      type: image.type,
+      requireMipmapGen :false,
+
+      sources: [{
+        surfaces
+      }]
+    }
+
+    return Promise.resolve(datas)
   }
 
 }

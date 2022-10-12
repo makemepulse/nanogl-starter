@@ -2,7 +2,7 @@
 // attribute vec3 aPosition;
 attribute vec2 aTexCoord0;
 
-varying highp vec3 vDirection;
+varying {{@highp}} vec3 vDirection;
 
 uniform mat4 uMVP;
 uniform vec3 uParams;

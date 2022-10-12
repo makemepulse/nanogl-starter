@@ -3,7 +3,6 @@ import { RenderContext } from "@webgl/core/Renderer";
 import { IScene } from "@webgl/engine/IScene";
 import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
-import { CreateProgram } from '@webgl/core/CreateProgram';
 
 import vShader from './quad.vert'
 import fShader from './quad.frag'
@@ -12,6 +11,7 @@ import GLState, { LocalConfig } from 'nanogl-state/GLState';
 import Rect from 'nanogl-primitives-2d/rect';
 import { mat4 } from "gl-matrix";
 import GLConfig from "nanogl-state/GLConfig";
+import Programs from "@webgl/glsl/programs";
 
 const M4 = mat4.create()
 /**
@@ -35,7 +35,7 @@ export default class GLStateSample implements IScene {
     const gl = renderer.gl
 
     this.quad = new Rect(gl)
-    this.prg = CreateProgram(gl, vShader, fShader)
+    this.prg = Programs(gl).create(vShader, fShader)
 
     this.depthTestConfig = new GLConfig()
       .enableDepthTest()
@@ -105,6 +105,7 @@ export default class GLStateSample implements IScene {
 
 
     // make sure to pop all config added previously, to avoid overflow
+    glState.pop()
     glState.pop()
     glState.pop()
   }

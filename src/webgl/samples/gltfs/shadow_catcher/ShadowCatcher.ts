@@ -19,8 +19,8 @@ import DebugDraw from "@webgl/dev/debugDraw/DebugDraw";
 
 
 const FBO_SIZE = 256;
-const MAX_SAMPLES = 200
-const SAMPLES_PER_FRAMES = 4
+const MAX_SAMPLES = 255
+const SAMPLES_PER_FRAMES = 8
 
 const XAXIS = vec3.fromValues(1, 0, 0);
 const YAXIS = vec3.fromValues(0, 1, 0);
@@ -88,8 +88,6 @@ export default class ShadowCatcher extends Node {
    * set the base direction of the directional light
    */
   setLightDirection( dir:vec3 ){
-    console.log('setLightDirection', dir);
-    
     vec3.normalize( dir, dir )
     const tangent = (Math.abs(dir[0])>0.9) ? ZAXIS : XAXIS
     vec3.cross( V3A, tangent, dir )
@@ -256,11 +254,12 @@ export default class ShadowCatcher extends Node {
   }
 
   _renderShadowmap(renderFunction: LightmapRenderFunction){
+
+    DebugDraw.drawCone( mat4.rotateX( mat4.create(), this._lightDirBasis, -Math.PI/2), 2, this._softness*Math.PI/2)
+
+
     if( this.sampleIndex >= MAX_SAMPLES ) return
     this.createRandomDirection(this.light.position, this._softness*Math.PI/2)
-    // const lightPos = this.light.position
-    // randomUnitVector(lightPos)
-    // lightPos[1] = Math.abs(lightPos[1]) + .5
     this.light.lookAt(vec3.create())
     this.light.invalidate()
     this.updateWorldMatrix()
@@ -304,6 +303,7 @@ export default class ShadowCatcher extends Node {
   render( context : RenderContext ){
 
     if( (context.mask & this.shadowpass.mask) === 0 ) return
+
 
     const state = GLState.get(this.gl)
     this.updateWorldMatrix()

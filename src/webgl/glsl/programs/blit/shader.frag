@@ -1,4 +1,4 @@
-precision {{@bestPrecision}} float;
+precision {{@highp}} float;
 
 varying vec2 vTexCoord0;
 uniform sampler2D tTex;

@@ -4,9 +4,9 @@ import { GLContext } from "nanogl/types"
 import { GltfScene } from "@webgl/engine/GltfScene"
 import { IScene } from "@webgl/engine/IScene"
 import Lighting from "@webgl/engine/Lighting"
-import Dome from "./Dome"
+import Dome from "./dome/Dome"
 import Bounds from "nanogl-pbr/Bounds"
-import ShadowCatcher from "../shadow_catcher/ShadowCatcher"
+import ShadowCatcher from "./shadow_catcher/ShadowCatcher"
 
 // import Suzanne from "@/assets/webgl/samples/suzanne/suzanne.gltf"
 

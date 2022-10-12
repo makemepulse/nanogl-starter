@@ -4,12 +4,12 @@ import { RenderContext } from "@webgl/core/Renderer";
 import { IScene } from "@webgl/engine/IScene";
 import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
-import { CreateProgram } from '@webgl/core/CreateProgram';
 
 import vShader from './circle.vert'
 import fShader from './circle.frag'
 import RenderMask from '@webgl/core/RenderMask';
 import { CreateGui, DeleteGui, GuiFolder, RangeGui } from '@webgl/dev/gui/decorators';
+import Programs from '@webgl/glsl/programs';
 
 /**
  * Most basic, low level draw call using just core nanogl features
@@ -41,10 +41,10 @@ export default class MinimalDrawcallSample implements IScene {
       .attrib('aAngle', 1, gl.FLOAT)
 
     /*
-     * CreateProgram utility provide a WebglProgram which update automatically 
+     * Program.create utility provide a WebglProgram which update automatically 
      * when one of it's shader is updated (using webpack HMR)
      */
-    this.prg = CreateProgram(gl, vShader, fShader)
+    this.prg = Programs(gl).create(vShader, fShader)
 
 
     /*

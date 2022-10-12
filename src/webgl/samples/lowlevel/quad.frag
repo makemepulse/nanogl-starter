@@ -1,4 +1,3 @@
-
 varying lowp vec2 vTexCoord;
 
 void main(void){

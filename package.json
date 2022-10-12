@@ -17,7 +17,7 @@
     "gl-matrix": "2.3.1",
     "nanogl": "^2.3.1",
     "nanogl-camera": "^1.1.2",
-    "nanogl-gltf": "^0.1.5",
+    "nanogl-gltf": "^0.1.6",
     "nanogl-node": "^1.2.1",
     "nanogl-pbr": "3.0.0-beta.15",
     "nanogl-pf": "^1.1.1",

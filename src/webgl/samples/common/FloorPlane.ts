@@ -1,10 +1,10 @@
-import { RenderContext } from "@webgl/core/Renderer";
 import Node from "nanogl-node";
 import Material from "nanogl-pbr/Material";
 import Flag from "nanogl-pbr/Flag";
-import { StandardMetalness } from "nanogl-pbr/StandardPass";
 import Rect from "nanogl-primitives-2d/rect";
 import GLState from 'nanogl-state/GLState';
+import { RenderContext } from "@webgl/core/Renderer";
+import { StandardMetalness } from "nanogl-pbr/StandardPass";
 import { GLContext, isWebgl2 } from "nanogl/types";
 
 
@@ -29,7 +29,6 @@ export default class FloorPlane {
     this.material.inputs.add( new Flag('hasTangents', false ))
     this.material.addPass( pass )
     
-
   }
 
   render( ctx: RenderContext ) : void {

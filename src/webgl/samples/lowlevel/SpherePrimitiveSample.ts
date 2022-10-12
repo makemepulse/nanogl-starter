@@ -3,7 +3,6 @@ import { RenderContext } from "@webgl/core/Renderer";
 import { IScene } from "@webgl/engine/IScene";
 import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
-import { CreateProgram } from '@webgl/core/CreateProgram';
 
 import vShader from './sphere.vert'
 import fShader from './sphere.frag'
@@ -13,6 +12,7 @@ import { TextureResource } from '@webgl/resources/TextureResource';
 import SpherePrimitive from "../common/SpherePrimitive";
 import GLState from "nanogl-state/GLState";
 import GLConfig from "nanogl-state/GLConfig";
+import Programs from "@webgl/glsl/programs";
 
 
 /**
@@ -30,7 +30,7 @@ export default class SpherePrimitiveSample implements IScene {
     const gl = renderer.gl
 
     this.sphere = new SpherePrimitive(gl, 16, 24)
-    this.prg = CreateProgram(gl, vShader, fShader)
+    this.prg = Programs(gl).create( vShader, fShader )
 
     this.envmap = AssetDatabase.getTexture('samples/textures/skybox_ditch_river.jpg', gl)
 

@@ -3,11 +3,11 @@ import { WebImpl } from "nanogl-gltf/lib/io/web";
 import AssetDatabase from "./AssetDatabase";
 import IOInterface from "nanogl-gltf/lib/io/IOInterface";
 import { GLContext, isWebgl2 } from "nanogl/types";
-import IblLight from "@webgl/engine/IblLight";
 import { cubeFaceForSurface, FaceIndex } from "./TextureData";
 import { TextureCubeResource, TextureResource } from "./TextureResource";
 import { loadText } from "./Net";
 import nativeAbortSignal from "@/core/AbortSignalUtils";
+import Ibl from "nanogl-pbr/lighting/Ibl";
 
 type PMREMSize = 64 | 128 | 256 | 512 | 1024 | 2048 | 4096
 
@@ -27,7 +27,7 @@ export type IblRequest = {
   /**
    * existing ibl to setup, if not provided a new one will be created
    */
-  ibl?: IblLight
+  ibl?: Ibl
 
   /**
    * Force octa format even if pmrem is available
@@ -93,13 +93,13 @@ export const _stdIO = new WebImpl();
 export const _moduleIO = new ModuleIO();
 
 
-export default class IblResource extends Resource<IblLight>{
+export default class IblResource extends Resource<Ibl>{
 
   private readonly _io: IOInterface
 
   private _usePmrem = false
 
-  private _ibl: IblLight;
+  private _ibl: Ibl;
 
   private readonly _request: Required<IblRequest>;
 
@@ -107,7 +107,7 @@ export default class IblResource extends Resource<IblLight>{
     return this._usePmrem
   }
 
-  get ibl(): IblLight {
+  get ibl(): Ibl {
     return this._ibl
   }
 
@@ -122,7 +122,7 @@ export default class IblResource extends Resource<IblLight>{
 
 
     this._usePmrem = isWebgl2(gl) && (request.forceOctahedronFormat !== true)
-    this._ibl = this._request.ibl || new IblLight()
+    this._ibl = this._request.ibl || new Ibl()
     
     this._ibl.iblFormat   = this._usePmrem ? 'PMREM' : 'OCTA'
     this._ibl.mipLevels   = this._usePmrem ? this._request.pmremMipLevels : this._request.octaMipLevels;
@@ -131,7 +131,7 @@ export default class IblResource extends Resource<IblLight>{
   }
 
 
-  async doLoad(): Promise<IblLight> {
+  async doLoad(): Promise<Ibl> {
 
     await Promise.all( [
       this._doLoadEnv(),
@@ -157,7 +157,7 @@ export default class IblResource extends Resource<IblLight>{
 
   private async _doLoadSh(): Promise<void> {
     const shFile = await loadText( this.resolveBundlePath('sh.txt'), {signal: nativeAbortSignal(this._abortCtrl.signal)} )
-    this._ibl.setRawSH( decodeSHFile( shFile ) )
+    this._ibl.sh = decodeSHFile( shFile )
   }
 
   /**
@@ -179,7 +179,7 @@ export default class IblResource extends Resource<IblLight>{
    */
   private createPmremFilenames(ext = ""): string[] {
     const mips = this._request.pmremMipLevels
-    const faces = ['px', 'py', 'pz', 'nx', 'ny', 'nz']
+    const faces = ['px', 'nx', 'py', 'ny', 'pz', 'nz']
 
     const res: string[] = []
     for (let mip = 0; mip < mips; mip++) {

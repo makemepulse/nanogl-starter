@@ -12,6 +12,7 @@ import CompleteLightSetup from "../common/CompleteLightSetup"
 import FloorPlane from "@webgl/samples/common/FloorPlane"
 import Bounds from "nanogl-pbr/Bounds"
 import { StandardMetalness } from "nanogl-pbr/StandardPass"
+import { ColorSpace } from "nanogl-pbr/ColorSpace"
 
 const GltfPath = "samples/suzanne/suzanne.gltf"
 // const GltfPath = "gltfs/fn-509_with_tactical_kit/scene.gltf"
@@ -29,11 +30,16 @@ export default class ClearcoatSample implements IScene {
   gltfSample: GltfScene
   lighting: Lighting
   root: Node
+
   clearcoatPass: ClearcoatMetalness
+
+  color       : Uniform
   ccSmoothness: Uniform
-  roughness: Uniform
-  metalness: Uniform
+  roughness   : Uniform
+  metalness   : Uniform
+
   completeLightSetup: CompleteLightSetup
+
   floor: FloorPlane
 
   constructor(renderer: Renderer) {
@@ -104,11 +110,13 @@ export default class ClearcoatSample implements IScene {
     // manully set lightSetup on this pass since gltf will not dio it itself
     this.lighting.setupStandardPass(this.clearcoatPass)
 
+
     // set red color as glsl constant
     // could attach a uniform if animated, or sampler or geomatry custom attribute here
-    this.clearcoatPass.surface.baseColor.attachConstant([.7, .1, .1])
-    
-
+    // this.color = this.clearcoatPass.surface.baseColor.attachConstant([.5, .0, .0])
+    this.color = this.clearcoatPass.surface.baseColor.attachUniform()
+    this.color.colorspace = ColorSpace.SRGB
+    this.color.set( .75, 0, 0 )
 
     this.ccSmoothness = this.clearcoatPass.clearcoatSmoothness.attachUniform()
     this.roughness = this.clearcoatPass.surface.roughness.attachUniform()
@@ -119,6 +127,7 @@ export default class ClearcoatSample implements IScene {
     this.metalness.set(1)
 
     const f = gui.folder('Clearcoat')
+    f.addColor(this.color, 'value').setLabel('Color')
     f.range(this.roughness, 'x', 0, 1).setLabel('Roughness')
     f.range(this.metalness, 'x', 0, 1).setLabel('Metalness')
     f.range(this.ccSmoothness, 'x', 0, 1).setLabel('CC Smoothness')

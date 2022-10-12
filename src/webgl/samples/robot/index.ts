@@ -32,7 +32,6 @@ export default class RobotScene implements IScene {
   }
 
   preRender():void {
-
     this.gltfSample.preRender()
     
     for (const node of this.gltfSample.gltf.nodes ) {

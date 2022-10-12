@@ -82,7 +82,7 @@ export default class LightmapSample implements IScene {
     this.root = new Node()
 
     this.lighting   = new Lighting( this.gl )
-    this.lighting.ibl.ambientExposure = 0
+    this.lighting.ibl.ambiantIntensity = 0
     
     this.root.add( this.lighting.root)
 

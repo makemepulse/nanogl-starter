@@ -3,7 +3,6 @@ import { RenderContext } from "@webgl/core/Renderer";
 import { IScene } from "@webgl/engine/IScene";
 import Renderer from "@webgl/Renderer";
 import Program from 'nanogl/program';
-import { CreateProgram } from '@webgl/core/CreateProgram';
 
 import vShader from './skybox.vert'
 import fShader from './skybox.frag'
@@ -12,6 +11,7 @@ import Rect from 'nanogl-primitives-2d/rect';
 import AssetDatabase from '@webgl/resources/AssetDatabase';
 import { TextureResource } from '@webgl/resources/TextureResource';
 import { mat4 } from 'gl-matrix';
+import Programs from "@webgl/glsl/programs";
 
 const M4 = mat4.create()
 
@@ -29,7 +29,7 @@ export default class SkyboxSample implements IScene {
     const gl = renderer.gl
 
     this.quad = new Rect(gl)
-    this.prg = CreateProgram(gl, vShader, fShader)
+    this.prg = Programs(gl).create(vShader, fShader)
 
     this.envmap = AssetDatabase.getTexture('samples/textures/skybox_ditch_river.jpg', gl)
   }

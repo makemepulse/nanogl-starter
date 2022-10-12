@@ -1,10 +1,10 @@
-#version {{@glslVersion}}
+{{@version}}
 
 #if __VERSION__ != 300
   #extension GL_OES_standard_derivatives : enable
 #endif 
 
-precision {{@bestPrecision}} float;
+precision {{@highp}} float;
 
 
 {{ require( "nanogl-pbr/glsl/includes/glsl-compat.frag" )() }}

@@ -70,8 +70,8 @@ The project is setup to support 2 formats of Ibl textures.
 Additionaly, Irradiance data is provided as a 3 bands Spherical Harmonics in a txt file.
 
 API:
-  `IblLight`: represent an IBL in a `LightSetup`, can be added like other Punctual Lights. A `LightSetup` suport only one IblLight.
-  `IblResource`: a `Resource<IblLight>` to help you load Ibls. It handle octa/pmrem and png/webp switch based on capabilities. 
+  `Ibl`: represent an IBL in a `LightSetup`, can be added like other Punctual Lights. A `LightSetup` suport only one Ibl.
+  `IblResource`: a `Resource<Ibl>` to help you load Ibls. It handle octa/pmrem and png/webp switch based on capabilities. 
 
 Examples: 
   [PmremIblSample](src/webgl/samples/ibl/PmremIblSample.ts) and [OctaIblSample](src/webgl/samples/ibl/OctaIblSample.ts)

@@ -8,13 +8,13 @@ export type TextureName =
   "matcap_clay" | 
   "matcap_red_plastic" | 
   "matcap_white" | 
-  "negx" | 
-  "negy" | 
-  "negz" | 
   "normal" | 
-  "posx" | 
-  "posy" | 
-  "posz" | 
+  "nx" | 
+  "ny" | 
+  "nz" | 
+  "px" | 
+  "py" | 
+  "pz" | 
   "roughness" | 
   "skybox_ditch_river" | 
   "texture1" | 
@@ -34,15 +34,15 @@ export type TexturePath =
   "samples/textures/avatar_LOD0.png" | 
   "samples/textures/avatar_LOD1.png" | 
   "samples/textures/avatar_LOD2.png" | 
-  "samples/textures/cube_car/negx.jpg" | 
-  "samples/textures/cube_car/negy.jpg" | 
-  "samples/textures/cube_car/negz.jpg" | 
-  "samples/textures/cube_car/posx.jpg" | 
-  "samples/textures/cube_car/posy.jpg" | 
-  "samples/textures/cube_car/posz.jpg" | 
   "samples/textures/matcap_clay.jpg" | 
   "samples/textures/matcap_red_plastic.jpg" | 
   "samples/textures/matcap_white.jpg" | 
+  "samples/textures/protospace/nx.jpg" | 
+  "samples/textures/protospace/ny.jpg" | 
+  "samples/textures/protospace/nz.jpg" | 
+  "samples/textures/protospace/px.jpg" | 
+  "samples/textures/protospace/py.jpg" | 
+  "samples/textures/protospace/pz.jpg" | 
   "samples/textures/skybox_ditch_river.jpg" | 
   "samples/textures/texture1.jpg" | 
   "samples/textures/texture1.jpg.astc.ktx" | 
@@ -56,6 +56,7 @@ export type TexturePath =
 
 
 export type OtherAssetName = 
+  "cubemap" | 
   "m0_nx" | 
   "m0_ny" | 
   "m0_nz" | 
@@ -86,13 +87,18 @@ export type OtherAssetName =
   "m4_px" | 
   "m4_py" | 
   "m4_pz" | 
+  "nx" | 
+  "ny" | 
+  "nz" | 
   "octa" | 
+  "px" | 
+  "py" | 
+  "pz" | 
   "room" | 
   "sh" | 
   "skybox_ditch_river" | 
   "suzanne" | 
-  "suzanne_data" | 
-  "tex"
+  "suzanne_data"
 ;
 
 
@@ -226,7 +232,16 @@ export type OtherAssetPath =
   "samples/room/room.glb" | 
   "samples/suzanne/suzanne_data.bin" | 
   "samples/suzanne/suzanne.gltf" | 
-  "samples/textures/cube_car/tex.etc.ktx" | 
+  "samples/textures/protospace/cubemap.astc.ktx" | 
+  "samples/textures/protospace/cubemap.dxt.ktx" | 
+  "samples/textures/protospace/cubemap.etc.ktx" | 
+  "samples/textures/protospace/cubemap.pvr.ktx" | 
+  "samples/textures/protospace/nx.webp" | 
+  "samples/textures/protospace/ny.webp" | 
+  "samples/textures/protospace/nz.webp" | 
+  "samples/textures/protospace/px.webp" | 
+  "samples/textures/protospace/py.webp" | 
+  "samples/textures/protospace/pz.webp" | 
   "samples/textures/skybox_ditch_river.webp"
 ;
 

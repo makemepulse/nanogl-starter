@@ -19,10 +19,10 @@ export type FaceIndex = 0|1|2|3|4|5;
 export function cubeFaceForSurface( i:FaceIndex ): CubeFace{
   switch( i ){
     case 0: return CubeFace.TEXTURE_CUBE_MAP_POSITIVE_X;
-    case 1: return CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Y;
-    case 2: return CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Z;
-    case 3: return CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_X;
-    case 4: return CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Y;
+    case 1: return CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_X;
+    case 2: return CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Y;
+    case 3: return CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Y;
+    case 4: return CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Z;
     case 5: return CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Z;
   }
 }
@@ -30,10 +30,10 @@ export function cubeFaceForSurface( i:FaceIndex ): CubeFace{
 export function surfaceForCubeFace( face:CubeFace ): FaceIndex {
   switch( face ){
     case CubeFace.TEXTURE_CUBE_MAP_POSITIVE_X : return 0;
-    case CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Y : return 1;
-    case CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Z : return 2;
-    case CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_X : return 3;
-    case CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Y : return 4;
+    case CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_X : return 1;
+    case CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Y : return 2;
+    case CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Y : return 3;
+    case CubeFace.TEXTURE_CUBE_MAP_POSITIVE_Z : return 4;
     case CubeFace.TEXTURE_CUBE_MAP_NEGATIVE_Z : return 5;
   }
 }

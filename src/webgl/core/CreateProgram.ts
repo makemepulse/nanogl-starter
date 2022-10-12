@@ -25,14 +25,14 @@ export default function CreateShader(glslModule:GlslModule ): GlslModule {
  * @param gl 
  * @param vert 
  * @param frag 
- * @param defs 
+ * @param prefix 
  * @returns 
  */
-export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program {
+export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, prefix?:string, datas?: unknown ): Program {
   const prg = new Program(gl)
   const lv = CreateShader(vert)
   const lf = CreateShader(frag)
-  const compile = ()=>prg.compile(lv(), lf(), defs)
+  const compile = ()=>prg.compile(lv(datas), lf(datas), prefix)
   compile()
   lv.onHmr(compile)
   lf.onHmr(compile)
@@ -43,6 +43,6 @@ export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, d
 /// #else
 
 /// #code export default function CreateShader(glslModule:GlslModule ): GlslModule { return glslModule }
-/// #code export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string ): Program { return new Program(gl, vert(), frag(), defs); }
+/// #code export function CreateProgram( gl:GLContext, vert:GlslModule, frag:GlslModule, defs?:string, datas?: unknown ): Program { return new Program(gl, vert(datas), frag(datas), defs); }
 
 /// #endif

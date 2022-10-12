@@ -33,7 +33,7 @@ import SkyboxSample             from "./lowlevel/SkyboxSample"
 import PmremIblSample           from "./ibl/PmremIblSample"
 import OctaIblSample            from "./ibl/OctaIblSample"
 import SpherePrimitiveSample    from "./lowlevel/SpherePrimitiveSample"
-import PackshotSample           from "./gltfs/dome/PackshotSample"
+import PackshotSample           from "./gltfs/PackshotSample"
 import TexturesAllFormatsSample from "./resources/TexturesAllFormatsSample"
 
 
