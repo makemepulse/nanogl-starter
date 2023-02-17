@@ -10,13 +10,14 @@ import ControlScheme from "./ControlScheme"
 import DevCameraController from "./DevCameraController"
 import Scheme3dsMax from "./Scheme3dsMax"
 import SchemeBlender from "./SchemeBlender"
-
+import SchemeTrackpad from "./SchemeTrackpad"
 
 function getSchemeFromEnvVar():ControlScheme {
   switch (process.env.VUE_APP_DEV_CAMERA_SCHEME) {
     case undefined: 
     case '3ds': return new Scheme3dsMax()
     case 'blender': return new SchemeBlender()
+    case 'trackpad': return new SchemeTrackpad()
   }
   console.warn(`Unknown camera scheme: ${process.env.VUE_APP_DEV_CAMERA_SCHEME}`)
 }
