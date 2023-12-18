@@ -89,8 +89,8 @@ export default class TexturesLoader {
     const source = data.sources[lod];
     const levels = source.surfaces[surface];
 
-    texture.width  = levels[0].data.width
-    texture.height = levels[0].data.height
+    texture.width  = levels[0].width
+    texture.height = levels[0].height
     
     for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
       this.gl.texImage2D(target, levelIndex, data.internalformat, data.format, data.type, levels[levelIndex].data)

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ColorInputParams, FolderApi, ListItem, MonitorBindingApi, ButtonApi } from "@tweakpane/core";
-import { InputBindingApi, ListApi, Pane, InputParams } from "tweakpane";
+
+import { ColorInputParams, InputBindingApi, ListBladeApi, Pane } from "tweakpane";
 import { Color, Control, Gui } from "./api";
 import { VecColorInputPlugin } from "./plugins/tp-color";
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import {RadioGridBladeParams} from '@tweakpane/plugin-essentials/dist/types/radio-grid/blade-plugin'
 import * as TweakpaneRotationInputPlugin from '@0b5vr/tweakpane-plugin-rotation'
 import { quat } from "gl-matrix";
+import { BindingApi, BindingParams, BladeApi, ButtonApi, FolderApi, ListItem, MonitorBindingApi } from "@tweakpane/core";
 import { InputChunkPlugin } from "./plugins/input-binding";
 // import * as TweakpaneThumbnailListPlugin from 'tweakpane-plugin-thumbnail-list'
 // import { Thumbnail } from "tweakpane-plugin-thumbnail-list/src/controller";
@@ -37,8 +38,8 @@ function deleteAllEmptyFolders(){
   }
 }
 
-root.registerPlugin( {plugin:VecColorInputPlugin} )
-root.registerPlugin( {plugin:InputChunkPlugin} )
+root.registerPlugin( {id:"VecColorInputPlugin", plugin:VecColorInputPlugin} )
+root.registerPlugin( {id:"InputChunkPlugin", plugin:InputChunkPlugin} )
 root.registerPlugin( EssentialsPlugin )
 root.registerPlugin( TweakpaneRotationInputPlugin )
 // root.registerPlugin( TweakpaneThumbnailListPlugin )
@@ -58,13 +59,13 @@ type PrimitiveValue<T> = {
   rawValue:T
 }
 
-type ControlInput<T> = InputBindingApi<unknown, T> | ListApi<T> | MonitorBindingApi<T> | ButtonApi
+type ControlInput<T> = InputBindingApi<unknown, T> | ListBladeApi<T> | MonitorBindingApi<T> | ButtonApi
 
 class TweakControl<T> implements Control<T>{
 
   _listeners: ((v:T)=>void)[] = []
 
-  constructor( private input: ControlInput<any>, private getter: ()=>T ){
+  constructor( private input: BindingApi|ButtonApi|ListBladeApi<any>, private getter: ()=>T ){
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     input.on( 'change', ()=>{
@@ -92,7 +93,7 @@ class TweakControl<T> implements Control<T>{
   }
 
   setHint( s:string ): this{
-    const el = this.input.controller_.view.element;
+    const el = this.input.controller.view.element;
     const input = el.querySelector( 'input, button' ) as HTMLElement
     if( input ) input.title = s
     return this;
@@ -146,19 +147,19 @@ function _factory( pane : FolderApi ){
 
     
     
-    add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, opts?: InputParams ): Control<O[Key]> {
-      const input = pane.addInput(tgt, prop, opts);
+    add<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key, opts?: BindingParams ): Control<O[Key]> {
+      const input = pane.addBinding(tgt, prop, opts);
       const ctrl = new TweakControl(input, () => tgt[prop]);
       registerCtrl( tgt, ctrl )
       return ctrl
     },
     
-    range<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, min:number, max:number, opts?: InputParams ):Control<O[Key]> {
+    range<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, min:number, max:number, opts?: BindingParams ):Control<O[Key]> {
       return this.add( tgt, prop, {...opts, min, max }) 
     },
 
     monitor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<O[Key]> {
-      const input = pane.addMonitor(tgt, prop);
+      const input = pane.addBinding(tgt, prop, {readonly:true});
       const ctrl = new TweakControl(input, () => tgt[prop]);
       registerCtrl( tgt, ctrl )
       return ctrl
@@ -168,7 +169,7 @@ function _factory( pane : FolderApi ){
     addColor<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<Color> {
       const alpha = tgt[prop].length === 4
       const opts: ColorInputParams = {view:'color', alpha, picker: 'inline',};
-      const input = pane.addInput(tgt, prop, opts);
+      const input = pane.addBinding(tgt, prop, opts);
       const ctrl = new TweakControl(input, () => tgt[prop]);
       registerCtrl( tgt, ctrl )
       return ctrl
@@ -178,7 +179,7 @@ function _factory( pane : FolderApi ){
       const r = tgt[prop]
       const o = {[prop]:new QuatWrapper(r)}
       // const o = {q:{x:r[0],y:r[1],z:r[2],w:r[3]}}
-      const input = pane.addInput(o, prop, {
+      const input = pane.addBinding(o, prop, {
         view: 'rotation',
         rotationMode: 'quaternion', // optional, 'quaternion' by default
         picker: 'inline', // or 'popup'. optional, 'popup' by default
@@ -200,7 +201,7 @@ function _factory( pane : FolderApi ){
       }
 
 
-      const list = pane.addInput(tgt, prop, {
+      const list = pane.addBinding(tgt, prop, {
         options
       })
       return new TweakControl(list, () => tgt[prop] );
@@ -253,12 +254,12 @@ function _factory( pane : FolderApi ){
         options = Object.entries(o).map( e=>({text:e[0], value:e[1] }))
       }
 
-      const list:ListApi<T> = gui._getPane().addBlade({
+      const list:ListBladeApi<T> = gui._getPane().addBlade({
         view: 'list',
         label,
         options,
         value: v ?? options[0].value,
-      }) as ListApi<T>;
+      }) as ListBladeApi<T>;
       
       return new TweakControl(list, () => list.value );
     },
@@ -286,7 +287,7 @@ function _factory( pane : FolderApi ){
         options,
         value: options[0].value,
       }
-      const list:ListApi<PrimitiveValue<T>> = gui._getPane().addBlade(params) as ListApi<PrimitiveValue<T>>;
+      const list:ListBladeApi<PrimitiveValue<T>> = gui._getPane().addBlade(params) as ListBladeApi<PrimitiveValue<T>>;
 
       return new TweakControl(list, () => list.value.rawValue );
     },
@@ -384,8 +385,8 @@ const fpsGraph = root.addBlade({
   lineCount: 2,
 });
 
-fpsGraph.controller_.view.element.addEventListener('dblclick', ()=>{
-  root.controller_.view.element.style.display = 'none'
+fpsGraph.controller.view.element.addEventListener('dblclick', ()=>{
+  root.controller.view.element.style.display = 'none'
 })
 
 const fpsCtrl:any = fpsGraph
@@ -396,6 +397,12 @@ function render() {
 }
 
 render()
+
+
+//
+
+// const texProfilePane = root.addBin
+
 
 
 export default gui

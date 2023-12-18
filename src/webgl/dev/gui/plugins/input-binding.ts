@@ -1,13 +1,14 @@
-import { BindingTarget, CompositeConstraint, Constraint, createNumberFormatter, createRangeConstraint, findConstraint, Formatter, getBaseStep, getSuitableDecimalDigits, getSuitableDraggingScale, InputBindingPlugin, ListParamsOptions, NumberInputParams, NumberTextController, ParamsParser, ParamsParsers, parseListOptions, parseNumber, parseParams, RangeConstraint, SliderTextController, ValueMap } from "@tweakpane/core";
+
+
+import { createSliderTextProps ,SliderInputBindingApi, createPlugin, BindingTarget, CompositeConstraint, Constraint, createRangeConstraint, findConstraint, InputBindingPlugin, ListParamsOptions, NumberInputParams, NumberTextController, parseListOptions, parseNumber, SliderTextController, ValueMap, DefiniteRangeConstraint, InputBindingController, ListConstraint, ListController, ListInputBindingApi, createListConstraint, createNumberTextInputParamsParser, createNumberTextPropsObject, createStepConstraint, createValue, parseRecord } from "@tweakpane/core";
 import Input, { Constant, Uniform } from "nanogl-pbr/Input";
 
 
 export function numberFromInput(value: unknown): number {
-  console.log("AAAAAAAAAA", value);
   
   if (value instanceof Input ) {
     const param = value.param
-    
+   
     if( param instanceof Constant ) {
       return param.value as number
     }
@@ -21,37 +22,6 @@ export function numberFromInput(value: unknown): number {
 	return 0;
 }
 
-
-function createConstraint(
-	params: NumberInputParams,
-): Constraint<number> {
-	const constraints: Constraint<number>[] = [];
-
-	const rc = createRangeConstraint(params);
-	if (rc) {
-		constraints.push(rc);
-	}
-
-	return new CompositeConstraint(constraints);
-}
-
-function findRange(
-	constraint: Constraint<number>,
-): [number | undefined, number | undefined] {
-	const c = constraint ? findConstraint(constraint, RangeConstraint) : null;
-	if (!c) {
-		return [undefined, undefined];
-	}
-
-	return [c.minValue, c.maxValue];
-}
-
-function estimateSuitableRange(
-	constraint: Constraint<number>,
-): [number, number] {
-	const [min, max] = findRange(constraint);
-	return [min ?? 0, max ?? 100];
-}
 
 function writeInput(
 	target: BindingTarget,
@@ -67,17 +37,40 @@ function writeInput(
 }
 
 
-export const InputChunkPlugin: InputBindingPlugin<
-  number,
-  Input,
-  NumberInputParams
-> = {
+function createConstraint(
+	params: NumberInputParams,
+	initialValue: number,
+): Constraint<number> {
+	const constraints: Constraint<number>[] = [];
 
-  id: 'input-number',
-  
-  type: 'input',
-  
-  accept: (value, params) => {
+	const sc = createStepConstraint(params, initialValue);
+	if (sc) {
+		constraints.push(sc);
+	}
+	const rc = createRangeConstraint(params);
+	if (rc) {
+		constraints.push(rc);
+	}
+	const lc = createListConstraint<number>(params.options);
+	if (lc) {
+		constraints.push(lc);
+	}
+
+	return new CompositeConstraint(constraints);
+}
+
+/**
+ * @hidden
+ */
+export const InputChunkPlugin: InputBindingPlugin<
+	number,
+	Input,
+	NumberInputParams
+> = createPlugin({
+	id: 'input-chunk',
+	type: 'input',
+	accept: (value, params) => {
+
     if (! (value instanceof Input )) {
       return null;
     }
@@ -86,68 +79,84 @@ export const InputChunkPlugin: InputBindingPlugin<
       return null;
     }
 
+		const result = parseRecord<NumberInputParams>(params, (p) => ({
+			...createNumberTextInputParamsParser(p),
+			options: p.optional.custom<ListParamsOptions<number>>(parseListOptions),
+			readonly: p.optional.constant(false),
+		}));
+		return result
+			? {
+					initialValue: value,
+					params: result,
+			  }
+			: null;
+	},
+	binding: {
+		reader: (_args) => numberFromInput,
+		writer: (_args) => writeInput,
+		constraint: (args) => createConstraint(args.params, numberFromInput( args.initialValue) ),
+	},
+	controller: (args) => {
+		const value = args.value;
+		const c = args.constraint;
 
-    const p = ParamsParsers;
-    const result = parseParams<NumberInputParams>(params, {
-      format: p.optional.function as ParamsParser<Formatter<number>>,
-      max: p.optional.number,
-      min: p.optional.number,
-      options: p.optional.custom<ListParamsOptions<number>>(parseListOptions),
-      step: p.optional.number,
-    });
-    return result
-      ? {
-        initialValue: value,
-        params: result,
-      }
-      : null;
-  },
+		const lc = c && findConstraint<ListConstraint<number>>(c, ListConstraint);
+		if (lc) {
+			return new ListController(args.document, {
+				props: new ValueMap({
+					options: lc.values.value('options'),
+				}),
+				value: value,
+				viewProps: args.viewProps,
+			});
+		}
 
-  binding: {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    reader: (_args) => numberFromInput,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    writer: (_args) => writeInput,
+		const textPropsObj = createNumberTextPropsObject(
+			args.params,
+			value.rawValue,
+		);
 
-    constraint: (args) => createConstraint(args.params),
-  },
+		const drc = c && findConstraint(c, DefiniteRangeConstraint);
+		if (drc) {
+			return new SliderTextController(args.document, {
+				...createSliderTextProps({
+					...textPropsObj,
+					keyScale: createValue(textPropsObj.keyScale),
+					max: drc.values.value('max'),
+					min: drc.values.value('min'),
+				}),
+				parser: parseNumber,
+				value: value,
+				viewProps: args.viewProps,
+			});
+		}
 
-  controller: (args) => {
-    const value = args.value;
-    const c = args.constraint;
+		return new NumberTextController(args.document, {
+			parser: parseNumber,
+			props: ValueMap.fromObject(textPropsObj),
+			value: value,
+			viewProps: args.viewProps,
+		});
+	},
+	api(args) {
+		if (typeof args.controller.value.rawValue !== 'number') {
+			return null;
+		}
 
+		if (args.controller.valueController instanceof SliderTextController) {
+			return new SliderInputBindingApi(
+				args.controller as InputBindingController<number, SliderTextController>,
+			);
+		}
+		if (args.controller.valueController instanceof ListController) {
+			return new ListInputBindingApi(
+				args.controller as InputBindingController<
+					number,
+					ListController<number>
+				>,
+			);
+		}
 
-    const formatter =
-      ('format' in args.params ? args.params.format : undefined) ??
-      createNumberFormatter(getSuitableDecimalDigits(c, value.rawValue));
-
-    if (c && findConstraint(c, RangeConstraint)) {
-      const [min, max] = estimateSuitableRange(c);
-      return new SliderTextController(args.document, {
-        baseStep: getBaseStep(c),
-        parser: parseNumber,
-        sliderProps: ValueMap.fromObject({
-          maxValue: max,
-          minValue: min,
-        }),
-        textProps: ValueMap.fromObject({
-          draggingScale: getSuitableDraggingScale(c, value.rawValue),
-          formatter: formatter,
-        }),
-        value: value,
-        viewProps: args.viewProps,
-      });
-    }
-
-    return new NumberTextController(args.document, {
-      baseStep: getBaseStep(c),
-      parser: parseNumber,
-      props: ValueMap.fromObject({
-        draggingScale: getSuitableDraggingScale(c, value.rawValue),
-        formatter: formatter,
-      }),
-      value: value,
-      viewProps: args.viewProps,
-    });
-  },
-};
+		return null;
+	},
+});

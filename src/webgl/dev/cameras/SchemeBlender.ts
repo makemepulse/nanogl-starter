@@ -9,9 +9,13 @@ export default class SchemeBlender implements ControlScheme {
   
   inverseDolly = true
 
-  getModeForEvt( e:MouseEvent ) : CameraMode {
-    // middle mouse only 
-    if( (e.buttons & 4) == 0 ) return CameraMode.IDLE
+  getModeForEvt( e:PointerEvent ) : CameraMode {
+    
+    // discard non primary pointer
+    if( !e.isPrimary ) return CameraMode.IDLE
+
+    // for mouse control, use only left or middle button
+    if( e.pointerType == "mouse" && (e.buttons & 5) == 0 ) return CameraMode.IDLE;
 
     if( e.shiftKey ){
       return e.ctrlKey ? CameraMode.DOLLY : CameraMode.PAN

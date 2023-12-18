@@ -12,7 +12,7 @@ export default interface ControlScheme {
    * Called on mouse move. Return a camera action type depending on keys/mouse btn combo
    * @param e 
    */
-  getModeForEvt( e:MouseEvent|TouchEvent ) : CameraMode
+  getModeForEvt( e:PointerEvent ) : CameraMode
 
   /**
    * set to true to reverse dolly direction
