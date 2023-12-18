@@ -9,8 +9,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@gltf-transform/core": "^2.1.7",
-    "@gltf-transform/functions": "^2.1.7",
+    "@gltf-transform/core": "^3.9.0",
+    "@gltf-transform/functions": "^3.9.0",
+    "sharp": "^0.33.0",
+    "tmp": "^0.2.1",
     "hdr": "^0.6.1",
     "jpeg-js": "^0.3.7",
     "pngjs": "^3.4.0",
@@ -18,7 +20,5 @@
     "xyz-utils": "^0.5.2"
   },
   "dependencies": {
-    "@squoosh/lib": "^0.4.0",
-    "tmp": "^0.2.1"
   }
 }

@@ -6,7 +6,7 @@ import fs from 'fs/promises'
 
 import {spawn} from 'child_process';
 
-import { TextureBasisu } from '@gltf-transform/extensions';
+import { KHRTextureBasisu } from '@gltf-transform/extensions';
 import { getTextureChannelMask, listTextureSlots } from '@gltf-transform/functions';
 import { FileUtils, ImageUtils } from '@gltf-transform/core';
 import { formatBytes, waitExit } from './utils.mjs';
@@ -34,7 +34,7 @@ const basis = function (options) {
   return async doc => {
     const logger = doc.getLogger();
 
-    const basisuExtension = doc.createExtension(TextureBasisu).setRequired(true);
+    const basisuExtension = doc.createExtension(KHRTextureBasisu).setRequired(true);
 
     let numCompressed = 0;
     const limit = pLimit(options.jobs);
