@@ -1,8 +1,8 @@
 
 import { NodeIO } from '@gltf-transform/core';
-import { dedup, mozjpeg, quantize, weld } from '@gltf-transform/functions';
+import { dedup, textureCompress, quantize, weld } from '@gltf-transform/functions';
 import basis from './gltf-transform-basis/basis.mjs';
-import squoosh from '@squoosh/lib';
+import sharp from 'sharp';
 
 export default async function optim( _input, _output ){
     const io = new NodeIO();
@@ -11,7 +11,13 @@ export default async function optim( _input, _output ){
     await document.transform(
         
         // basis({slots:['occlusionTexture', 'baseColorTexture', 'metallicRoughnessTexture']}),
-        mozjpeg({slots:['normalTexture'], squoosh}),
+        // mozjpeg({slots:['normalTexture'], squoosh}),
+
+        textureCompress({
+            encoder: sharp,
+            targetFormat: 'jpeg',
+            slots:/^normalTexture.*$/,
+        }),
 
         // weld(),
         quantize(),
@@ -19,5 +25,6 @@ export default async function optim( _input, _output ){
     );
     
     await io.write(_output, document);
+    
 }
 

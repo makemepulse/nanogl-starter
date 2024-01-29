@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { quat, vec3, vec4 } from "gl-matrix";
-import type { InputParams } from "tweakpane";
+import type { BindingParams } from "tweakpane";
 
 export type Color = vec3|vec4
 
@@ -14,8 +14,8 @@ export interface Control<T = any> {
 
 export interface Gui {
   
-  add<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, opts?: InputParams ):Control<O[Key]>
-  range<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, min:number, max:number, opts?: InputParams ):Control<O[Key]>
+  add<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, opts?: BindingParams ):Control<O[Key]>
+  range<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key, min:number, max:number, opts?: BindingParams ):Control<O[Key]>
   monitor<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key ):Control<O[Key]>
   addColor<O extends Record<string, any>, Key extends string>( tgt:O, prop:Key ):Control<Color>
   addRotation<O extends Record<string, any>, Key extends string>(tgt: O, prop: Key): Control<quat> 

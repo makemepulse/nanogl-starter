@@ -15,7 +15,7 @@ const IMVP      = mat4.create();
 
 const PAN_SENSITIVITY = 10;
 
-function setMousePos( e:MouseEvent, el:Element, v3: vec3 ){
+function setMousePos( e:PointerEvent, el:Element, v3: vec3 ){
   v3[0] =   2 * e.clientX / window.innerWidth - 1
   v3[1] = -(2 * e.clientY / window.innerHeight - 1)
 }
@@ -214,7 +214,7 @@ export default class DevCameraController implements ICameraController {
     this.cam = cam as Camera<PerspectiveLens>;
     this.cam.updateWorldMatrix()
     this.orbitRadius = -vec3.length(this.cam._wposition as vec3)
-    this.el.addEventListener( 'mousemove', this.onMouseMove );
+    this.el.addEventListener( 'pointermove', this.onPointerMove );
     this.mode        = -1;
     this.setMode( CameraMode.IDLE )
   }
@@ -222,7 +222,7 @@ export default class DevCameraController implements ICameraController {
 
   stop():void{
     this.cam = null;
-    this.el.removeEventListener( 'mousemove', this.onMouseMove );
+    this.el.removeEventListener( 'pointermove', this.onPointerMove );
   }
 
 
@@ -266,7 +266,7 @@ export default class DevCameraController implements ICameraController {
 
 
 
-  onMouseMove = ( e:MouseEvent ):void =>{
+  onPointerMove = ( e:PointerEvent ):void =>{
     const mode = this.controlScheme?.getModeForEvt(e) ?? CameraMode.IDLE;
     this.setMode( mode );
     setMousePos( e, this.el, this.mouse );
