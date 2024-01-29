@@ -24,6 +24,9 @@ export default class FloorPlane {
     const pass = new StandardMetalness()
     pass.version.set( isWebgl2(gl)?"300 es":"100")
     pass.glconfig.enableDepthTest()
+    pass.surface.baseColor.attachConstant( [1, 1, 1, 1.0] );
+    pass.surface.metalness.attachConstant( 0 );
+    pass.surface.roughness.attachConstant( 1 );
 
     this.material.inputs.add( new Flag('hasNormals', false ))
     this.material.inputs.add( new Flag('hasTangents', false ))

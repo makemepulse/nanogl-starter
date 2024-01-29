@@ -34,7 +34,7 @@ export default class LightsScene implements IScene {
     /**
      * remove initial ibl light added by default by Lighting
      */
-    this.lighting.lightSetup.remove( this.lighting.ibl )
+    // this.lighting.lightSetup.remove( this.lighting.ibl )
 
 
     /**
