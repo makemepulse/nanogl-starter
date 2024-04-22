@@ -1,0 +1,22 @@
+{
+  "name": "burn_webgpu",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "gl-matrix": "2.3.1",
+    "nanogl-camera": "^1.1.2",
+    "nanogl-node": "^1.2.1",
+    "ola": "1.2.1"
+  },
+  "devDependencies": {
+    "@webgpu/types": "^0.1.40",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0"
+  }
+}
