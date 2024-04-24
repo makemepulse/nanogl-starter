@@ -2,11 +2,14 @@
 import { mat4, vec3 } from 'gl-matrix';
 import type { RenderContext } from '../../core/RenderContext';
 import ColorUtils from '../../utils/Color';
-import type { CircleGuizmo } from './CircleGuizmo';
 import CircleGuizmos from './CircleGuizmo';
+import CrossGuizmos from './CrossGuizmo';
+import Grid, { GridOrientation } from './Grid';
+import Lines from './Lines';
 
 
-const Orange = ColorUtils.HexToNewVec3( 0xfe9f2c )
+const OrangeHex = 0xfe9f2c
+const Orange = ColorUtils.HexToNewVec3( OrangeHex )
 
 /// #if DEBUG
 
@@ -16,49 +19,72 @@ const Orange = ColorUtils.HexToNewVec3( 0xfe9f2c )
 // TEST SWITCH HERE
 //*
 
-function m4fromV3( v3:vec3 ) : mat4 {
-  const m = mat4.create();
-  mat4.fromTranslation( m, v3 );
-  return m;
+function m4fromV3( v3:vec3|mat4 ) : mat4 {
+  if( v3.length === 3 ){
+    const m = mat4.create();
+    mat4.fromTranslation( m, v3 as vec3 );
+    return m;
+  }
+  return v3 as mat4;
 }
 
 class DebugDrawImpl {
   
-  _circles: CircleGuizmo[] = [];
-
   circleRenderer       : CircleGuizmos  
+  guizmoRenderer       : CrossGuizmos
+  grid : Grid;
+  lineRenderer : Lines
       
   enabled = true
-
+  gridXZ = true
+  gridXY = false
+  gridZY = false
 
   constructor( device:GPUDevice ){
-    this.circleRenderer       = new CircleGuizmos( device )
+    this.circleRenderer = new CircleGuizmos( device )
+    this.guizmoRenderer = new CrossGuizmos ( device )
+    this.grid           = new Grid         ( device )
+    this.lineRenderer   = new Lines        ( device )
   }
 
 
   clear(){
-    this._circles .length = 0
+    this.circleRenderer.clear()
+    this.guizmoRenderer.clear()
+    this.lineRenderer.clear()
   }
 
  
-  // take vec3 or mat4
   drawCircle( pos : vec3 | mat4, radius = 1, color = Orange ){
     if( !this.enabled ) return
-    if( pos.length === 3 ){
-      pos = m4fromV3( pos as vec3 );
-    }
-    this._circles.push( {matrix: pos as mat4, radius, color} );
+    this.circleRenderer.add( m4fromV3(pos), radius, color );
   }
 
+  drawGuizmo( pos : vec3 | mat4 ){
+    if( !this.enabled ) return
+    this.guizmoRenderer.add( m4fromV3(pos) );
+  }
+
+  drawLine( a:vec3, b:vec3, color = OrangeHex ){
+    if( !this.enabled ) return
+    this.lineRenderer.addLine( a, b, color );
+  }
 
 
 
   render( context: RenderContext ){
     if( !this.enabled ) return
 
-    if( this._circles.length > 0 ) {
-      this.circleRenderer.render( context, this._circles );
-    }
+    this.grid.render( 
+      (this.gridXZ ? GridOrientation.XZ : 0) |
+      (this.gridXY ? GridOrientation.XY : 0) |
+      (this.gridZY ? GridOrientation.YZ : 0) 
+      , context
+    )
+
+    this.circleRenderer.render( context );
+    this.guizmoRenderer.render( context );
+    this.lineRenderer  .render( context );
 
   }
 
@@ -87,6 +113,14 @@ const DebugDraw = {
     _instance.drawCircle( pos, radius, color );
   },
   
+  drawGuizmo( pos : vec3 | mat4 ){
+    _instance.drawGuizmo( pos );
+  },
+
+  drawLine( a:vec3, b:vec3, color = OrangeHex ){
+    _instance.drawLine( a, b, color );
+  },
+
   render(context: RenderContext):void{
     _instance.render(context);
     _instance.clear();

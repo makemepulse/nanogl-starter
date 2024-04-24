@@ -39,6 +39,7 @@ export default class Engine {
       throw new Error("No appropriate GPUDevice found.");
     }
 
+    console.log( device.limits )
     return new Engine( adapter, device );
   }
 

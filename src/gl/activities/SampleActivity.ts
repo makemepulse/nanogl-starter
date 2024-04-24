@@ -1,9 +1,11 @@
+import { vec3 } from "gl-matrix";
 import Camera from "nanogl-camera";
 import type PerspectiveLens from "nanogl-camera/perspective-lens";
 import Node from "nanogl-node";
 import type Engine from "../Engine";
 import DevCameraController from "../cameras/DevCameraController";
 import { BaseActivity } from "../core/Activity";
+import { CameraBindGroupFactory, type BindGroup } from "../core/BindGroup";
 import type { RenderContext } from "../core/RenderContext";
 import Time from "../core/Time";
 import DebugDraw from "../dev/debugDraw/DebugDraw";
@@ -19,6 +21,7 @@ export default class SampleActivity extends BaseActivity {
   camera: Camera<PerspectiveLens>
   camCtrl: DevCameraController;
   node: Node;
+  cameraBindGroup: BindGroup;
 
   constructor(engine: Engine) {
     super(engine)
@@ -27,9 +30,13 @@ export default class SampleActivity extends BaseActivity {
 
     this.camera = Camera.makePerspectiveCamera()
     this.camera.z = 5
+    this.camera.lens.near = 0.1
+    this.camera.lens.far = 50.0
     this.camera.updateMatrix()
     this.camCtrl = new DevCameraController(engine.canvasTarget.canvas)
     this.camCtrl.start(this.camera)
+
+    this.cameraBindGroup = CameraBindGroupFactory.createBindGroup(engine.device)
 
     this.node = new Node()
 
@@ -51,10 +58,17 @@ export default class SampleActivity extends BaseActivity {
 
     DebugDraw.drawCircle(this.node._wmatrix, 1)
 
+    DebugDraw.drawGuizmo(this.node._wmatrix)
+
+    DebugDraw.drawLine( vec3.fromValues(0,0,0), vec3.fromValues(1,1,1) )
+
     this.camCtrl.update(Time.dt)
     this.camera.updateWorldMatrix()
     this.camera.updateViewProjectionMatrix(this.engine.canvasTarget.bufferWidth, this.engine.canvasTarget.bufferHeight)
 
+
+    CameraBindGroupFactory.updateCameraData(this.cameraBindGroup, this.camera)
+    
     const encoder = this.engine.device.createCommandEncoder();
 
     const passEncoder = encoder.beginRenderPass({
@@ -71,6 +85,7 @@ export default class SampleActivity extends BaseActivity {
 
     const context: RenderContext = {
       camera : this.camera,
+      cameraBindGroup: this.cameraBindGroup,
       renderPassEncoder: passEncoder,
     }
 

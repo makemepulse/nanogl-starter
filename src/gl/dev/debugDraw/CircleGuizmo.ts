@@ -1,5 +1,6 @@
 import { mat4, type vec3 } from 'gl-matrix';
 import type { RenderContext } from '../../core/RenderContext';
+import { CameraBindGroupFactory } from '../../core/BindGroup';
 
 
 const CircleSegs = 32;
@@ -16,6 +17,8 @@ const FBUFF = new Float32Array(Circle)
 
 const WGSL = /* wgsl */`
 
+${CameraBindGroupFactory.getWgslDeclaration(1)}
+
 struct InstanceState {
   matrix: mat4x4<f32>,
   radius: f32,
@@ -27,7 +30,6 @@ struct VertexOutput {
   @location(0) color: vec4f,
 };
 
-@group(0) @binding(1) var<uniform> viewProjectionMatrix: mat4x4<f32>;
 @group(0) @binding(0) var<storage> instStates: array<InstanceState>;
 
 @vertex
@@ -37,7 +39,7 @@ fn vertexMain(
 ) -> VertexOutput {
 
   var inst = instStates[instance];
-  var worldPos = viewProjectionMatrix * (inst.matrix * vec4f(position*inst.radius, 0.0, 1.0));
+  var worldPos = camera.viewProj * (inst.matrix * vec4f(position*inst.radius, 0.0, 1.0));
   var color = vec4f( inst.color, 1.0 );
 
   return VertexOutput(
@@ -60,10 +62,10 @@ export type CircleGuizmo = {
   radius: number
   color: vec3
 }
-const CircleGuizmoFloatPerVertex = 16 + 4 + 4;
-const CircleGuizmoBytesLength = CircleGuizmoFloatPerVertex * 4;
+const FLOAT_PER_VERTEX = 16 + 4 + 4;
+const BYTES_PER_VERTEX = FLOAT_PER_VERTEX * 4;
 
-const maxCircles = 64;
+const maxInstances = 64;
 
 
 export default class CircleGuizmos {
@@ -72,13 +74,15 @@ export default class CircleGuizmos {
   private pipeline: GPURenderPipeline;
   private bindGroup: GPUBindGroup;
   private instStatesStorage: GPUBuffer;
-  private uniformsBuffer: GPUBuffer;
   private vertexBuffer: GPUBuffer;
-  private bufferData: Float32Array;
+
+  private instanceBufferData : Float32Array;
+
+  private numInstances = 0
 
   constructor(private device:GPUDevice ) {
 
-    this.bufferData = new Float32Array( maxCircles * CircleGuizmoFloatPerVertex );
+    this.instanceBufferData = new Float32Array( maxInstances * FLOAT_PER_VERTEX );
 
     const vertexBufferLayout: GPUVertexBufferLayout = {
       arrayStride: 8,
@@ -89,25 +93,35 @@ export default class CircleGuizmos {
       }],
     };
 
-    const module = device.createShaderModule({
+    const shader = device.createShaderModule({
       label: "CircleGuizmo",
       code: WGSL,
     });
 
     this.pipeline = device.createRenderPipeline({
       label: 'Simple Quad',
-      layout: 'auto',
-        
+
+      layout: device.createPipelineLayout({
+        bindGroupLayouts: [
+          device.createBindGroupLayout({
+            entries: [
+              { binding: 0, visibility: GPUShaderStage.VERTEX, buffer:{type: 'read-only-storage' }},
+            ],
+          }),
+          CameraBindGroupFactory.getBindGroupLayout(device),
+        ],
+      }),
+
       primitive: {
         topology: 'line-strip',
       },
       vertex: {
-        module,
+        module: shader,
         entryPoint: 'vertexMain',
         buffers: [vertexBufferLayout],
       },
       fragment: {
-        module,
+        module: shader,
         entryPoint: 'fragmentMain',
         targets: [{ format: navigator.gpu.getPreferredCanvasFormat() }],
       },
@@ -115,21 +129,15 @@ export default class CircleGuizmos {
 
     this.instStatesStorage = device.createBuffer({
       label: "CircleGuizmo Instances",
-      size: maxCircles * CircleGuizmoBytesLength,
+      size: maxInstances * BYTES_PER_VERTEX,
       usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
 
-    this.uniformsBuffer = device.createBuffer({
-      label: "CircleGuizmo uniforms",
-      size: 16*4,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
     
     this.bindGroup = device.createBindGroup({
       layout: this.pipeline.getBindGroupLayout(0),
       entries: [
         { binding: 0, resource: {buffer: this.instStatesStorage } },
-        { binding: 1, resource: {buffer: this.uniformsBuffer } },
       ],
     });
     
@@ -142,32 +150,40 @@ export default class CircleGuizmos {
     device.queue.writeBuffer(this.vertexBuffer, 0, FBUFF);
 
   }
-
-
-  render(context: RenderContext, instances: CircleGuizmo[] ): void {
-
-    if( instances.length > maxCircles ) {
-      console.error('Too many circles to render');
-      return;
+  
+  add( matrix: mat4, radius:number, color: vec3 ): void {
+    
+    if( this.numInstances >= maxInstances ) {
+      throw new Error('Too many instances');
     }
+    
+    const offset = this.numInstances * FLOAT_PER_VERTEX;
+    this.instanceBufferData.set( matrix, offset );
+    this.instanceBufferData[offset+16] = radius;
+    this.instanceBufferData.set( color, offset+16+4 );
+    this.numInstances++;
+  }
 
-    for (let i = 0; i < instances.length; i++) {
-      const inst = instances[i];
-      const offset = i * CircleGuizmoFloatPerVertex;
-      this.bufferData.set( inst.matrix, offset );
-      this.bufferData[offset+16] = inst.radius;
-      this.bufferData.set( inst.color, offset+16+4 );
-    }
-    this.device.queue.writeBuffer(this.instStatesStorage, 0, this.bufferData, 0, instances.length * CircleGuizmoFloatPerVertex);
-    this.device.queue.writeBuffer(this.uniformsBuffer, 0, context.camera._viewProj );
+
+  clear(): void {
+    this.numInstances = 0;
+  }
+
+
+  render(context: RenderContext ): void {
+
+    if( this.numInstances === 0 ) return;
+
+
+    this.device.queue.writeBuffer(this.instStatesStorage, 0, this.instanceBufferData, 0, this.numInstances * FLOAT_PER_VERTEX);
     
     const pass = context.renderPassEncoder;
     
     pass.setPipeline(this.pipeline);
     pass.setBindGroup(0, this.bindGroup ); // Updated!
+    pass.setBindGroup(1, context.cameraBindGroup.getBindGroup() ); // Updated!
     pass.setVertexBuffer(0, this.vertexBuffer);
-    pass.draw( CircleSegs, instances.length);
-
+    pass.draw( CircleSegs, this.numInstances);
 
   }
 
