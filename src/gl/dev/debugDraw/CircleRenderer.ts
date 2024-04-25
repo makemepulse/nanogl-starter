@@ -1,6 +1,7 @@
 import { mat4, type vec3 } from 'gl-matrix';
-import type { RenderContext } from '../../core/RenderContext';
+import type { RenderContext } from '../../renderer/RenderContext';
 import { CameraBindGroupFactory } from '../../core/BindGroup';
+import ColorUtils from '../../utils/Color';
 
 
 const CircleSegs = 32;
@@ -68,7 +69,7 @@ const BYTES_PER_VERTEX = FLOAT_PER_VERTEX * 4;
 const maxInstances = 64;
 
 
-export default class CircleGuizmos {
+export default class CircleRenderer {
 
 
   private pipeline: GPURenderPipeline;
@@ -100,7 +101,13 @@ export default class CircleGuizmos {
 
     this.pipeline = device.createRenderPipeline({
       label: 'Simple Quad',
-
+      
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: "less",
+        format: "depth24plus",
+      },
+      
       layout: device.createPipelineLayout({
         bindGroupLayouts: [
           device.createBindGroupLayout({
@@ -151,7 +158,7 @@ export default class CircleGuizmos {
 
   }
   
-  add( matrix: mat4, radius:number, color: vec3 ): void {
+  add( matrix: mat4, radius:number, color: number ): void {
     
     if( this.numInstances >= maxInstances ) {
       throw new Error('Too many instances');
@@ -160,7 +167,7 @@ export default class CircleGuizmos {
     const offset = this.numInstances * FLOAT_PER_VERTEX;
     this.instanceBufferData.set( matrix, offset );
     this.instanceBufferData[offset+16] = radius;
-    this.instanceBufferData.set( color, offset+16+4 );
+    this.instanceBufferData.set( ColorUtils.HexToTmpVec3(color), offset+16+4 );
     this.numInstances++;
   }
 

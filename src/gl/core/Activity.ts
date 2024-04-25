@@ -26,6 +26,7 @@ export abstract class BaseActivity extends ResourceGroup implements IActivity {
   constructor( protected engine: Engine ) {
     super()
   }
+  
   abstract start(): void;
   abstract stop(): void;
   abstract render(): void;

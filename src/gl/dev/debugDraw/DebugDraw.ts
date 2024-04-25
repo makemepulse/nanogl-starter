@@ -1,20 +1,19 @@
 
 import { mat4, vec3 } from 'gl-matrix';
-import type { RenderContext } from '../../core/RenderContext';
-import ColorUtils from '../../utils/Color';
-import CircleGuizmos from './CircleGuizmo';
-import CrossGuizmos from './CrossGuizmo';
-import Grid, { GridOrientation } from './Grid';
-import Lines from './Lines';
 
 
-const OrangeHex = 0xfe9f2c
-const Orange = ColorUtils.HexToNewVec3( OrangeHex )
 
 /// #if DEBUG
 
 
+import type { RenderContext } from '../../renderer/RenderContext';
+import AxisRenderer from './AxisRenderer';
+import CircleRenderer from './CircleRenderer';
+import ConeRenderer from './ConeRenderer';
+import GridRenderer, { GridOrientation } from './GridRenderer';
+import LineRenderer from './LineRenderer';
 
+const DefaultColorHex = 0xfe9f2c
 
 // TEST SWITCH HERE
 //*
@@ -28,12 +27,13 @@ function m4fromV3( v3:vec3|mat4 ) : mat4 {
   return v3 as mat4;
 }
 
-class DebugDrawImpl {
+export class DebugDrawImpl {
   
-  circleRenderer       : CircleGuizmos  
-  guizmoRenderer       : CrossGuizmos
-  grid : Grid;
-  lineRenderer : Lines
+  circleRenderer : CircleRenderer
+  axisRenderer   : AxisRenderer
+  gridRenderer   : GridRenderer
+  lineRenderer   : LineRenderer
+  coneRenderer   : ConeRenderer
       
   enabled = true
   gridXZ = true
@@ -41,50 +41,56 @@ class DebugDrawImpl {
   gridZY = false
 
   constructor( device:GPUDevice ){
-    this.circleRenderer = new CircleGuizmos( device )
-    this.guizmoRenderer = new CrossGuizmos ( device )
-    this.grid           = new Grid         ( device )
-    this.lineRenderer   = new Lines        ( device )
+    this.circleRenderer = new CircleRenderer ( device )
+    this.axisRenderer   = new AxisRenderer   ( device )
+    this.gridRenderer   = new GridRenderer   ( device )
+    this.lineRenderer   = new LineRenderer   ( device )
+    this.coneRenderer   = new ConeRenderer   ( this )
   }
 
 
   clear(){
     this.circleRenderer.clear()
-    this.guizmoRenderer.clear()
+    this.axisRenderer.clear()
     this.lineRenderer.clear()
   }
 
  
-  drawCircle( pos : vec3 | mat4, radius = 1, color = Orange ){
+  drawCircle( pos : vec3 | mat4, radius = 1, colorHexRgb = DefaultColorHex ){
     if( !this.enabled ) return
-    this.circleRenderer.add( m4fromV3(pos), radius, color );
+    this.circleRenderer.add( m4fromV3(pos), radius, colorHexRgb );
   }
 
-  drawGuizmo( pos : vec3 | mat4 ){
+  drawAxis( pos : vec3 | mat4 ){
     if( !this.enabled ) return
-    this.guizmoRenderer.add( m4fromV3(pos) );
+    this.axisRenderer.add( m4fromV3(pos) );
   }
 
-  drawLine( a:vec3, b:vec3, color = OrangeHex ){
+  drawLine( a:vec3, b:vec3, colorHexRgb = DefaultColorHex ){
     if( !this.enabled ) return
-    this.lineRenderer.addLine( a, b, color );
+    this.lineRenderer.addLine( a, b, colorHexRgb );
+  }
+  
+  drawCone( m : mat4, height: number, angle: number, colorHexRgb = DefaultColorHex, segs?:number ){
+    if( !this.enabled ) return
+    this.coneRenderer.addCone( m, height, angle, colorHexRgb, segs );
   }
 
 
 
   render( context: RenderContext ){
     if( !this.enabled ) return
+    this.circleRenderer.render( context );
+    this.axisRenderer.render( context );
+    this.lineRenderer  .render( context );
 
-    this.grid.render( 
+    this.gridRenderer.render( 
       (this.gridXZ ? GridOrientation.XZ : 0) |
       (this.gridXY ? GridOrientation.XY : 0) |
       (this.gridZY ? GridOrientation.YZ : 0) 
       , context
     )
 
-    this.circleRenderer.render( context );
-    this.guizmoRenderer.render( context );
-    this.lineRenderer  .render( context );
 
   }
 
@@ -109,16 +115,20 @@ const DebugDraw = {
   },
 
 
-  drawCircle( pos : vec3 | mat4, radius = 1, color = Orange ){
+  drawCircle( pos : vec3 | mat4, radius = 1, color = DefaultColorHex ){
     _instance.drawCircle( pos, radius, color );
   },
   
-  drawGuizmo( pos : vec3 | mat4 ){
-    _instance.drawGuizmo( pos );
+  drawAxis( pos : vec3 | mat4 ){
+    _instance.drawAxis( pos );
   },
 
-  drawLine( a:vec3, b:vec3, color = OrangeHex ){
+  drawLine( a:vec3, b:vec3, color = DefaultColorHex ){
     _instance.drawLine( a, b, color );
+  },
+
+  drawCone( m : mat4, height: number, angle: number, color = DefaultColorHex, segs?:number  ){
+    _instance.drawCone( m, height, angle, color, segs );
   },
 
   render(context: RenderContext):void{

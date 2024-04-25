@@ -1,6 +1,6 @@
 import { mat4 } from 'gl-matrix';
 import { CameraBindGroupFactory } from '../../core/BindGroup';
-import type { RenderContext } from '../../core/RenderContext';
+import type { RenderContext } from '../../renderer/RenderContext';
 
 /**
  * Cross Vertex Buffer data
@@ -74,10 +74,10 @@ const FLOAT_PER_INST = 16;
 const BYTES_PER_INST = FLOAT_PER_INST * 4;
 
 const maxInstances = 1024;
-const Label = 'CrossGuizmo';
+const Label = 'AxisGuizmo';
 
 
-export default class CrossGuizmos {
+export default class AxisRenderer {
 
 
   private pipeline         : GPURenderPipeline;
@@ -116,6 +116,12 @@ export default class CrossGuizmos {
 
     this.pipeline = device.createRenderPipeline({
       label: Label,
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: "less",
+        format: "depth24plus",
+      },
+      
       layout: device.createPipelineLayout({
         bindGroupLayouts: [
           device.createBindGroupLayout({

@@ -3,10 +3,12 @@ import { TextureSrcSet } from "../resources/TextureRequest";
 import TextureResource from "../resources/TextureResource";
 import Quad from "../utils/Quad";
 import TexturedQuad from "../wgsl/TexturedQuad";
-import type { RenderContext } from "../core/RenderContext";
+import type { RenderContext } from "../renderer/RenderContext";
+import Node from "nanogl-node";
+import { CameraBindGroupFactory } from "../core/BindGroup";
 
 
-export default class SimpleTexturedQuad {
+export default class SimpleTexturedQuad extends Node {
 
   
   texRes1: TextureResource;
@@ -15,7 +17,8 @@ export default class SimpleTexturedQuad {
   bindGroup?: GPUBindGroup;
   shader: TexturedQuad;
   
-  constructor( readonly engine: Engine ) {
+  constructor( readonly engine: Engine, depthTest: boolean = true) {
+    super()
     
     const device = this.engine.device;    
     
@@ -46,9 +49,28 @@ export default class SimpleTexturedQuad {
 
   
     this.pipeline = device.createRenderPipeline({
-      label: 'Simple Quad',
-      layout: 'auto',
-        
+      label: 'Simple Quad depthtest: '+ depthTest,
+      layout: device.createPipelineLayout({
+        bindGroupLayouts: [
+          CameraBindGroupFactory.getBindGroupLayout(device),
+          device.createBindGroupLayout({
+            entries: [
+              { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'} },
+              { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+              { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+            ],
+          }),
+        ],
+      }),
+
+      depthStencil: (depthTest) ? {
+        depthWriteEnabled: false,
+        depthCompare: "less",
+        format: "depth24plus",
+      }: undefined,
+
+      
+
       primitive: {
         topology: 'triangle-strip',
       },
@@ -60,10 +82,22 @@ export default class SimpleTexturedQuad {
       fragment: {
         module : this.shader.module,
         entryPoint: 'fragmentMain',
-        targets: [{ format: this.engine.canvasTarget.format! }],
+        targets: [{ 
+          format: this.engine.canvasTarget.format!,
+          blend: {
+            color: {
+              srcFactor: 'src-alpha',
+              dstFactor: 'one-minus-src-alpha',
+            },
+            alpha: {
+              srcFactor: 'src-alpha',
+              dstFactor: 'one-minus-src-alpha',
+            },
+          },
+        }],
+
       },
     });   
-    
     
   }
 
@@ -74,7 +108,7 @@ export default class SimpleTexturedQuad {
     const sampler = device.createSampler();
 
     this.bindGroup = device.createBindGroup({
-      layout: this.pipeline.getBindGroupLayout(0),
+      layout: this.pipeline.getBindGroupLayout(1),
       entries: [
         { binding: 0, resource: {buffer: this.shader.uniformBuffer } },
         { binding: 1, resource: sampler },
@@ -84,12 +118,13 @@ export default class SimpleTexturedQuad {
   }
   
   render( context: RenderContext ): void {
-
-    this.shader.setUniforms( context.camera._viewProj );
+    this.updateWorldMatrix()
+    this.shader.setUniforms( this._wmatrix );
 
     // Draw the square.
     context.renderPassEncoder.setPipeline(this.pipeline);
-    context.renderPassEncoder.setBindGroup(0, this.bindGroup!);
+    context.renderPassEncoder.setBindGroup(0, context.cameraBindGroup.getBindGroup() );
+    context.renderPassEncoder.setBindGroup(1, this.bindGroup!);
     context.renderPassEncoder.setVertexBuffer(0, this.quad.vertexBuffer );
     context.renderPassEncoder.draw(4);
 

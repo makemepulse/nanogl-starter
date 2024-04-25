@@ -6,7 +6,7 @@ import type Engine from "../Engine";
 import DevCameraController from "../cameras/DevCameraController";
 import { BaseActivity } from "../core/Activity";
 import { CameraBindGroupFactory, type BindGroup } from "../core/BindGroup";
-import type { RenderContext } from "../core/RenderContext";
+import type { RenderContext } from "../renderer/RenderContext";
 import Time from "../core/Time";
 import DebugDraw from "../dev/debugDraw/DebugDraw";
 import SimpleTexturedQuad from "./SimpleTexturedQuad";
@@ -58,9 +58,10 @@ export default class SampleActivity extends BaseActivity {
 
     DebugDraw.drawCircle(this.node._wmatrix, 1)
 
-    DebugDraw.drawGuizmo(this.node._wmatrix)
+    DebugDraw.drawAxis(this.node._wmatrix)
 
     DebugDraw.drawLine( vec3.fromValues(0,0,0), vec3.fromValues(1,1,1) )
+    DebugDraw.drawCone(this.node._wmatrix, 3, Math.PI/8)
 
     this.camCtrl.update(Time.dt)
     this.camera.updateWorldMatrix()
@@ -71,7 +72,19 @@ export default class SampleActivity extends BaseActivity {
     
     const encoder = this.engine.device.createCommandEncoder();
 
-    const passEncoder = encoder.beginRenderPass({
+    
+      const blendedPassEncoder = encoder.beginRenderPass({
+        label: 'SampleActivity render pass',
+        colorAttachments: [{
+          view: this.engine.canvasTarget.createView(),
+          loadOp: "clear",
+          clearValue: { r: 0, g: 0, b: 0.0, a: 1.0 },
+          storeOp: "store",
+        }]
+      })
+      blendedPassEncoder.end();
+
+    const opaquePassEncoder = encoder.beginRenderPass({
       label: 'SampleActivity render pass',
       colorAttachments: [{
         view: this.engine.canvasTarget.createView(),
@@ -79,6 +92,12 @@ export default class SampleActivity extends BaseActivity {
         clearValue: { r: 0, g: 0, b: 0.0, a: 1.0 },
         storeOp: "store",
       }],
+      depthStencilAttachment: {
+        view: this.engine.canvasTarget.getDepthStencilTexture().createView(),
+        depthLoadOp: "clear",
+        depthStoreOp: "store",
+        depthClearValue: 1.0,
+      }
     })
 
     
@@ -86,14 +105,14 @@ export default class SampleActivity extends BaseActivity {
     const context: RenderContext = {
       camera : this.camera,
       cameraBindGroup: this.cameraBindGroup,
-      renderPassEncoder: passEncoder,
+      renderPassEncoder: opaquePassEncoder,
     }
 
     this.texturedQuad.render( context )
 
     DebugDraw.render(context)
 
-    passEncoder.end();
+    opaquePassEncoder.end();
 
     this.engine.device.queue.submit([encoder.finish()]);
   }

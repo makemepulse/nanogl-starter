@@ -1,6 +1,6 @@
 
 import { vec3 } from 'gl-matrix';
-import type { RenderContext } from '../../core/RenderContext';
+import type { RenderContext } from '../../renderer/RenderContext';
 
 
 const LABEL = 'Lines';
@@ -40,7 +40,7 @@ fn fragmentMain( input: VertexOutput ) -> @location(0) vec4f {
 
 //rabg
 
-export default class Lines {
+export default class LineRenderer {
 
 
   /**
@@ -89,6 +89,12 @@ export default class Lines {
         entryPoint: 'fragmentMain',
         targets: [{ format: navigator.gpu.getPreferredCanvasFormat() }],
       },
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: "less",
+        format: "depth24plus",
+      },
+      
     })
 
     this.vertexBuffer = device.createBuffer({

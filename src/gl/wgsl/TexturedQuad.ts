@@ -1,21 +1,22 @@
 import type { mat4 } from "gl-matrix";
+import { CameraBindGroupFactory } from "../core/BindGroup";
 
 const WGSL =  /* wgsl */`
-
+${CameraBindGroupFactory.getWgslDeclaration(0)}
 struct VertexOutput {
   @builtin(position) position: vec4f,
   @location(0) texcoord: vec2f,
 };
 
-@group(0) @binding(0) var<uniform> modelViewProjectionMatrix: mat4x4<f32>;
-@group(0) @binding(1) var pSampler: sampler;
-@group(0) @binding(2) var pTexture: texture_2d<f32>;
+@group(1) @binding(0) var<uniform> matrix: mat4x4<f32>;
+@group(1) @binding(1) var pSampler: sampler;
+@group(1) @binding(2) var pTexture: texture_2d<f32>;
 
 
 @vertex
 fn vertexMain(@location(0) position: vec2f, @location(1) texcoord: vec2f) -> VertexOutput {
   return VertexOutput( 
-    modelViewProjectionMatrix * vec4f(position, 0, 1),
+    camera.viewProj * (matrix * vec4f(position, 0, 1)),
     texcoord
   );
 }
@@ -58,8 +59,8 @@ export default class TexturedQuad {
     
   }
 
-  setUniforms( mvp : mat4 ){
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, mvp.buffer, mvp.byteOffset, mvp.byteLength);
+  setUniforms( worldMatrix : mat4 ){
+    this.device.queue.writeBuffer(this.uniformBuffer, 0, worldMatrix.buffer, worldMatrix.byteOffset, worldMatrix.byteLength);
   }
 
 

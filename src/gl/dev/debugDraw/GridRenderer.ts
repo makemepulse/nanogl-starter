@@ -1,7 +1,7 @@
 import { mat4, vec3 } from "gl-matrix"
 import ColorUtils from "../../utils/Color"
 import Quad from "../../utils/Quad"
-import type { RenderContext } from "../../core/RenderContext";
+import type { RenderContext } from "../../renderer/RenderContext";
 import { CameraBindGroupFactory } from "../../core/BindGroup";
 
 
@@ -49,40 +49,55 @@ fn vertexMain(
 }
 
 
-fn gridTextureGradBox( p:vec2f, ddx: vec2f, ddy: vec2f, thickness: f32 ) -> f32
+fn PristineGrid(uv: vec2f, lineWidth: f32) -> f32 {
+  let uvDDXY = vec4f(dpdx(uv), dpdy(uv));
+  let uvDeriv = vec2f(length(uvDDXY.xz), length(uvDDXY.yw));
+  let drawWidth: vec2f = clamp(vec2f(lineWidth), uvDeriv, vec2f(0.5));
+  let lineAA: vec2f = uvDeriv * 3.0;
+  var gridUV: vec2f = 1.0-abs(fract(uv) * 2.0 - 1.0);
+  var grid2: vec2f = smoothstep(drawWidth + lineAA, drawWidth - lineAA, gridUV);
+  grid2 *= saturate(lineWidth / drawWidth);
+  grid2 = mix(grid2, vec2f(lineWidth), saturate(uvDeriv * 2.0 - 1.0));
+  return 1.0-mix(grid2.x, 1.0, grid2.y);
+}
+
+fn GradBox( uv: vec2f, thickness: f32 ) -> f32
 {
+
 	// filter kernel
-    var w = max(abs(ddx), abs(ddy)) + 0.0001;
+    var w = max(abs(dpdx(uv)), abs(dpdy(uv))) + 0.0001;
 
     // float n = N;
     var n = thickness;//.2/(min(length(ddx), length(ddy)));
 
 	// analytic (box) filtering
-    var a = p + 0.5*w;                        
-    var b = p - 0.5*w;           
+    var a = uv + 0.5*w;                        
+    var b = uv - 0.5*w;           
     var i = (
-      floor(a)+min(fract(a)*n,vec2f(1.0))-
-      floor(b)-min(fract(b)*n,vec2f(1.0))
-    )/(n*w);
+      floor(a)+min(fract(a)/thickness,vec2f(1.0))-
+      floor(b)-min(fract(b)/thickness,vec2f(1.0))
+    )/(w/thickness);
     //pattern
     return (1.0-i.x)*(1.0-i.y);
 }
 
-const N = 150.0; // grid ratio
+const N = 1.0/200.0; // grid ratio
 
 @fragment
 fn fragmentMain( input: VertexOutput ) -> @location(0) vec4f {  
 
-  var ddx_uv = dpdx( input.texCoord ); 
-  var ddy_uv = dpdy( input.texCoord ); 
+  // var gridA : f32 = 
+  //   GradBox( input.texCoord, N/2.0 ) *
+  //   GradBox( input.texCoord*10.0, N ) *
+  //   GradBox( input.texCoord/10.0, N/5.0 );
 
-  var grid : f32 = 
-    gridTextureGradBox( input.texCoord, ddx_uv, ddy_uv, N ) *
-    gridTextureGradBox( input.texCoord*10.0, ddx_uv*10.0, ddy_uv*10.0, N ) *
-    gridTextureGradBox( input.texCoord/10.0, ddx_uv/10.0, ddy_uv/10.0, N*3.0 );
-    // *gridTextureGradBox( vTexCoord*100.0, ddx_uv*100.0, ddy_uv*100.0 );
+  var grid = 
+    PristineGrid( input.texCoord, N/2.0) *
+    PristineGrid( input.texCoord*10.0, N) *
+    PristineGrid( input.texCoord/10.0, N/5.0 );
 
-  return vec4f( uniforms.color*(1.0-grid), 1.0 );
+  // var grid = select( gridA, gridB, input.texCoord.x + input.texCoord.y < 0.0 );
+  return vec4f( uniforms.color, 1.0-grid );
 }
 `
 
@@ -96,7 +111,7 @@ export enum GridOrientation {
   YZ = 4,
 }
 
-export default class Grid {
+export default class GridRenderer {
 
   public get scale() {
     return this.uniformsData[3];
@@ -177,8 +192,27 @@ export default class Grid {
       fragment: {
         module: shader,
         entryPoint: 'fragmentMain',
-        targets: [{ format: navigator.gpu.getPreferredCanvasFormat() }],
+        targets: [{ 
+          format: navigator.gpu.getPreferredCanvasFormat(),
+          blend: {
+            color: {
+              srcFactor: 'src-alpha',
+              dstFactor: 'one-minus-src-alpha'
+            },
+            alpha: {
+              srcFactor: 'src-alpha',
+              dstFactor: 'one-minus-src-alpha'
+            },
+          },
+        }],
       },
+      
+      depthStencil: {
+        depthWriteEnabled: true,
+        depthCompare: "less",
+        format: "depth24plus",
+      },
+      
     });
 
     this.uniformsBuffer = device.createBuffer({
