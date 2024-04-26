@@ -36,6 +36,8 @@ export default class TexturedQuad {
   readonly uniformBuffer: GPUBuffer;
   readonly module: GPUShaderModule;
 
+  static readonly WGSL = WGSL;
+
   static createShaderModule( device: GPUDevice ) : GPUShaderModule {
     const module = device.createShaderModule({
       label: "TexturedQuad",

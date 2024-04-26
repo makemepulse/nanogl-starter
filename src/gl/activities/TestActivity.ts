@@ -9,6 +9,7 @@ import type { RenderViewContext } from "../renderer/RenderViewContext";
 import Renderer from "../renderer/Renderer";
 import { RendererTarget } from "../renderer/RendererTarget";
 import TexturedQuadRenderable from "./TexturedQuadRenderable";
+import RenderPass from "../renderer/RenderPass";
 
 
 export default class TestActivity extends BaseActivity {
@@ -49,6 +50,7 @@ export default class TestActivity extends BaseActivity {
     }
     this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
     this.renderer = new Renderer( engine.device, this.rendererTarget, this.renderViewContext )
+    this.renderer.addPass( new RenderPass( this.renderer, 'opaque' ) )
 
     this.renderer.addRenderable( this.quad )
   }

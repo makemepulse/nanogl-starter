@@ -1,16 +1,36 @@
-import RenderPass, { RenderPassType } from "./RenderPass"
+import RenderPass from "./RenderPass"
 import type { RenderViewContext } from "./RenderViewContext"
-import Renderable from "./Renderable"
+import { type IRenderable, type ResourceAllocationContext } from "./Renderable"
 import type { RendererTarget } from "./RendererTarget"
 
-
+/**
+ * frame:
+ *   GPUCommandBuffer..
+ *     GPURenderPassEncoder(attachments)
+ *      
+ *      [
+ *        setPipeleine
+ *        ...
+ *        draw
+ *      ]
+ *      or
+ *      [
+ *        GPURenderBundle
+ *      ]
+ *      end()
+ * 
+ *     
+ */
 
 
 export default class Renderer {
 
-  private _renderabes: Renderable[] = []
+  private _renderables: IRenderable[] = []
 
-  private _renderPass: RenderPass
+  private _passes: RenderPass[] = []
+  private _passesByName = new Map<string, RenderPass>()
+
+  private _resourceAllocationContext: ResourceAllocationContext
 
   /**
    * 
@@ -40,42 +60,75 @@ export default class Renderer {
    *  - submit render pass encoders
    */
   constructor( readonly device: GPUDevice, readonly target: RendererTarget, readonly viewContext: RenderViewContext ) {
-    this._renderPass = new RenderPass( this, RenderPassType.OPAQUE )
+
+    this._resourceAllocationContext = {
+      colorFormat: target.getColorAttachmentFormat(0),
+      depthStencilFormat: target.depthStencilFormat
+    }
+
   }
 
 
-  addRenderable( renderable: Renderable ){
-    renderable.allocateResources( this ).then( () => {
-      this._renderabes.push( renderable )
+  addRenderable( renderable: IRenderable ){
+    renderable.allocateResources( this.device, this._resourceAllocationContext ).then( () => {
+      this._renderables.push( renderable )
+      renderable.addedToRenderer( this )
     })
   }
 
-  removeRenderable( renderable: Renderable ){
-    const idx = this._renderabes.indexOf( renderable )
+  removeRenderable( renderable: IRenderable ){
+    const idx = this._renderables.indexOf( renderable )
     if( idx >= 0 ){
-      this._renderabes.splice( idx, 1 )
+      this._renderables.splice( idx, 1 )
       // dealloc 
     }
   }
 
+  hasPass( pass:  RenderPass ){
+    return this._passesByName.has( pass.name )
+  }
 
-  
-  
-  buildRenderPassIfNeeded() {
-    if( this._renderPass.isInvalid() ){
-      this._renderPass.begin()
-
-      this._renderPass.encoder.setBindGroup(0, this.viewContext.cameraBindGroup.getBindGroup() );
-      this._renderabes.forEach( renderable => renderable.render( this._renderPass ) )
-      this._renderPass.end()
+  addPass( pass:  RenderPass ){
+    if( this.hasPass( pass ) ) {
+      throw new Error(`Pass ${pass.name} already exists`)
     }
+    this._passes.push( pass )
+    this._passesByName.set( pass.name, pass )
+  }
+
+  getPass( name: string ): RenderPass {
+    const pass = this._passesByName.get( name )
+    if( pass === undefined ) {
+      throw new Error(`Pass ${name} not found`)
+    }
+    return pass
+  }
+
+
+  
+  
+  private _buildCommands() {
+
+    for( let pass of this._passes ){
+      pass.executeBeforeRenderActions()
+    }
+    
+    for( let pass of this._passes ){
+      pass.encodePendingBundles( this.target )
+    }
+    
+    const commandEncoder = this.device.createCommandEncoder()
+
+    for( let pass of this._passes ){
+      pass.encode( commandEncoder, this.viewContext )
+    }
+
+    return commandEncoder.finish()
+
   }
 
   render(){
-    this.buildRenderPassIfNeeded()
-    this._renderabes.forEach( renderable => renderable.updateResources() )
-    this.device.queue.submit([this._renderPass.commandBuffer]);
-    this._renderPass.invalidate()
+    this.device.queue.submit([this._buildCommands()])
   }
 
 }

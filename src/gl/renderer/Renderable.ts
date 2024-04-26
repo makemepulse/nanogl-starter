@@ -3,6 +3,21 @@ import { RenderableQueue } from "./RenderableQueue"
 import type Renderer from "./Renderer"
 
 
+export type ResourceAllocationContext = {
+  readonly colorFormat: GPUTextureFormat;
+  readonly depthStencilFormat: GPUTextureFormat;
+}
+
+export interface IRenderable {
+  // invalidate():void
+  allocateResources( device:GPUDevice, context: ResourceAllocationContext ):Promise<void>
+
+  dispose():void
+
+  addedToRenderer( renderer:Renderer ): void;
+
+}
+
 export default abstract class Renderable {
 
   /**

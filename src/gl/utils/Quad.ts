@@ -14,6 +14,7 @@ export default class Quad {
 
 
   readonly vertexBuffer: GPUBuffer;
+  readonly layout: GPUVertexBufferLayout;
 
   constructor( readonly device: GPUDevice, x = -1, y = -1, w = 2, h = 2 ) {
     this.device = device;
@@ -31,6 +32,20 @@ export default class Quad {
       usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
     device.queue.writeBuffer(this.vertexBuffer, 0, a);
+
+    this.layout = {
+      arrayStride: 16,
+      attributes: [{
+        format: "float32x2",
+        offset: 0,
+        shaderLocation: 0,
+      }, 
+      {
+        format: "float32x2",
+        offset: 8,
+        shaderLocation: 1,
+      }],
+    };
   
     // const vertexBufferLayout: GPUVertexBufferLayout = {
     //   arrayStride: 8,

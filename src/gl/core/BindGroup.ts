@@ -3,30 +3,6 @@ import { ResourceType, WgslReflect, type VariableInfo } from "wgsl_reflect";
 
 
 
-function getGPUBindGroupLayoutEntry(variable: VariableInfo): GPUBindGroupLayoutEntry {
-  const entry: GPUBindGroupLayoutEntry = {
-    binding: variable.binding,
-    visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-  }
-
-  switch (variable.resourceType) {
-    case ResourceType.Uniform:
-      entry.buffer = { type: "uniform" }
-      break;
-    case ResourceType.Storage:
-      // entry.buffer = { type: "storage" }
-      entry.buffer = { type: (variable.access==='read_write') ? "storage" : "read-only-storage" }
-      break;
-    case ResourceType.Texture:
-      entry.texture = { sampleType: 'float' }
-      break;
-    case ResourceType.Sampler:
-      entry.sampler = {}
-      break;
-  }
-  return entry
-
-}
 
 function CreateVariableFromVariableInfo(device: GPUDevice, variable: VariableInfo): Binding {
   
@@ -264,8 +240,8 @@ export default abstract class BindGroupFactory {
 
     this.ast = new WgslReflect( this.getWgslDeclaration(0) );
 
-    console.log(this.ast)
-    console.log(this.ast.getBindGroups())
+    // console.log(this.ast)
+    // console.log(this.ast.getBindGroups())
   }
 
 
@@ -276,12 +252,54 @@ export default abstract class BindGroupFactory {
 
   abstract getWgslDeclaration(group: GPUIndex32): string;
 
+  getVariableVisibility( variable: VariableInfo ): GPUShaderStageFlags {
+    let visibility: GPUShaderStageFlags = 0
+    for( const func of this.ast.functions ){
+      if( func.resources.includes(variable) ){
+        let fVis : GPUShaderStageFlags = 0
+        switch (func.stage){
+          case 'vertex'  : fVis = GPUShaderStage.VERTEX  ; break;
+          case 'fragment': fVis = GPUShaderStage.FRAGMENT; break;
+          case 'compute' : fVis = GPUShaderStage.COMPUTE ; break;
+        }
+
+        visibility |= fVis
+      }
+    }
+    return visibility
+  }
+
+
+  getGPUBindGroupLayoutEntry(variable: VariableInfo): GPUBindGroupLayoutEntry {
+    const entry: GPUBindGroupLayoutEntry = {
+      binding: variable.binding,
+      visibility:  GPUShaderStage.VERTEX//this.getVariableVisibility(variable)
+    }
+
+    switch (variable.resourceType) {
+      case ResourceType.Uniform:
+        entry.buffer = { type: "uniform" }
+        break;
+      case ResourceType.Storage:
+        // entry.buffer = { type: "storage" }
+        entry.buffer = { type: (variable.access==='read_write') ? "storage" : "read-only-storage" }
+        break;
+      case ResourceType.Texture:
+        entry.texture = { sampleType: 'float' }
+        break;
+      case ResourceType.Sampler:
+        entry.sampler = {}
+        break;
+    }
+    return entry
+
+  }
 
   getBindGroupLayoutDescriptor(): GPUBindGroupLayoutDescriptor {
     const variables = this.ast.getBindGroups()[0]
     return {
       label: 'TODO name',
-      entries: variables.map(variable => getGPUBindGroupLayoutEntry(variable))
+      entries: variables.map(variable => this.getGPUBindGroupLayoutEntry(variable))
     }
   }
 

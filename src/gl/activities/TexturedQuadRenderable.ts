@@ -1,7 +1,6 @@
 import Node from "nanogl-node";
-import { CameraBindGroupFactory } from "../core/BindGroup";
-import type RenderPass from "../renderer/RenderPass";
-import Renderable from "../renderer/Renderable";
+import WgslSource from "../core/WgslSource";
+import { type IRenderable, type ResourceAllocationContext } from "../renderer/Renderable";
 import type Renderer from "../renderer/Renderer";
 import { TextureSrcSet } from "../resources/TextureRequest";
 import TextureResource from "../resources/TextureResource";
@@ -9,7 +8,8 @@ import Quad from "../utils/Quad";
 import TexturedQuad from "../wgsl/TexturedQuad";
 
 
-export default class TexturedQuadRenderable extends Renderable {
+export default class TexturedQuadRenderable implements IRenderable {
+
 
 
   
@@ -22,12 +22,10 @@ export default class TexturedQuadRenderable extends Renderable {
   node = new Node()
 
 
-  async allocateResources(renderer: Renderer): Promise<void> {
+  async allocateResources( device: GPUDevice, context: ResourceAllocationContext): Promise<void> {
 
-    const device = renderer.device
-    
     this.texture = new TextureResource( new TextureSrcSet([
-      ['webp', 'assets/sample_tex_alpha.webp'],
+      ['webp', 'assets/Bird_diffuse.webp'],
       ['std', 'assets/sample_tex_alpha.webp'],
     ] ), device )
     
@@ -36,71 +34,73 @@ export default class TexturedQuadRenderable extends Renderable {
   
     this.shader = new TexturedQuad( device );
   
-    const vertexBufferLayout: GPUVertexBufferLayout = {
-      arrayStride: 16,
-      attributes: [{
-        format: "float32x2",
-        offset: 0,
-        shaderLocation: 0,
-      }, 
-      {
-        format: "float32x2",
-        offset: 8,
-        shaderLocation: 1,
-      }],
-    };
 
+
+    const shaderSource = new WgslSource( device, TexturedQuad.WGSL, 'TexturedQuad' );
+
+    
     await this.texture.load();
-    this.pipeline = await device.createRenderPipelineAsync({
-      label: 'TexturedQuadRenderable',
-      layout: device.createPipelineLayout({
-        bindGroupLayouts: [
-          CameraBindGroupFactory.getBindGroupLayout(device),
-          device.createBindGroupLayout({
-            entries: [
-              { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'} },
-              { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-              { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
-            ],
-          }),
-        ],
-      }),
-
-      depthStencil: {
-        depthWriteEnabled: false,
-        depthCompare: "less",
-        format: renderer.target.depthStencilFormat,
-      },
-
-      
-
+    
+    this.pipeline = await shaderSource.createRenderPipelineAsync( {
       primitive: {
         topology: 'triangle-strip',
       },
-      vertex: {
-        module: this.shader.module,
-        entryPoint: 'vertexMain',
-        buffers: [vertexBufferLayout],
-      },
-      fragment: {
-        module : this.shader.module,
-        entryPoint: 'fragmentMain',
-        targets: [{ 
-          format: renderer.target.getColorAttachmentFormat(0),
-          blend: {
-            color: {
-              srcFactor: 'src-alpha',
-              dstFactor: 'one-minus-src-alpha',
-            },
-            alpha: {
-              srcFactor: 'src-alpha',
-              dstFactor: 'one-minus-src-alpha',
-            },
-          },
-        }],
+      buffers: [this.quad.layout],
+    })
+    
+    // this.pipeline = await device.createRenderPipelineAsync({
+    //   label: 'TexturedQuadRenderable',
+    //   layout: device.createPipelineLayout({
+    //     bindGroupLayouts: [
+    //       CameraBindGroupFactory.getBindGroupLayout(device),
+    //       device.createBindGroupLayout({
+    //         entries: [
+    //           { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'} },
+    //           { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    //           { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+    //         ],
+    //       }),
+    //     ],
+    //   }),
 
-      },
-    });   
+    //   depthStencil: {
+    //     depthWriteEnabled: false,
+    //     depthCompare: "less",
+    //     format: context.depthStencilFormat,
+    //   },
+
+      
+
+    //   primitive: {
+    //     topology: 'triangle-strip',
+    //   },
+    //   vertex: {
+    //     module: this.shader.module,
+    //     entryPoint: 'vertexMain',
+    //     buffers: [this.quad.layout],
+    //   },
+    //   fragment: {
+    //     module : this.shader.module,
+    //     entryPoint: 'fragmentMain',
+    //     targets: [{ 
+    //       format: context.colorFormat,
+    //       // blend: {
+    //       //   color: {
+    //       //     srcFactor: 'src-alpha',
+    //       //     dstFactor: 'one-minus-src-alpha',
+    //       //   },
+    //       //   alpha: {
+    //       //     srcFactor: 'src-alpha',
+    //       //     dstFactor: 'one-minus-src-alpha',
+    //       //   },
+    //       // },
+
+    //       writeMask: GPUColorWrite.ALL,
+
+    //     }],
+
+    //   },
+    // });   
 
     const sampler = device.createSampler();
 
@@ -114,20 +114,25 @@ export default class TexturedQuadRenderable extends Renderable {
     });
     
   }
-  
-  updateResources(): void {
-    this.node.updateWorldMatrix()
-    this.shader.setUniforms( this.node._wmatrix );
+
+  dispose(): void {
+    
   }
 
-
-  render(context: RenderPass): void {
-
-    const encoder = context.encoder;
-    encoder.setPipeline(this.pipeline);
-    encoder.setBindGroup(1, this.bindGroup!);
-    encoder.setVertexBuffer(0, this.quad.vertexBuffer );
-    encoder.draw(4);
+  addedToRenderer(renderer: Renderer): void {
+    
+    renderer.getPass('opaque').addCommands( (encoder) => {
+      encoder.setPipeline(this.pipeline);
+      encoder.setBindGroup(1, this.bindGroup!);
+      encoder.setVertexBuffer(0, this.quad.vertexBuffer );
+      encoder.draw(4);
+    })
+    
+    renderer.getPass('opaque').beforeRender( () => {
+      this.node.updateWorldMatrix()
+      this.shader.setUniforms( this.node._wmatrix );
+    })
   }
+
 
 }
