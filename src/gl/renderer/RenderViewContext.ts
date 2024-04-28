@@ -1,10 +1,15 @@
 import type Camera from "nanogl-camera";
 import type { BindGroup } from "../core/BindGroup";
+import type { RendererTarget } from "./RendererTarget";
+import type { RenderableDebugDraw } from "../dev/debugDraw/DebugDraw";
 
 
 export interface RenderViewContext {
+  readonly target: RendererTarget, 
+  readonly camera: Camera;
+  readonly cameraBindGroup: BindGroup;
 
-  camera: Camera;
-  cameraBindGroup: BindGroup;
-
+  /// #if DEBUG
+  readonly debugDraw?: RenderableDebugDraw;
+  /// #endif
 }

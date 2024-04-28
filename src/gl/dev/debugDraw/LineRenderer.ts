@@ -1,6 +1,9 @@
 
 import { vec3 } from 'gl-matrix';
-import type { RenderContext } from '../../renderer/RenderContext';
+import type { RenderActionContext } from '../../renderer/RenderActions';
+import type { IRenderable } from '../../renderer/Renderable';
+import type Renderer from '../../renderer/Renderer';
+import type { RenderViewContext } from '../../renderer/RenderViewContext';
 
 
 const LABEL = 'Lines';
@@ -40,20 +43,22 @@ fn fragmentMain( input: VertexOutput ) -> @location(0) vec4f {
 
 //rabg
 
-export default class LineRenderer {
+export default class LineRenderer implements IRenderable {
 
 
   /**
    * current number of lines to draw in buffer
    */
-  count = 0
-  private vertices       : Float32Array
-  private colors         : Uint32Array
-  private shader         : GPUShaderModule
-  private pipeline       : GPURenderPipeline
-  private vertexBuffer   : GPUBuffer
-  private uniformsBuffer : GPUBuffer
-  private bindGroup      : GPUBindGroup
+  numInstances = 0
+  private vertices           : Float32Array
+  private colors             : Uint32Array
+  private shader             : GPUShaderModule
+  private pipeline           : GPURenderPipeline
+  private vertexBuffer       : GPUBuffer
+  private uniformsBuffer     : GPUBuffer
+  private indirectDrawBuffer : GPUBuffer
+  private indirectDrawData   : Uint32Array
+  private bindGroup          : GPUBindGroup
 
   constructor(private device: GPUDevice ) {
 
@@ -115,36 +120,70 @@ export default class LineRenderer {
       ],
     });
 
+
+    this.indirectDrawBuffer = device.createBuffer({
+      size: 16,
+      usage: GPUBufferUsage.INDIRECT | GPUBufferUsage.COPY_DST
+    });
+    this.indirectDrawData = new Uint32Array([0, 1, 0, 0]);
+
+  }
+
+  dispose(): void {
+    
+  }
+  
+  addedToRenderer(renderer: Renderer): void {
+
+    renderer.defaultPass.addBundle( (context) => {
+      this.encode( context );
+    }, () => this.numInstances>0 )
+
+    // renderer.defaultPass.addCommands( (context) => {
+    //   this.render( context );
+    // })
+
+    
+    renderer.defaultPass.beforeSubmit( (context ) => {
+      this.updateBuffers(context)
+      this.clear();
+    } )
+
   }
 
   clear(){
-    this.count = 0
+    this.numInstances = 0
   }
 
   addLine( a:vec3, b:vec3, hexColor:number ):void {
-    const c = this.count*FLOAT_PER_VERT*2
+    const c = this.numInstances*FLOAT_PER_VERT*2
     this.vertices.set( a, c )
     this.vertices.set( b, c+4 )
     this.colors[c+3] = hexColor
     this.colors[c+7] = hexColor
-    this.count++;
+    this.numInstances++;
   }
 
-
-  render(context: RenderContext ): void {
-
-    if( this.count === 0 ) return
-
-    this.device.queue.writeBuffer(this.vertexBuffer, 0, this.vertices, 0, this.count*FLOAT_PER_VERT*2)
+  updateBuffers(context: RenderViewContext){
+    if( this.numInstances === 0 ) return
+    this.indirectDrawData[0] = this.numInstances*2;
+    this.device.queue.writeBuffer(this.indirectDrawBuffer, 0, this.indirectDrawData);
+    this.device.queue.writeBuffer(this.vertexBuffer, 0, this.vertices, 0, this.numInstances*FLOAT_PER_VERT*2)
     this.device.queue.writeBuffer(this.uniformsBuffer, 0, context.camera._viewProj );
+  }
 
-    const pass = context.renderPassEncoder;
-    
+  encode(context: RenderActionContext ): void {
+    const pass = context.encoder;
     pass.setPipeline(this.pipeline);
     pass.setBindGroup(0, this.bindGroup);
     pass.setVertexBuffer(0, this.vertexBuffer);
-    pass.draw( this.count*2 );
+    pass.drawIndirect( this.indirectDrawBuffer, 0 );
+  }
 
+  render(context: RenderActionContext ): void {
+    if( this.numInstances === 0 ) return
+    this.updateBuffers(context)
+    this.encode(context)
   }
 
 

@@ -1,8 +1,10 @@
-import { mat4, vec3 } from "gl-matrix"
-import ColorUtils from "../../utils/Color"
-import Quad from "../../utils/Quad"
-import type { RenderContext } from "../../renderer/RenderContext";
+import { mat4, vec3 } from "gl-matrix";
 import { CameraBindGroupFactory } from "../../core/BindGroup";
+import Quad from "../../geometry/Quad";
+import type { RenderActionContext } from "../../renderer/RenderActions";
+import ColorUtils from "../../utils/Color";
+import type { IRenderable } from "../../renderer/Renderable";
+import type Renderer from "../../renderer/Renderer";
 
 
 
@@ -111,7 +113,7 @@ export enum GridOrientation {
   YZ = 4,
 }
 
-export default class GridRenderer {
+export default class GridRenderer implements IRenderable {
 
   public get scale() {
     return this.uniformsData[3];
@@ -141,6 +143,7 @@ export default class GridRenderer {
   private bindGroupXZ: GPUBindGroup
   private bindGroupYZ: GPUBindGroup
 
+  public orientation: GridOrientation = GridOrientation.XZ
 
 
   constructor(private device: GPUDevice) {
@@ -208,7 +211,7 @@ export default class GridRenderer {
       },
       
       depthStencil: {
-        depthWriteEnabled: true,
+        depthWriteEnabled: false,
         depthCompare: "less",
         format: "depth24plus",
       },
@@ -223,7 +226,8 @@ export default class GridRenderer {
 
 
     this.bindGroupCommon = device.createBindGroup({
-      layout: this.pipeline.getBindGroupLayout(0),
+      label: 'Grid Common Uniforms',
+      layout: this.pipeline.getBindGroupLayout(1),
       entries: [
         { binding: 0, resource: { buffer: this.uniformsBuffer } },
       ],
@@ -257,11 +261,32 @@ export default class GridRenderer {
 
   }
 
-  render(orientation: GridOrientation, context: RenderContext): void {
+  dispose(): void {
+    
+  }
+   
+  addedToRenderer(renderer: Renderer): void {
 
-    if (orientation === 0) return
+    // renderer.defaultPass.addBundle( (context) => {
+    //   this.render( context );
+    // }, () => {
+    //   if( this.numInstances===0) return false;
+    //   this.clear();
+    //   return true;
+    // })
 
-    const pass = context.renderPassEncoder;
+    renderer.defaultPass.addCommands( (context) => {
+      this.render( context );
+    })
+
+
+  }
+
+  render(context: RenderActionContext): void {
+
+    if (this.orientation === 0) return
+
+    const pass = context.encoder;
 
     this.device.queue.writeBuffer(this.uniformsBuffer, 0, this.uniformsData);
 
@@ -270,17 +295,17 @@ export default class GridRenderer {
     pass.setBindGroup(1, this.bindGroupCommon);
     pass.setVertexBuffer(0, this.quad.vertexBuffer);
     
-    if (orientation & GridOrientation.XY) {
+    if (this.orientation & GridOrientation.XY) {
       pass.setBindGroup(2, this.bindGroupXY);
       pass.draw(4, 1);
     }
 
-    if( orientation & GridOrientation.XZ ){
+    if( this.orientation & GridOrientation.XZ ){
       pass.setBindGroup(2, this.bindGroupXZ);
       pass.draw(4, 1);
     }
 
-    if( orientation & GridOrientation.YZ ){
+    if( this.orientation & GridOrientation.YZ ){
       pass.setBindGroup(2, this.bindGroupYZ);
       pass.draw(4, 1);
     }

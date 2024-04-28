@@ -1,7 +1,10 @@
 import { mat4, type vec3 } from 'gl-matrix';
-import type { RenderContext } from '../../renderer/RenderContext';
 import { CameraBindGroupFactory } from '../../core/BindGroup';
+import type { RenderActionContext } from '../../renderer/RenderActions';
 import ColorUtils from '../../utils/Color';
+import type { IRenderable } from '../../renderer/Renderable';
+import type { AnyPromise } from '../../../utils/AnyPromise';
+import type Renderer from '../../renderer/Renderer';
 
 
 const CircleSegs = 32;
@@ -69,7 +72,7 @@ const BYTES_PER_VERTEX = FLOAT_PER_VERTEX * 4;
 const maxInstances = 64;
 
 
-export default class CircleRenderer {
+export default class CircleRenderer implements IRenderable {
 
 
   private pipeline: GPURenderPipeline;
@@ -157,6 +160,24 @@ export default class CircleRenderer {
     device.queue.writeBuffer(this.vertexBuffer, 0, FBUFF);
 
   }
+  ready?: AnyPromise | undefined;
+
+  dispose(): void {
+    
+  }
+  
+  addedToRenderer(renderer: Renderer): void {
+
+    renderer.defaultPass.addCommands( (context) => {
+      this.encode( context );
+    })
+    
+    renderer.defaultPass.beforeSubmit( () => {
+      this.updateBuffers()
+      this.clear();
+    } )
+    
+  }
   
   add( matrix: mat4, radius:number, color: number ): void {
     
@@ -170,29 +191,37 @@ export default class CircleRenderer {
     this.instanceBufferData.set( ColorUtils.HexToTmpVec3(color), offset+16+4 );
     this.numInstances++;
   }
-
-
+  
+  
   clear(): void {
     this.numInstances = 0;
   }
-
-
-  render(context: RenderContext ): void {
-
+  
+  
+  updateBuffers( ): void {
     if( this.numInstances === 0 ) return;
-
-
     this.device.queue.writeBuffer(this.instStatesStorage, 0, this.instanceBufferData, 0, this.numInstances * FLOAT_PER_VERTEX);
+  }
+  
+  
+  encode(context: RenderActionContext ): void {
     
-    const pass = context.renderPassEncoder;
+    if( this.numInstances === 0 ) return;
+    
+    const pass = context.encoder
     
     pass.setPipeline(this.pipeline);
     pass.setBindGroup(0, this.bindGroup ); // Updated!
     pass.setBindGroup(1, context.cameraBindGroup.getBindGroup() ); // Updated!
     pass.setVertexBuffer(0, this.vertexBuffer);
     pass.draw( CircleSegs, this.numInstances);
-
+    
   }
-
+  
+  render(context: RenderActionContext): void {
+    this.updateBuffers();
+    this.encode(context); 
+    this.clear();
+  }
 
 }

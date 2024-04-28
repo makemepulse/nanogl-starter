@@ -7,6 +7,14 @@ export class RendererTarget {
 
   }
 
+  get width() {
+    return this._canvasTarget.bufferWidth
+  }
+
+  get height() {
+    return this._canvasTarget.bufferHeight
+  }
+
   createColorAttachmentView( i:number = 0 ) {
     i;
     return this._canvasTarget.createView()

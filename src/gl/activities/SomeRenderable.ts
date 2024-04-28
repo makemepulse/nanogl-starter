@@ -1,3 +1,4 @@
+import RenderPass from "../renderer/RenderPass"
 import type Renderer from "../renderer/Renderer"
 
 
@@ -20,15 +21,32 @@ export default class SomeRenderable {
     // free resources
   }
 
-  addedToRenderer( renderer : Renderer ) {
+  addBundleOnPass() {
+
+    return {
+
+      default: (context) => {
+
+      }
+
+    }
+  }
+
+  addBundle(context) {
+    
+  }
+
+  addedToRenderer( renderer : Renderer, hooks: RendererHooks ) {
+
+
 
     // renderer.addPass('myRenderableRTT', )
 
     // add commands on a GPURenderPassEncoder or a GPURenderBundleEncoder
-    renderer.getPass( 'opaque' ).addCommands( (passEncoder, context) => {
+    renderer.defaultPass.addCommands( (context) => {
 
-      passEncoder.setPipeline()
-      passEncoder.draw()
+      context.encoder.setPipeline()
+      context.encoder.draw()
       // ...
     },
       {
@@ -37,7 +55,7 @@ export default class SomeRenderable {
       })
 
     // add commands on a GPURenderPassEncoder or a GPURenderBundleEncoder
-    renderer.getPass( 'opaque' ).addBundle( (bundleEncoder, context) => {
+    renderer.defaultPass.addBundle( (bundleEncoder, context) => {
 
       bundleEncoder.setPipeline()
       bundleEncoder.draw()

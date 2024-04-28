@@ -1,7 +1,12 @@
+import type Camera from "nanogl-camera"
+import { CameraBindGroupFactory } from "../core/BindGroup"
+import { DebugDrawImpl } from "../dev/debugDraw/DebugDraw"
 import RenderPass from "./RenderPass"
 import type { RenderViewContext } from "./RenderViewContext"
-import { type IRenderable, type ResourceAllocationContext } from "./Renderable"
+import { type IRenderable } from "./Renderable"
 import type { RendererTarget } from "./RendererTarget"
+
+
 
 /**
  * frame:
@@ -30,7 +35,11 @@ export default class Renderer {
   private _passes: RenderPass[] = []
   private _passesByName = new Map<string, RenderPass>()
 
-  private _resourceAllocationContext: ResourceAllocationContext
+  private _setupedRenderable: IRenderable | null = null
+
+  readonly defaultPass: RenderPass
+
+  private viewContext: RenderViewContext
 
   /**
    * 
@@ -59,76 +68,140 @@ export default class Renderer {
    *  - update gpu resources, buffers
    *  - submit render pass encoders
    */
-  constructor( readonly device: GPUDevice, readonly target: RendererTarget, readonly viewContext: RenderViewContext ) {
+  constructor(
+    readonly device: GPUDevice,
+    readonly target: RendererTarget,
+    readonly camera: Camera
+  ) {
 
-    this._resourceAllocationContext = {
-      colorFormat: target.getColorAttachmentFormat(0),
-      depthStencilFormat: target.depthStencilFormat
+    // this._resourceAllocationContext = {
+    //   colorFormat: target.getColorAttachmentFormat(0),
+    //   depthStencilFormat: target.depthStencilFormat
+    // }
+
+
+    const cameraBindGroup = CameraBindGroupFactory.createBindGroup(device)
+
+    this.defaultPass = new RenderPass(this, 'default')
+    this.addPass(this.defaultPass)
+
+    /// #if DEBUG
+    const debugDraw = new DebugDrawImpl(device)
+    debugDraw.setupRenderer(this)
+    /// #endif
+
+    this.viewContext = {
+      camera,
+      target,
+      cameraBindGroup,
+      /// #if DEBUG
+      debugDraw,
+      /// #endif
     }
 
+
   }
 
 
-  addRenderable( renderable: IRenderable ){
-    renderable.allocateResources( this.device, this._resourceAllocationContext ).then( () => {
-      this._renderables.push( renderable )
-      renderable.addedToRenderer( this )
-    })
+  addRenderable(renderable: IRenderable) {
+    //TODO: handle renderable removed while allocating resources
+    if( renderable.ready !== undefined ){
+      renderable.ready.then( () => {
+        this._setupRenderable(renderable)
+      })
+    } else {
+      this._setupRenderable(renderable)
+    }
   }
+  
+  private _setupRenderable(renderable: IRenderable) {
+    
+    this._setupedRenderable = renderable
+    for (let pass of this._passes) pass.setCurrentActionOwner(renderable)
+  
+    renderable.addedToRenderer(this)
+  
+    for (let pass of this._passes) pass.setCurrentActionOwner(null)
+      this._setupedRenderable = null
+    
+    this._renderables.push(renderable)
 
-  removeRenderable( renderable: IRenderable ){
-    const idx = this._renderables.indexOf( renderable )
-    if( idx >= 0 ){
-      this._renderables.splice( idx, 1 )
+  }
+  
+  removeRenderable(renderable: IRenderable) {
+    const idx = this._renderables.indexOf(renderable)
+    if (idx >= 0) {
+      this._renderables.splice(idx, 1)
+      
+      for (let pass of this._passes) pass.clearOwnerActions(renderable)
       // dealloc 
     }
   }
 
-  hasPass( pass:  RenderPass ){
-    return this._passesByName.has( pass.name )
+  hasPass(pass: RenderPass) {
+    return this._passesByName.has(pass.name)
   }
 
-  addPass( pass:  RenderPass ){
-    if( this.hasPass( pass ) ) {
+  addPass(pass: RenderPass) {
+    if (this.hasPass(pass)) {
       throw new Error(`Pass ${pass.name} already exists`)
     }
-    this._passes.push( pass )
-    this._passesByName.set( pass.name, pass )
+    pass.setCurrentActionOwner(this._setupedRenderable)
+    this._passes.push(pass)
+    this._passesByName.set(pass.name, pass)
   }
 
-  getPass( name: string ): RenderPass {
-    const pass = this._passesByName.get( name )
-    if( pass === undefined ) {
+  getPass(name: string): RenderPass {
+    const pass = this._passesByName.get(name)
+    if (pass === undefined) {
       throw new Error(`Pass ${name} not found`)
     }
     return pass
   }
 
 
-  
-  
+
+
   private _buildCommands() {
 
-    for( let pass of this._passes ){
-      pass.executeBeforeRenderActions()
+    for (let pass of this._passes) {
+      pass.executeBeforeRenderActions(this.viewContext)
     }
-    
-    for( let pass of this._passes ){
-      pass.encodePendingBundles( this.target )
+
+    for (let pass of this._passes) {
+      pass.encodePendingBundles(this.viewContext)
     }
-    
+
     const commandEncoder = this.device.createCommandEncoder()
 
-    for( let pass of this._passes ){
-      pass.encode( commandEncoder, this.viewContext )
+    for (let pass of this._passes) {
+      pass.encode(commandEncoder, this.viewContext)
     }
+
 
     return commandEncoder.finish()
 
   }
 
-  render(){
-    this.device.queue.submit([this._buildCommands()])
+  render() {
+
+
+    this.camera.updateWorldMatrix()
+    this.camera.updateViewProjectionMatrix(this.target.width, this.target.height)
+    CameraBindGroupFactory.updateCameraData(this.viewContext.cameraBindGroup, this.camera)
+
+    const commandBuffer = this._buildCommands()
+
+    for (let pass of this._passes) {
+      pass.executeBeforeSubmitActions(this.viewContext)
+    }
+
+    this.device.queue.submit([commandBuffer])
+
+
+    for (let pass of this._passes) {
+      pass.executeAfterRenderActions(this.viewContext)
+    }
   }
 
 }

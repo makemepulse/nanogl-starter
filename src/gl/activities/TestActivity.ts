@@ -3,13 +3,10 @@ import type PerspectiveLens from "nanogl-camera/perspective-lens";
 import type Engine from "../Engine";
 import DevCameraController from "../cameras/DevCameraController";
 import { BaseActivity } from "../core/Activity";
-import { CameraBindGroupFactory, type BindGroup } from "../core/BindGroup";
 import Time from "../core/Time";
-import type { RenderViewContext } from "../renderer/RenderViewContext";
 import Renderer from "../renderer/Renderer";
 import { RendererTarget } from "../renderer/RendererTarget";
 import TexturedQuadRenderable from "./TexturedQuadRenderable";
-import RenderPass from "../renderer/RenderPass";
 
 
 export default class TestActivity extends BaseActivity {
@@ -20,14 +17,12 @@ export default class TestActivity extends BaseActivity {
 
   camera: Camera<PerspectiveLens>
   camCtrl: DevCameraController;
-  cameraBindGroup: BindGroup;
-  renderViewContext: RenderViewContext
   rendererTarget: RendererTarget;
   renderer: Renderer;
 
   constructor(engine: Engine) {
     super(engine)
-    this.quad = new TexturedQuadRenderable();
+    this.quad = new TexturedQuadRenderable( engine.device );
 
     this.quad.node.z = 1
 
@@ -39,19 +34,9 @@ export default class TestActivity extends BaseActivity {
     this.camCtrl = new DevCameraController(engine.canvasTarget.canvas)
     this.camCtrl.start(this.camera)
 
-    this.cameraBindGroup = CameraBindGroupFactory.createBindGroup(engine.device)
 
-
-
-
-    this.renderViewContext = {
-      camera: this.camera,
-      cameraBindGroup: this.cameraBindGroup,
-    }
     this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
-    this.renderer = new Renderer( engine.device, this.rendererTarget, this.renderViewContext )
-    this.renderer.addPass( new RenderPass( this.renderer, 'opaque' ) )
-
+    this.renderer = new Renderer( engine.device, this.rendererTarget, this.camera)
     this.renderer.addRenderable( this.quad )
   }
 
@@ -67,9 +52,6 @@ export default class TestActivity extends BaseActivity {
   render(): void {
 
     this.camCtrl.update(Time.dt)
-    this.camera.updateWorldMatrix()
-    this.camera.updateViewProjectionMatrix(this.engine.canvasTarget.bufferWidth, this.engine.canvasTarget.bufferHeight)
-    CameraBindGroupFactory.updateCameraData(this.cameraBindGroup, this.camera)
 
     this.renderer.render()
   }

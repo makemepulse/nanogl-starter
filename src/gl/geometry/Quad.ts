@@ -1,3 +1,4 @@
+import type { PipelineGeometryData } from "../core/WgslSource";
 
 const TMP_ARRAY = new Float32Array( [
   -1, -1, 0, 0,
@@ -12,9 +13,27 @@ const TMP_ARRAY = new Float32Array( [
  */
 export default class Quad {
 
-
   readonly vertexBuffer: GPUBuffer;
-  readonly layout: GPUVertexBufferLayout;
+
+  static readonly pipelineGeometryData: PipelineGeometryData = {
+    buffers: [{
+      arrayStride: 16,
+      attributes: [{
+        format: "float32x2",
+        offset: 0,
+        shaderLocation: 0,
+      }, 
+      {
+        format: "float32x2",
+        offset: 8,
+        shaderLocation: 1,
+      }],
+    }],
+    primitive: {
+      topology: 'triangle-strip',
+    },
+  }
+
 
   constructor( readonly device: GPUDevice, x = -1, y = -1, w = 2, h = 2 ) {
     this.device = device;
@@ -33,19 +52,6 @@ export default class Quad {
     });
     device.queue.writeBuffer(this.vertexBuffer, 0, a);
 
-    this.layout = {
-      arrayStride: 16,
-      attributes: [{
-        format: "float32x2",
-        offset: 0,
-        shaderLocation: 0,
-      }, 
-      {
-        format: "float32x2",
-        offset: 8,
-        shaderLocation: 1,
-      }],
-    };
   
     // const vertexBufferLayout: GPUVertexBufferLayout = {
     //   arrayStride: 8,
@@ -57,4 +63,5 @@ export default class Quad {
     // };
 
   }
+
 }

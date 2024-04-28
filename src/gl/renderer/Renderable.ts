@@ -1,3 +1,4 @@
+import type { AnyPromise } from "../../utils/AnyPromise";
 import type RenderPass from "./RenderPass"
 import { RenderableQueue } from "./RenderableQueue"
 import type Renderer from "./Renderer"
@@ -8,9 +9,13 @@ export type ResourceAllocationContext = {
   readonly depthStencilFormat: GPUTextureFormat;
 }
 
+
 export interface IRenderable {
+  
+  readonly ready?: AnyPromise
+
   // invalidate():void
-  allocateResources( device:GPUDevice, context: ResourceAllocationContext ):Promise<void>
+  // allocateResources( device:GPUDevice, context: ResourceAllocationContext ):Promise<void>
 
   dispose():void
 
@@ -18,7 +23,7 @@ export interface IRenderable {
 
 }
 
-export default abstract class Renderable {
+export default abstract class Renderable implements IRenderable{
 
   /**
    * renderable priority
@@ -63,5 +68,6 @@ export default abstract class Renderable {
   invalidateRenderPass() {
     this._lastRenderPass?.invalidate()
   }
+
 
 }

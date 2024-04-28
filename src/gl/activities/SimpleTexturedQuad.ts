@@ -1,11 +1,12 @@
 import type Engine from "../Engine";
 import { TextureSrcSet } from "../resources/TextureRequest";
 import TextureResource from "../resources/TextureResource";
-import Quad from "../utils/Quad";
+import Quad from "../geometry/Quad";
 import TexturedQuad from "../wgsl/TexturedQuad";
 import type { RenderContext } from "../renderer/RenderContext";
 import Node from "nanogl-node";
 import { CameraBindGroupFactory } from "../core/BindGroup";
+import type { RenderActionContext } from "../renderer/RenderActions";
 
 
 export default class SimpleTexturedQuad extends Node {
@@ -117,16 +118,17 @@ export default class SimpleTexturedQuad extends Node {
     });
   }
   
-  render( context: RenderContext ): void {
+  render( context: RenderActionContext ): void {
     this.updateWorldMatrix()
     this.shader.setUniforms( this._wmatrix );
 
+    const encoder = context.encoder;
     // Draw the square.
-    context.renderPassEncoder.setPipeline(this.pipeline);
-    context.renderPassEncoder.setBindGroup(0, context.cameraBindGroup.getBindGroup() );
-    context.renderPassEncoder.setBindGroup(1, this.bindGroup!);
-    context.renderPassEncoder.setVertexBuffer(0, this.quad.vertexBuffer );
-    context.renderPassEncoder.draw(4);
+    encoder.setPipeline(this.pipeline);
+    encoder.setBindGroup(0, context.cameraBindGroup.getBindGroup() );
+    encoder.setBindGroup(1, this.bindGroup!);
+    encoder.setVertexBuffer(0, this.quad.vertexBuffer );
+    encoder.draw(4);
 
   }
 

@@ -6,9 +6,10 @@ import type Engine from "../Engine";
 import DevCameraController from "../cameras/DevCameraController";
 import { BaseActivity } from "../core/Activity";
 import { CameraBindGroupFactory, type BindGroup } from "../core/BindGroup";
-import type { RenderContext } from "../renderer/RenderContext";
 import Time from "../core/Time";
 import DebugDraw from "../dev/debugDraw/DebugDraw";
+import type { RenderActionContext } from "../renderer/RenderActions";
+import { RendererTarget } from "../renderer/RendererTarget";
 import SimpleTexturedQuad from "./SimpleTexturedQuad";
 
 
@@ -22,6 +23,7 @@ export default class SampleActivity extends BaseActivity {
   camCtrl: DevCameraController;
   node: Node;
   cameraBindGroup: BindGroup;
+  rendererTarget: RendererTarget;
 
   constructor(engine: Engine) {
     super(engine)
@@ -37,6 +39,8 @@ export default class SampleActivity extends BaseActivity {
     this.camCtrl.start(this.camera)
 
     this.cameraBindGroup = CameraBindGroupFactory.createBindGroup(engine.device)
+
+    this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
 
     this.node = new Node()
 
@@ -102,10 +106,11 @@ export default class SampleActivity extends BaseActivity {
 
     
 
-    const context: RenderContext = {
+    const context: RenderActionContext = {
       camera : this.camera,
       cameraBindGroup: this.cameraBindGroup,
-      renderPassEncoder: opaquePassEncoder,
+      encoder: opaquePassEncoder,
+      target: this.rendererTarget,
     }
 
     this.texturedQuad.render( context )

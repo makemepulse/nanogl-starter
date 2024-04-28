@@ -9,6 +9,21 @@ type PipelineOptions = {
   targets?: TargetConfig[]
 }
 
+const CustomAttributes = [
+  "format",
+  "depthWrite",
+  "depthCompare",
+  "stencilFront",
+  "stencilBack",
+  "stencilReadMask",
+  "stencilWriteMask",
+  "depthBias",
+  "depthBiasSlopeScale",
+  "depthBiasClamp",
+  "blend",
+  "alphaBlend",
+  "writeMask",
+] as const
 
 const DepthStencilFormats = new Set([
   "stencil8",
@@ -102,11 +117,14 @@ const BlendOperations = new Set([
   "max",
 ] as const)
 
+function hyphen( s:string ): string {
+  return s.replaceAll( '_', '-' )
+}
 
 type SetType<T extends Set<any>> = T extends Set<infer K> ? K : never
 
 
-type GeometryConfig = {
+export type PipelineGeometryData = {
   buffers?: Iterable<GPUVertexBufferLayout | null>,
   primitive: GPUPrimitiveState
 }
@@ -119,19 +137,29 @@ export default class WgslSource {
   readonly module: GPUShaderModule;
   readonly layout: GPUPipelineLayout;
 
-  constructor( private device: GPUDevice, code: string, readonly label?: string) {
+  constructor( private device: GPUDevice, wgsl: string, readonly label?: string) {
+    
+    
+    this._ast = new WgslReflect(wgsl);
+
+    const code = this.normalizeCode(wgsl)
     
     this.module = device.createShaderModule({
       code,
       label,
     })
-
-    this._ast = new WgslReflect(code);
-
     this.layout = this.device.createPipelineLayout({
       bindGroupLayouts: this.getBindGroupLayouts(),
     })
 
+  }
+  /**
+   * remove all custom attributes from source code before compilation
+   */
+  private normalizeCode(code: string): string {
+    console.log( `@(${CustomAttributes.join('|')})\\s*\\(.*?\\)` )
+    const regex = new RegExp(`@(${CustomAttributes.join('|')})\\s*\\(.*?\\)`, 'g')
+    return code.replace(regex, '')
   }
 
   hasAttribute( attributes: Attribute[], name: string ): boolean {
@@ -161,11 +189,13 @@ export default class WgslSource {
   getAttributeValue<TSet extends Set<string>>( typeSet: TSet, attributes: Attribute[], name: string, defaultValue?: SetType<TSet> ): SetType<TSet>| undefined {
     const attr = attributes.find( a=>a.name === name );
     if( attr === undefined ) return defaultValue;
-    if( ! typeSet.has(attr.value as SetType<TSet>) ){
+    if( attr.value === null || Array.isArray(attr.value) ) throw new Error(`Attribute ${name} is invalid: ${attr.value}`)
+    const value = hyphen(attr.value) as SetType<TSet>
+    if( ! typeSet.has(value) ){
       throw new Error(`Attribute ${name} has invalid value ${attr.value}`)
     }
 
-    return attr.value as SetType<TSet> ?? defaultValue
+    return value ?? defaultValue
   }
 
   getAttributeValueAt<TSet extends Set<string>>( typeSet: TSet, attributes: Attribute[], name: string, index: number , defaultValue: SetType<TSet> ): SetType<TSet>;
@@ -175,12 +205,12 @@ export default class WgslSource {
     if( attr === undefined ) return defaultValue;
     if( ! Array.isArray(attr.value) ) throw new Error(`Attribute ${name} is not an array`)
     if( index >= attr.value.length ) return defaultValue
-    const value = attr.value[index]
-    if( ! typeSet.has(value as SetType<TSet>) ){
+    const value = hyphen(attr.value[index]) as SetType<TSet>
+    if( ! typeSet.has(value) ){
       throw new Error(`Attribute ${name} has invalid value ${value}`)
     }
 
-    return value as SetType<TSet> ?? defaultValue
+    return value ?? defaultValue
   }
 
   isAttributeValue( attributes: Attribute[], name: string, value: string ): boolean {
@@ -254,9 +284,9 @@ export default class WgslSource {
       } : {}
 
       const alphaBlend = this.hasAttribute( attributes, 'alphaBlend' ) ? {
-        srcFactor: this.getAttributeValue( BlendFactors, attributes, 'blendAlphaSrc', 'one' ),
-        dstFactor: this.getAttributeValue( BlendFactors, attributes, 'blendAlphaDst', 'zero' ),
-        operation: this.getAttributeValue( BlendOperations, attributes, 'blendAlphaOp', 'add' ),
+        srcFactor: this.getAttributeValueAt( BlendFactors, attributes, 'alphaBlend', 0 ),
+        dstFactor: this.getAttributeValueAt( BlendFactors, attributes, 'alphaBlend', 1 ),
+        operation: this.getAttributeValueAt( BlendOperations, attributes, 'alphaBlend', 2 ),
       } : colorBlend
 
       state.blend = {
@@ -330,7 +360,7 @@ export default class WgslSource {
     return this._ast.getBindGroups().map( variables => this.getBindGroupLayout( variables ) )
   }
 
-  createRenderPipelineAsync( geometry: GeometryConfig, pvertexEntry?: string, pfragmentEntry?: string, pipelineConfig?: PipelineOptions): Promise<GPURenderPipeline> {
+  createRenderPipelineAsync( geometry: PipelineGeometryData, pvertexEntry?: string, pfragmentEntry?: string, pipelineConfig?: PipelineOptions): Promise<GPURenderPipeline> {
 
     const vertexEntry = pvertexEntry ?? this.getDefaultVertexEntry();
     const fragmentEntry = pfragmentEntry ?? this.getDefaultFragmentEntry();

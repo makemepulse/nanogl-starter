@@ -1,7 +1,6 @@
-import RenderActions, { type AddCommandsActionFunction, type RenderActionOptions, type AddBundleActionFunction, DefaultCommandOnPassOptions, type BeforeRenderActionFunction } from "./RenderActions";
+import RenderActions, { DefaultCommandOnPassOptions, type AddCommandsActionFunction, type BeforeRenderActionFunction, type EncodeBundleActionFunction, type ExecuteBundleActionFunction, type RenderActionOptions, type RenderActionOwner, type RenderCommandsActionContext } from "./RenderActions";
 import type { RenderViewContext } from "./RenderViewContext";
 import type Renderer from "./Renderer";
-import type { RendererTarget } from "./RendererTarget";
 
 
 
@@ -16,28 +15,49 @@ export default class RenderPass {
 
   private _actions: RenderActions = new RenderActions()
 
+  private _currentSetupOwner: RenderActionOwner | null = null
 
-
+  
   constructor(
     readonly renderer: Renderer,
     readonly name: string,
   ) {
-
-  }
-
-  addCommands( callback: AddCommandsActionFunction, options : RenderActionOptions = DefaultCommandOnPassOptions ){
-    this._actions.addCommands( callback, options )
+    
   }
   
-  addBundle(callback: AddBundleActionFunction, options : RenderActionOptions = DefaultCommandOnPassOptions ){
-    this._actions.addBundle( callback, options )
+  setCurrentActionOwner( owner: RenderActionOwner | null ){
+    this._currentSetupOwner = owner
+  }
+  
+  addCommands( callback: AddCommandsActionFunction, options : RenderActionOptions = DefaultCommandOnPassOptions ){
+    this._actions.addCommands( callback, options, this._currentSetupOwner )
+  }
+  
+  /**
+   * 
+   * @param callback 
+   * @param execFunc 
+   * @param options 
+   */
+  addBundle(callback: EncodeBundleActionFunction, execFunc: ExecuteBundleActionFunction | null = null, options : RenderActionOptions = DefaultCommandOnPassOptions ){
+    this._actions.addBundle( callback, execFunc, options, this._currentSetupOwner )
   }
 
   beforeRender( callback: BeforeRenderActionFunction ){
-    this._actions.beforeRender( callback )
+    this._actions.beforeRender( callback, this._currentSetupOwner )
   }
 
+  afterRender( callback: BeforeRenderActionFunction ){
+    this._actions.afterRender( callback, this._currentSetupOwner )
+  }
 
+  beforeSubmit( callback: BeforeRenderActionFunction ){
+    this._actions.beforeSubmit( callback, this._currentSetupOwner )
+  }
+
+  clearOwnerActions( owner: RenderActionOwner ){
+    this._actions.clearOwnerActions( owner )
+  }
 
   /**
    * called by renderables to invalidate the previously render pass encoder 
@@ -50,19 +70,20 @@ export default class RenderPass {
     return this._invalid
   }
 
-  executeBeforeRenderActions(){
-    this._actions.executeBeforeRenderActions( this.renderer.viewContext )
+  executeBeforeRenderActions( viewContext: RenderViewContext ){
+    this._actions.executeBeforeRenderActions( viewContext )
   }
 
-  encodePendingBundles( rendererTarget: RendererTarget ){
+  executeAfterRenderActions( viewContext: RenderViewContext ){
+    this._actions.executeAfterRenderActions( viewContext )
+  }
 
-    const encoder = this.renderer.device.createRenderBundleEncoder({
-      colorFormats: [rendererTarget.getColorAttachmentFormat()],
-      depthStencilFormat: rendererTarget.depthStencilFormat,
-    })
+  executeBeforeSubmitActions( viewContext: RenderViewContext ){
+    this._actions.executeBeforeSubmitActions( viewContext )
+  }
 
-    this._actions.encodePendingBundles( encoder, this.renderer.viewContext )
-
+  encodePendingBundles( viewContext: RenderViewContext ){
+    this._actions.encodePendingBundles( this.renderer.device, viewContext )
   }
 
   encode(commandEncoder: GPUCommandEncoder, viewContext: RenderViewContext): void {
@@ -70,13 +91,13 @@ export default class RenderPass {
     const passEncoder = commandEncoder.beginRenderPass({
       label: `RenderPass ${this.name}`,
       colorAttachments: [{
-        view: this.renderer.target.createColorAttachmentView(),
+        view: viewContext.target.createColorAttachmentView(),
         loadOp: "clear",
         clearValue: { r: 0, g: 0, b: 0.0, a: 1.0 },
         storeOp: "store",
       }],
-      depthStencilAttachment: this.renderer.target.hasDepthStencilAttachment() ? {
-        view: this.renderer.target.createDepthStencilAttachmentView(),
+      depthStencilAttachment: viewContext.target.hasDepthStencilAttachment() ? {
+        view: viewContext.target.createDepthStencilAttachmentView(),
         depthLoadOp: "clear",
         depthStoreOp: "store",
         depthClearValue: 1.0,
@@ -86,9 +107,15 @@ export default class RenderPass {
       
     passEncoder.setBindGroup(0, viewContext.cameraBindGroup.getBindGroup() );
     
+    const commandsContext: RenderCommandsActionContext = {
+      ...viewContext,
+      encoder: passEncoder,
+    }
+    
     const renderActions = this._actions.getRenderActions()
     for( let action of renderActions ){
-      action.execute( passEncoder, viewContext )
+      action.execute( commandsContext )
+      // passEncoder.setBindGroup(0, viewContext.cameraBindGroup.getBindGroup() );
     }
 
     passEncoder.end()

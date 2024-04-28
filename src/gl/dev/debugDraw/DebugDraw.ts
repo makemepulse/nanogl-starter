@@ -6,11 +6,12 @@ import { mat4, vec3 } from 'gl-matrix';
 /// #if DEBUG
 
 
-import type { RenderContext } from '../../renderer/RenderContext';
+import type { RenderActionContext } from '../../renderer/RenderActions';
+import type Renderer from '../../renderer/Renderer';
 import AxisRenderer from './AxisRenderer';
 import CircleRenderer from './CircleRenderer';
 import ConeRenderer from './ConeRenderer';
-import GridRenderer, { GridOrientation } from './GridRenderer';
+import GridRenderer from './GridRenderer';
 import LineRenderer from './LineRenderer';
 
 const DefaultColorHex = 0xfe9f2c
@@ -36,22 +37,18 @@ export class DebugDrawImpl {
   coneRenderer   : ConeRenderer
       
   enabled = true
-  gridXZ = true
-  gridXY = false
-  gridZY = false
 
   constructor( device:GPUDevice ){
     this.circleRenderer = new CircleRenderer ( device )
-    this.axisRenderer   = new AxisRenderer   ( device )
     this.gridRenderer   = new GridRenderer   ( device )
     this.lineRenderer   = new LineRenderer   ( device )
     this.coneRenderer   = new ConeRenderer   ( this )
+    this.axisRenderer   = new AxisRenderer   ( this )
   }
 
 
   clear(){
     this.circleRenderer.clear()
-    this.axisRenderer.clear()
     this.lineRenderer.clear()
   }
 
@@ -78,23 +75,22 @@ export class DebugDrawImpl {
 
 
 
-  render( context: RenderContext ){
+  render( context: RenderActionContext ){
     if( !this.enabled ) return
     this.circleRenderer.render( context );
-    this.axisRenderer.render( context );
     this.lineRenderer  .render( context );
-
-    this.gridRenderer.render( 
-      (this.gridXZ ? GridOrientation.XZ : 0) |
-      (this.gridXY ? GridOrientation.XY : 0) |
-      (this.gridZY ? GridOrientation.YZ : 0) 
-      , context
-    )
-
+    this.gridRenderer.render(context)
 
   }
 
+  setupRenderer( renderer: Renderer ){
+    renderer.addRenderable( this.circleRenderer );
+    renderer.addRenderable( this.lineRenderer );
+    renderer.addRenderable( this.gridRenderer );
+  }
+
 }
+
 
 
 let _instance : DebugDrawImpl;
@@ -131,7 +127,7 @@ const DebugDraw = {
     _instance.drawCone( m, height, angle, color, segs );
   },
 
-  render(context: RenderContext):void{
+  render(context: RenderActionContext):void{
     _instance.render(context);
     _instance.clear();
   }
