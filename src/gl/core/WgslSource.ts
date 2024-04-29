@@ -4,9 +4,13 @@ import { ResourceType, WgslReflect, type Attribute, type VariableInfo } from "wg
 type DepthStencilOptions = Partial<GPUDepthStencilState>
 type TargetConfig = Partial<GPUColorTargetState>
 
-type PipelineOptions = {
+type RenderPipelineOptions = {
   depthStencil?: DepthStencilOptions
   targets?: TargetConfig[]
+}
+
+type ComputePipelineOptions = {
+  constants?: Record<string, GPUPipelineConstantValue>
 }
 
 const CustomAttributes = [
@@ -137,17 +141,24 @@ export default class WgslSource {
   readonly module: GPUShaderModule;
   readonly layout: GPUPipelineLayout;
 
-  constructor( private device: GPUDevice, wgsl: string, readonly label?: string) {
+  constructor( protected device: GPUDevice, wgsl: string, readonly label?: string) {
     
     
-    this._ast = new WgslReflect(wgsl);
-
     const code = this.normalizeCode(wgsl)
     
     this.module = device.createShaderModule({
       code,
       label,
     })
+ 
+    try {
+      this._ast = new WgslReflect(wgsl);
+    } catch (e) {
+      console.error(e)
+      console.error(wgsl)
+      throw new Error(`Failed to parse WGSL source code for ${label}`)
+    }
+ 
     this.layout = this.device.createPipelineLayout({
       bindGroupLayouts: this.getBindGroupLayouts(),
     })
@@ -219,14 +230,9 @@ export default class WgslSource {
     return attr.value === value
   }
 
-  getDefaultFragmentEntry(): string | null {
-    const fragmentFunction = this._ast.functions.find(f => f.stage === 'fragment')
+  getDefaultEntry( stage : 'vertex'|'fragment'|'compute' ): string | null {
+    const fragmentFunction = this._ast.functions.find(f => f.stage === stage )
     return fragmentFunction?.name ?? null;
-  }
-
-  getDefaultVertexEntry(): string | null {
-    const vertexFunction = this._ast.functions.find(f => f.stage === 'vertex')
-    return vertexFunction?.name ?? null;
   }
 
   getDepthStencilState(attributes: Attribute[] | null): GPUDepthStencilState {
@@ -317,7 +323,7 @@ export default class WgslSource {
     return visibility
   }
 
-  getGPUBindGroupLayoutEntry(variable: VariableInfo): GPUBindGroupLayoutEntry {
+  private getGPUBindGroupLayoutEntry(variable: VariableInfo): GPUBindGroupLayoutEntry {
   
     const entry: GPUBindGroupLayoutEntry = {
       binding: variable.binding,
@@ -343,13 +349,13 @@ export default class WgslSource {
   
   }
   
-  getBindGroupLayout( variables: VariableInfo[] ): GPUBindGroupLayout {
+  private getBindGroupLayout( variables: VariableInfo[] ): GPUBindGroupLayout {
     const layoutDescriptor = this.getBindGroupLayoutDescriptor( variables )
     console.log( layoutDescriptor )
     return this.device.createBindGroupLayout( layoutDescriptor )
   }
 
-  getBindGroupLayoutDescriptor( variables: VariableInfo[] ): GPUBindGroupLayoutDescriptor {
+  private getBindGroupLayoutDescriptor( variables: VariableInfo[] ): GPUBindGroupLayoutDescriptor {
     return {
       label: `${this.label ?? ''} BindGroupLayout`,
       entries: variables.map(variable => this.getGPUBindGroupLayoutEntry(variable))
@@ -360,10 +366,35 @@ export default class WgslSource {
     return this._ast.getBindGroups().map( variables => this.getBindGroupLayout( variables ) )
   }
 
-  createRenderPipelineAsync( geometry: PipelineGeometryData, pvertexEntry?: string, pfragmentEntry?: string, pipelineConfig?: PipelineOptions): Promise<GPURenderPipeline> {
+  createComputePipelineAsync( entry?: string, pipelineConfig?: ComputePipelineOptions): Promise<GPUComputePipeline> {
 
-    const vertexEntry = pvertexEntry ?? this.getDefaultVertexEntry();
-    const fragmentEntry = pfragmentEntry ?? this.getDefaultFragmentEntry();
+    const computeEntry = entry ?? this.getDefaultEntry('compute');
+    if (computeEntry === null) throw new Error('No compute entry found')
+
+    const computeFunc = this._ast._functions.get(computeEntry);
+
+    if (computeFunc === undefined) throw new Error(`Compute function ${computeEntry} not found`)
+
+
+    const pipelineDescriptor: GPUComputePipelineDescriptor = {
+      label: 'TexturedQuadRenderable',
+      layout: this.layout,
+
+      compute: {
+        module: this.module,
+        entryPoint: computeEntry,
+        constants: pipelineConfig?.constants,
+      },
+    }
+
+    // console.log( pipelineDescriptor )
+    return this.device.createComputePipelineAsync( pipelineDescriptor );
+  }
+
+  createRenderPipelineAsync( geometry: PipelineGeometryData, pvertexEntry?: string, pfragmentEntry?: string, pipelineConfig?: RenderPipelineOptions): Promise<GPURenderPipeline> {
+
+    const vertexEntry = pvertexEntry ?? this.getDefaultEntry('vertex');
+    const fragmentEntry = pfragmentEntry ?? this.getDefaultEntry('fragment');
 
     if (vertexEntry === null) throw new Error('No vertex entry found')
     if (fragmentEntry === null) throw new Error('No fragment entry found')
@@ -413,7 +444,7 @@ export default class WgslSource {
       },
     }
 
-    console.log( pipelineDescriptor )
+    // console.log( pipelineDescriptor )
     return this.device.createRenderPipelineAsync( pipelineDescriptor );
 
   }

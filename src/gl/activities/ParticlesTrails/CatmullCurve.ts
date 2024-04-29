@@ -1,5 +1,4 @@
-import type { vec2, vec3, vec4 } from "gl-matrix";
-import type { ResourceAllocationContext } from "../../renderer/Renderable";
+import type { vec3, vec4 } from "gl-matrix";
 
 const FLOAT_PER_ANCHORS = 4;
 const BYTES_PER_ANCHORS = FLOAT_PER_ANCHORS*4;
@@ -16,6 +15,8 @@ const TOTAL_ALLOCATED_ANCHORS = (MAX_ANCHORS+OVERHAED);
 
 export default class CatmullCurve{
 
+  readonly maxAnchors = MAX_ANCHORS;
+  readonly maxAlloc = TOTAL_ALLOCATED_ANCHORS;
   /**
    * number of anchors set in the curve
    */
@@ -31,7 +32,8 @@ export default class CatmullCurve{
   
   private anchors: Float32Array;
 
-  private buffer: GPUBuffer;
+  readonly buffer: GPUBuffer;
+  readonly parambuffer: GPUBuffer;
 
   constructor( readonly device: GPUDevice ) {
     this.anchors = new Float32Array( TOTAL_ALLOCATED_ANCHORS*FLOAT_PER_ANCHORS );
@@ -39,8 +41,16 @@ export default class CatmullCurve{
     this.buffer = device.createBuffer({
       label: "Catmull Curve",
       size: BYTES_PER_ANCHORS * TOTAL_ALLOCATED_ANCHORS,
-      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
     });
+
+    this.parambuffer = device.createBuffer({
+      label: "Catmull Curve Params",
+      size: 12,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    this.device.queue.writeBuffer(this.parambuffer, 0, new Uint32Array([0, this.maxAlloc, 0]));
+
   }
 
   private _invalidRange: {start:number, length:number} = {start:0, length:0};
@@ -59,12 +69,13 @@ export default class CatmullCurve{
 
   updateBufferIfNeeded():void {
     if( this._invalidRange.length == 0 ) return;
-    this.device.queue.writeBuffer(this.buffer, 0, this.anchors, this._invalidRange.start*BYTES_PER_ANCHORS, this._invalidRange.length*BYTES_PER_ANCHORS);
-    this._invalidRange.length = 0;
+    console.log('update buffer', this._invalidRange.start, this._invalidRange.length);
+    this.device.queue.writeBuffer(this.buffer, 0, this.anchors, this._invalidRange.start*FLOAT_PER_ANCHORS, this._invalidRange.length*FLOAT_PER_ANCHORS);
+    this.device.queue.writeBuffer(this.parambuffer, 0, new Uint32Array([this.startIndex, this.maxAlloc, this.numAnchors]));
   }
 
   getAnchor<T extends vec3|vec4>( index:number, out:T ):T {
-    const i = index*FLOAT_PER_ANCHORS;
+    const i = (index+this.startIndex)*FLOAT_PER_ANCHORS;
     out.set( this.anchors.subarray(i, i+out.length) );
     return out;
   }
@@ -73,7 +84,7 @@ export default class CatmullCurve{
     
     let anchorIndex = this.startIndex + this._numAnchors;
  
-    if( this._numAnchors = MAX_ANCHORS ){
+    if( this._numAnchors === MAX_ANCHORS ){
       this.startIndex++;
     } else {
       this._numAnchors++;
@@ -82,7 +93,7 @@ export default class CatmullCurve{
      * if we reach the end of allocation buffer, we shift all the buffer to the left
      */
     if( anchorIndex >= TOTAL_ALLOCATED_ANCHORS ){
-      this.anchors.copyWithin(0, this.startIndex );
+      this.anchors.copyWithin(0, this.startIndex*FLOAT_PER_ANCHORS);
       this.startIndex = 0;
       anchorIndex = this._numAnchors - 1;
 

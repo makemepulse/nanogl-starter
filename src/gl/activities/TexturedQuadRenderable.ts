@@ -1,14 +1,14 @@
+import { vec3 } from "gl-matrix";
 import Node from "nanogl-node";
+import { CameraBindGroupFactory } from "../core/BindGroup";
+import Time from "../core/Time";
 import WgslSource from "../core/WgslSource";
-import { type IRenderable, type ResourceAllocationContext } from "../renderer/Renderable";
+import Quad from "../geometry/Quad";
+import { type IRenderable } from "../renderer/Renderable";
 import type Renderer from "../renderer/Renderer";
 import { TextureSrcSet } from "../resources/TextureRequest";
 import TextureResource from "../resources/TextureResource";
-import Quad from "../geometry/Quad";
 import TexturedQuad from "../wgsl/TexturedQuad";
-import { CameraBindGroupFactory } from "../core/BindGroup";
-import Time from "../core/Time";
-import { vec3 } from "gl-matrix";
 
 
 const WGSL =  /* wgsl */`

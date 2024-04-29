@@ -40,6 +40,10 @@ export default class Renderer {
   readonly defaultPass: RenderPass
 
   private viewContext: RenderViewContext
+  
+  /// #if DEBUG
+  readonly debugDraw: DebugDrawImpl
+  /// #endif
 
   /**
    * 
@@ -88,6 +92,7 @@ export default class Renderer {
     /// #if DEBUG
     const debugDraw = new DebugDrawImpl(device)
     debugDraw.setupRenderer(this)
+    this.debugDraw = debugDraw
     /// #endif
 
     this.viewContext = {
