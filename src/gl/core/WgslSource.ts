@@ -373,6 +373,14 @@ export default class WgslSource {
     return this._bindGroupLayouts[index]
   }
 
+  createBindGroup( index: number, resources: GPUBindGroupEntry[] ): GPUBindGroup {
+    const layout = this.getBindGroupLayout(index)
+    return this.device.createBindGroup({
+      layout,
+      entries: resources
+    })
+  }
+
   createComputePipelineAsync( entry?: string, pipelineConfig?: ComputePipelineOptions): Promise<GPUComputePipeline> {
 
     const computeEntry = entry ?? this.getDefaultEntry('compute');

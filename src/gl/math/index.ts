@@ -1,49 +1,49 @@
 import { vec3 } from "gl-matrix";
 
-const PI2 = Math.PI*2.0;
+const PI2 = Math.PI * 2.0;
 
-export const DEG2RAD = Math.PI/180.0;
+export const DEG2RAD = Math.PI / 180.0;
 
-export const RAD2DEG = 1.0/DEG2RAD;
+export const RAD2DEG = 1.0 / DEG2RAD;
 
 
-export function clamp01(n:number):number{
-  return Math.min( 1.0, Math.max( 0.0, n ) );
+export function clamp01(n: number): number {
+  return Math.min(1.0, Math.max(0.0, n));
 }
 
 
-export function clamp(n:number, min:number, max:number) : number {
-  return Math.min( max, Math.max( min, n ) );
+export function clamp(n: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, n));
 }
 
 
-export function sign(n:number):number{
-  return (n<0.0)?-1.0:1.0;
+export function sign(n: number): number {
+  return (n < 0.0) ? -1.0 : 1.0;
 }
 
-export function mix( a: number, b: number, m: number ): number {
-  return a * (1.0-m) + b*m;
+export function mix(a: number, b: number, m: number): number {
+  return a * (1.0 - m) + b * m;
 }
 
 
-export function map( num: number, min1: number, max1: number, min2: number, max2: number ):number {
-  const num1 = ( num - min1 ) / ( max1 - min1 )
-  const num2 = ( num1 * ( max2 - min2 ) ) + min2
+export function map(num: number, min1: number, max1: number, min2: number, max2: number): number {
+  const num1 = (num - min1) / (max1 - min1)
+  const num2 = (num1 * (max2 - min2)) + min2
   return num2;
 }
 
 
-export function mapUnit( p: number, s: number, e: number ): number{
-  const r = e-s;
-  return clamp01(p/r - s/r)
+export function mapUnit(p: number, s: number, e: number): number {
+  const r = e - s;
+  return clamp01(p / r - s / r)
 }
 
 
-export function randomFloat (minValue: number, maxValue: number):number {
+export function randomFloat(minValue: number, maxValue: number): number {
   return Math.min(minValue + (Math.random() * (maxValue - minValue)), maxValue)
 }
 
-export function randomUnitVector(out: vec3){
+export function randomUnitVector(out: vec3) {
   const u = Math.random();
   const v = Math.random();
   const theta = 2 * Math.PI * u;
@@ -58,9 +58,9 @@ export function randomUnitVector(out: vec3){
  * @param a the angle to wrap
  * @returns 
  */
-export function normalizeAngle(a: number):number{
-  while( a >= PI2 ) a -= PI2
-  while( a < 0.0  ) a += PI2
+export function normalizeAngle(a: number): number {
+  while (a >= PI2) a -= PI2
+  while (a < 0.0) a += PI2
   return a;
 }
 
@@ -71,25 +71,29 @@ export function normalizeAngle(a: number):number{
  * @param dest the destination angle in radians
  * @returns the destination angle, eventually modified to avoid 360 wrap around
  */
-export function normalizeDeltaAngle( angle: number, dest: number ):number{
-  let   d0 = dest - angle;
+export function normalizeDeltaAngle(angle: number, dest: number): number {
+  let d0 = dest - angle;
   const d1 = d0 - PI2
   const d2 = d0 + PI2
 
-  if( Math.abs( d1 ) < Math.abs( d0 ) ){
-    d0 = d1 
+  if (Math.abs(d1) < Math.abs(d0)) {
+    d0 = d1
   }
-  if( Math.abs( d2 ) < Math.abs( d0 ) ){
-    d0 = d2 
+  if (Math.abs(d2) < Math.abs(d0)) {
+    d0 = d2
   }
 
-  return angle+d0;
+  return angle + d0;
 }
 
 
-export function nextPOT( n:number ):number{
+export function nextPOT(n: number): number {
   let p = 1;
-  while( p < n ) p *= 2;
+  while (p < n) p *= 2;
   return p;
+}
+
+export function isPOT(n: number): boolean {
+  return Math.log2(n) % 1 === 0;
 }
 

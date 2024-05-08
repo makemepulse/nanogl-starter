@@ -1,6 +1,7 @@
 import type { AnyPromise } from "../../../utils/AnyPromise";
 import { CameraBindGroupFactory } from "../../core/BindGroup";
 import WgslSource from "../../core/WgslSource";
+import { isPOT } from "../../math";
 import type { IRenderable } from "../../renderer/Renderable";
 import type Renderer from "../../renderer/Renderer";
 
@@ -16,6 +17,13 @@ struct Anchor {
   p: vec4<f32>
 }
 
+struct CubicSegment {
+  a: vec4<f32>,
+  b: vec4<f32>,
+  c: vec4<f32>,
+  d: vec4<f32>,
+}
+
 
 struct CurveInfos {
   start: u32,
@@ -26,9 +34,14 @@ struct CurveInfos {
 
 struct Curve {
   infos: CurveInfos,
-  anchors: array<Anchor, ${numAnchors}>,
+  anchors: array<Anchor, ${numAnchors+3}>,
+}
+
+struct CubicData {
+  segments: array<CubicSegment, ${numAnchors}>,
 }
 `
+
 
 const WGSL_UpdateCurves = (numAnchors: number, numCurves: number) =>
 /* wgsl */`
@@ -75,6 +88,7 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
     var currentPos = anchors[ currPtr ].p.xyz;
     var dist = distance( cursor.p.xyz, currentPos );
+    
 
     loop {
       var ptr2 = curvePtr(currPtr + 1);
@@ -121,8 +135,46 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
 `
 
 
-const WGSL_DebugAnchors = (numAnchors: number) =>
-  /* wgsl */`
+const WGSL_ComputeCubicCoeffs = (numAnchors: number) =>
+/* wgsl */`
+override C_workgroup_X = 16;
+override C_workgroup_Y = 16;
+
+override segmentLength = 0.1;
+${WGSL_CurveStructsDecl(numAnchors)}
+
+@group(0) @binding(0) var<storage, read> curves: array<Curve>;
+@group(0) @binding(1) var<storage, read_write> cubics: array<CubicData>;
+
+fn computeSegment( a: Anchor, b: Anchor, c: Anchor, d: Anchor ) -> CubicSegment {
+  // return catmull-rom cubic coefficients from 4 points
+  return CubicSegment(
+    b.p,
+    0.5*(c.p-a.p),
+    a.p - 2.5*b.p + 2.0*c.p - 0.5*d.p,
+    0.5*(d.p-a.p) + 1.5*( b.p-c.p )
+  );
+}
+
+@compute @workgroup_size(C_workgroup_X, C_workgroup_Y)
+fn computeCubics(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let anchors = &curves[globalId.x].anchors;
+  let cubic = &cubics[globalId.x];
+  let segments = &cubic.segments;
+
+  segments[globalId.y] = computeSegment( 
+    anchors[ (globalId.y+0) % ${numAnchors} ], 
+    anchors[ (globalId.y+1) % ${numAnchors} ], 
+    anchors[ (globalId.y+2) % ${numAnchors} ], 
+    anchors[ (globalId.y+3) % ${numAnchors} ]
+  );
+
+}
+
+`
+
+const WGSL_DebugAnchors = (numAnchors: number, totalVertices: number) =>
+/* wgsl */`
 
 ${CameraBindGroupFactory.getWgslDeclaration(0)}
 ${WGSL_CurveStructsDecl(numAnchors)}
@@ -132,9 +184,10 @@ fn curvePtr( index: u32 ) -> u32 {
 }
 
 @group(1) @binding(0) var<storage> curves: array<Curve>;
+@group(1) @binding(1) var<storage> cubics: array<CubicData>;
 
 @vertex
-fn vertexMain( 
+fn vertexAnchors( 
   @builtin(vertex_index) anchorIndex: u32,
   @builtin(instance_index) curveIndex: u32 
 ) -> @builtin(position) vec4f {
@@ -142,17 +195,59 @@ fn vertexMain(
   var i = curvePtr( min( anchorIndex, infos.length - 1 ) + infos.start );
   var pos = curves[curveIndex].anchors[i].p.xyz;
   // pos += vec3<f32>(f32(anchorIndex)*0.01, f32(curveIndex)*0.01, 0.0);
-
+  
   return camera.viewProj * vec4f( pos, 1.0 );
 }
 
+@vertex
+fn vertexCurve( 
+  @builtin(vertex_index) vertexIndex: u32,
+  @builtin(instance_index) curveIndex: u32 
+) -> @builtin(position) vec4f {
+  let infos = curves[curveIndex].infos;
+  var p = f32(vertexIndex) / f32(${totalVertices});
+  // p *= ${numAnchors-3.00001};
+  p *= f32(infos.length) - 4.00001;
+  
+  var segIndex = u32( floor( p ) );
+  segIndex = segIndex + infos.start;
+  segIndex = segIndex % ${numAnchors-3};
+
+  var segment = cubics[curveIndex].segments[ segIndex ];
+  var t = fract( p );
+  var cp = segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) );
+
+  // cp = curves[curveIndex].anchors[segIndex].p;
+  return camera.viewProj * vec4f(cp.xyz, 1.0);
+}
+
 @fragment
-fn fragmentMain() -> @location(0) vec4f {
+fn fragmentAnchors() -> @location(0) vec4f {
   return vec4f(0.0, 1.0, 0.0, 1.0);
 }
 
-`
+@fragment
+fn fragmentCurve() -> @location(0) vec4f {
+  return vec4f(1.0, 0.0, 0.0, 1.0);
+}
 
+`
+/*
+
+
+start 6, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15
+        15...*---*---*---*---*---* x *---*---*---*---*---*---*---*---*---*...0
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  14, 15
+seg : [6 => 15 => 0 => 4] , length 16-1 = 15, mod 16
+
+
+start 0, length 6
+anchors : 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15
+          * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
+segmnts :   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14
+            X *---*---*---* X
+*/ 
 export default class GpuCurves implements IRenderable {
 
   private cursorsBuffer: GPUBuffer
@@ -162,16 +257,26 @@ export default class GpuCurves implements IRenderable {
   private cursorsData: Float32Array;
 
   readonly numSegments: number
-  private updateCurvesSource: WgslSource
-  private debugAnchorsSource: WgslSource
+  private updateCurvesSource : WgslSource
+  private computeCoeffsSource: WgslSource
+  private debugAnchorsSource : WgslSource
+
   private updateCurveBindGroup: GPUBindGroup
+  private computeCoeffsBindGroup: GPUBindGroup
   private debugAnchorsBindGroup: GPUBindGroup 
 
   private updateCurvesPipeline!: GPUComputePipeline
+  private computeCoeffsPipeline!: GPUComputePipeline
   private debugAnchorsPipeline!: GPURenderPipeline
+  private debugCurvePipeline!: GPURenderPipeline
+
+  private coeffDispatch: [number, number];
 
 
   constructor(private device: GPUDevice, readonly numCurves = 64, readonly numAnchors = 128, readonly segmentLength = 0.1) {
+    
+    if( !isPOT(numAnchors) ) throw new Error('numAnchors must be a power of two')
+    if( !isPOT(numCurves) ) throw new Error('numCurves must be a power of two')
 
     this.numSegments = numAnchors - 3;
 
@@ -185,7 +290,7 @@ export default class GpuCurves implements IRenderable {
 
     this.anchorsBuffer = device.createBuffer({
       label: "GpuCurves Anchors Buffer",
-      size: numCurves * (numAnchors * ANCHOR_BYTE_SIZE + CURVE_META_BYTE_SIZE), // vec4f
+      size: numCurves * ( ( numAnchors+3) * ANCHOR_BYTE_SIZE + CURVE_META_BYTE_SIZE), // vec4f
       usage: GPUBufferUsage.STORAGE
     })
 
@@ -195,23 +300,39 @@ export default class GpuCurves implements IRenderable {
       usage: GPUBufferUsage.STORAGE
     })
 
-    this.updateCurvesSource = new WgslSource(device, WGSL_UpdateCurves(numAnchors, numCurves), 'GpuCurves UpdateCurves')
-    this.debugAnchorsSource = new WgslSource(device, WGSL_DebugAnchors(numAnchors), 'GpuCurves DebugAnchors')
 
-    this.updateCurveBindGroup = this.device.createBindGroup({
-      layout: this.updateCurvesSource.getBindGroupLayout(0),
-      entries: [
-        { binding: 0, resource: { buffer: this.cursorsBuffer } },
-        { binding: 1, resource: { buffer: this.anchorsBuffer } },
-      ]
-    })
 
-    this.debugAnchorsBindGroup = this.device.createBindGroup({
-      layout: this.debugAnchorsSource.getBindGroupLayout(1),
-      entries: [
-        { binding: 0, resource: { buffer: this.anchorsBuffer } },
-      ]
-    })
+    this.updateCurvesSource  = new WgslSource(device, WGSL_UpdateCurves      (numAnchors, numCurves), 'GpuCurves UpdateCurves'     )
+    this.computeCoeffsSource = new WgslSource(device, WGSL_ComputeCubicCoeffs(numAnchors), 'GpuCurves ComputeCubicCoeff')
+    this.debugAnchorsSource  = new WgslSource(device, WGSL_DebugAnchors      (numAnchors, numAnchors*10 ), 'GpuCurves DebugAnchors'     )
+
+
+    this.updateCurveBindGroup = this.updateCurvesSource.createBindGroup( 0, [
+      { binding: 0, resource: { buffer: this.cursorsBuffer } },
+      { binding: 1, resource: { buffer: this.anchorsBuffer } },
+    ])
+
+    this.computeCoeffsBindGroup = this.computeCoeffsSource.createBindGroup( 0, [
+      { binding: 0, resource: { buffer: this.anchorsBuffer } },
+      { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
+    ])
+
+    this.debugAnchorsBindGroup = this.debugAnchorsSource.createBindGroup( 1, [
+      { binding: 0, resource: { buffer: this.anchorsBuffer } },
+      { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
+    ])
+
+    const maxInvokation = device.limits.maxComputeInvocationsPerWorkgroup
+    const C_workgroup_X = Math.min( maxInvokation, numAnchors );
+    const C_workgroup_Y = Math.min( maxInvokation / C_workgroup_X, numCurves );
+
+    this.coeffDispatch = [
+      Math.ceil( numAnchors / C_workgroup_X ),
+      Math.ceil( numCurves / C_workgroup_Y )
+    ]
+
+    console.log( 'numAnchors', numAnchors, 'numCurves', numCurves, 'maxInvokation', maxInvokation)
+    console.log('C_workgroup_X', C_workgroup_X, 'C_workgroup_Y', C_workgroup_Y, 'disp X', this.coeffDispatch[0], 'disp Y', this.coeffDispatch[1] )
 
     this.ready = Promise.all([
 
@@ -225,13 +346,29 @@ export default class GpuCurves implements IRenderable {
         this.updateCurvesPipeline = pipeline
       }),
 
+      this.computeCoeffsSource.createComputePipelineAsync('computeCubics', {
+        constants: {
+          C_workgroup_X,
+          C_workgroup_Y,
+        }
+      }).then(pipeline => {
+        this.computeCoeffsPipeline = pipeline
+      }),
+
       this.debugAnchorsSource.createRenderPipelineAsync({
         primitive: {
           topology: 'line-strip'
         },
-      }, 'vertexMain', 'fragmentMain'
-      ).then(pipeline => {
+      }, 'vertexAnchors', 'fragmentAnchors' ).then(pipeline => {
         this.debugAnchorsPipeline = pipeline
+      }),
+
+      this.debugAnchorsSource.createRenderPipelineAsync({
+        primitive: {
+          topology: 'line-strip'
+        },
+      }, 'vertexCurve', 'fragmentCurve' ).then(pipeline => {
+        this.debugCurvePipeline = pipeline
       })
 
     ])
@@ -268,6 +405,10 @@ export default class GpuCurves implements IRenderable {
       pass.setPipeline(this.updateCurvesPipeline)
       pass.setBindGroup(0, this.updateCurveBindGroup)
       pass.dispatchWorkgroups(1)
+
+      pass.setPipeline(this.computeCoeffsPipeline)
+      pass.setBindGroup(0, this.computeCoeffsBindGroup)
+      pass.dispatchWorkgroups(this.coeffDispatch[0], this.coeffDispatch[1])
       pass.end()
       
       this.device.queue.writeBuffer(this.cursorsBuffer, 0, this.cursorsData)
@@ -278,10 +419,14 @@ export default class GpuCurves implements IRenderable {
     renderer.defaultPass.addCommands( (ctx)=>{
        
       const encoder = ctx.encoder;
-      encoder.setPipeline(this.debugAnchorsPipeline);
       encoder.setBindGroup(0, ctx.cameraBindGroup.getBindGroup());
       encoder.setBindGroup(1, this.debugAnchorsBindGroup );
-      encoder.draw( this.numAnchors, this.numCurves, 0, 0 );
+
+      // encoder.setPipeline(this.debugAnchorsPipeline);
+      // encoder.draw( this.numAnchors, this.numCurves, 0, 0 );
+
+      encoder.setPipeline(this.debugCurvePipeline);
+      encoder.draw( this.numAnchors * 10, this.numCurves, 0, 0 );
     })
   }
 
