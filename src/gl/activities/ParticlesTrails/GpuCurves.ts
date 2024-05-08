@@ -47,7 +47,7 @@ const WGSL_UpdateCurves = (numAnchors: number, numCurves: number) =>
 /* wgsl */`
 override numCurves: u32 = ${numCurves};
 override segmentLength = 0.1;
-override numAnchors: u32 = 128;
+override numAnchors: u32 = ${numAnchors};
 
 ${WGSL_CurveStructsDecl(numAnchors)}
 
@@ -121,15 +121,16 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
       }
     }
 
-    if( length >= numAnchors ){
+    if( length > numAnchors ){
       start = curvePtr( currPtr + 3 );
       length = numAnchors;
     }
-
     
   }
-  infos.start = start;
+
+  infos.start  = start;
   infos.length = length;
+
   // curve.infos = CurveInfos( start, length, 0, 0 );
 }
 `
@@ -137,6 +138,8 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
 const WGSL_ComputeCubicCoeffs = (numAnchors: number) =>
 /* wgsl */`
+
+const numAnchors: u32 = ${numAnchors};
 override C_workgroup_X = 16;
 override C_workgroup_Y = 16;
 
@@ -163,10 +166,10 @@ fn computeCubics(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let segments = &cubic.segments;
 
   segments[globalId.y] = computeSegment( 
-    anchors[ (globalId.y+0) % ${numAnchors} ], 
-    anchors[ (globalId.y+1) % ${numAnchors} ], 
-    anchors[ (globalId.y+2) % ${numAnchors} ], 
-    anchors[ (globalId.y+3) % ${numAnchors} ]
+    anchors[ (globalId.y - 1 + numAnchors) % numAnchors ],
+    anchors[ globalId.y ], 
+    anchors[ (globalId.y+1) % numAnchors ], 
+    anchors[ (globalId.y+2) % numAnchors ], 
   );
 
 }
@@ -207,11 +210,11 @@ fn vertexCurve(
   let infos = curves[curveIndex].infos;
   var p = f32(vertexIndex) / f32(${totalVertices});
   // p *= ${numAnchors-3.00001};
-  p *= f32(infos.length) - 4.00001;
+  p *= f32(infos.length) - 3.00001;
   
   var segIndex = u32( floor( p ) );
-  segIndex = segIndex + infos.start;
-  segIndex = segIndex % ${numAnchors-3};
+  segIndex = segIndex + infos.start + 1;
+  segIndex = segIndex % ${numAnchors};
 
   var segment = cubics[curveIndex].segments[ segIndex ];
   var t = fract( p );
@@ -235,18 +238,33 @@ fn fragmentCurve() -> @location(0) vec4f {
 /*
 
 
+start 0, length 6, segs 3
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,  13, 14, 15
+
+
+start 0, length 16, segs 13
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X * X
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
+start 1, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X *
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
+start 2, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+          ...* X * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
 start 6, length 16
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15
-        15...*---*---*---*---*---* x *---*---*---*---*---*---*---*---*---*...0
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+        15...*---*---*---*---* X * X * X *---*---*---*---*---*---*---*---*---
 segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  14, 15
-seg : [6 => 15 => 0 => 4] , length 16-1 = 15, mod 16
+seg : [7 => 15 => 0 => 3] , length 16-1 = 15, mod 16
 
-
-start 0, length 6
-anchors : 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15
-          * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
-segmnts :   0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14
-            X *---*---*---* X
 */ 
 export default class GpuCurves implements IRenderable {
 
