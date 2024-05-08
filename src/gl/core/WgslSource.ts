@@ -140,6 +140,7 @@ export default class WgslSource {
   private _ast: WgslReflect;
   readonly module: GPUShaderModule;
   readonly layout: GPUPipelineLayout;
+  private _bindGroupLayouts: GPUBindGroupLayout[];
 
   constructor( protected device: GPUDevice, wgsl: string, readonly label?: string) {
     
@@ -153,6 +154,7 @@ export default class WgslSource {
  
     try {
       this._ast = new WgslReflect(wgsl);
+      this._bindGroupLayouts = this._ast.getBindGroups().map( variables => this._getBindGroupLayout( variables ) )
     } catch (e) {
       console.error(e)
       console.error(wgsl)
@@ -349,13 +351,13 @@ export default class WgslSource {
   
   }
   
-  private getBindGroupLayout( variables: VariableInfo[] ): GPUBindGroupLayout {
-    const layoutDescriptor = this.getBindGroupLayoutDescriptor( variables )
+  private _getBindGroupLayout( variables: VariableInfo[] ): GPUBindGroupLayout {
+    const layoutDescriptor = this._getBindGroupLayoutDescriptor( variables )
     console.log( layoutDescriptor )
     return this.device.createBindGroupLayout( layoutDescriptor )
   }
 
-  private getBindGroupLayoutDescriptor( variables: VariableInfo[] ): GPUBindGroupLayoutDescriptor {
+  private _getBindGroupLayoutDescriptor( variables: VariableInfo[] ): GPUBindGroupLayoutDescriptor {
     return {
       label: `${this.label ?? ''} BindGroupLayout`,
       entries: variables.map(variable => this.getGPUBindGroupLayoutEntry(variable))
@@ -363,7 +365,12 @@ export default class WgslSource {
   }
 
   getBindGroupLayouts(): GPUBindGroupLayout[] {
-    return this._ast.getBindGroups().map( variables => this.getBindGroupLayout( variables ) )
+    return this._bindGroupLayouts
+  }
+
+  getBindGroupLayout( index : number): GPUBindGroupLayout {
+    if( index >= this._bindGroupLayouts.length ) throw new Error(`Invalid bind group layout index ${index}`)
+    return this._bindGroupLayouts[index]
   }
 
   createComputePipelineAsync( entry?: string, pipelineConfig?: ComputePipelineOptions): Promise<GPUComputePipeline> {

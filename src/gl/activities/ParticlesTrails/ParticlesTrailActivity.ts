@@ -14,6 +14,8 @@ import TexturedQuadRenderable from "../TexturedQuadRenderable";
 import CatmullCurve from "./CatmullCurve";
 import Trail from "./Trail";
 import CurveDrawer from "./CurveDrawer";
+import GpuCurves from "./GpuCurves";
+import CurveCursorsSource from "./CurveCursorsSource";
 
 const V3_1 = vec3.create()
 const V3_2 = vec3.create()
@@ -37,6 +39,9 @@ export default class ParticlesTrailActivity extends BaseActivity {
   trail: Trail;
   drawer: CurveDrawer
 
+  gpuCurves: GpuCurves;
+  cursorSource: CurveCursorsSource;
+
   constructor(engine: Engine) {
     super(engine)
     this.quad = new TexturedQuadRenderable(engine.device);
@@ -57,7 +62,12 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.renderer = new Renderer( engine.device, this.rendererTarget, this.camera )
 
     this.trail = new Trail( engine.device, this.curve )
-    this.renderer.addRenderable( this.trail )
+    // this.renderer.addRenderable( this.trail )
+    
+    this.gpuCurves = new GpuCurves( engine.device, 128, 128, 0.1)
+    this.cursorSource = new CurveCursorsSource( this.gpuCurves )
+
+    this.renderer.addRenderable( this.gpuCurves )
   }
 
   onMouseMove = (e: MouseEvent) => {
@@ -70,6 +80,9 @@ export default class ParticlesTrailActivity extends BaseActivity {
     rayPlaneIntersection( V3_1, RAY, PROJ_PLANE )
 
     this.drawer.update(V3_1)
+    this.cursorSource.update(V3_1)
+    
+    // this.gpuCurves.setAllCursors(V3_1)
     // this.renderer.debugDraw.drawAxis( V3_1 )
 
     // if( this.curve.numAnchors === 0 ){

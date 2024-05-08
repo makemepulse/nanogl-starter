@@ -69,7 +69,7 @@ export default class CatmullCurve{
 
   updateBufferIfNeeded():void {
     if( this._invalidRange.length == 0 ) return;
-    console.log( 'update buffer', this._invalidRange.start, this._invalidRange.length );
+    // console.log( 'update buffer', this._invalidRange.start, this._invalidRange.length );
     this.device.queue.writeBuffer(this.buffer, this._invalidRange.start*BYTES_PER_ANCHORS, this.anchors, this._invalidRange.start*FLOAT_PER_ANCHORS, this._invalidRange.length*FLOAT_PER_ANCHORS);
     this.device.queue.writeBuffer(this.parambuffer, 0, new Uint32Array([this.startIndex, this.maxAlloc, this.numAnchors]));
 
