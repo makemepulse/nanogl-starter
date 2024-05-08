@@ -13,6 +13,7 @@ import { RendererTarget } from "../../renderer/RendererTarget";
 import TexturedQuadRenderable from "../TexturedQuadRenderable";
 import CatmullCurve from "./CatmullCurve";
 import Trail from "./Trail";
+import CurveDrawer from "./CurveDrawer";
 
 const V3_1 = vec3.create()
 const V3_2 = vec3.create()
@@ -34,6 +35,7 @@ export default class ParticlesTrailActivity extends BaseActivity {
   renderer: Renderer;
   curve: CatmullCurve;
   trail: Trail;
+  drawer: CurveDrawer
 
   constructor(engine: Engine) {
     super(engine)
@@ -49,6 +51,7 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.camCtrl.start(this.camera)
 
     this.curve = new CatmullCurve(engine.device)
+    this.drawer = new CurveDrawer(this.curve)
 
     this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
     this.renderer = new Renderer( engine.device, this.rendererTarget, this.camera )
@@ -66,17 +69,18 @@ export default class ParticlesTrailActivity extends BaseActivity {
     RAY.unproject( [x*2-1, -y*2+1], this.camera )
     rayPlaneIntersection( V3_1, RAY, PROJ_PLANE )
 
-    this.renderer.debugDraw.drawAxis( V3_1 )
+    this.drawer.update(V3_1)
+    // this.renderer.debugDraw.drawAxis( V3_1 )
 
-    if( this.curve.numAnchors === 0 ){
-      this.curve.addAnchor(V3_1)
-    } else {
-      this.curve.getAnchor(this.curve.numAnchors-1, V3_2)
-      const dist = vec3.distance(V3_1, V3_2)
-      if( dist > .3 ){
-        this.curve.addAnchor(V3_1)
-      }
-    }
+    // if( this.curve.numAnchors === 0 ){
+    //   this.curve.addAnchor(V3_1)
+    // } else {
+    //   this.curve.getAnchor(this.curve.numAnchors-1, V3_2)
+    //   const dist = vec3.distance(V3_1, V3_2)
+    //   if( dist > .3 ){
+    //     this.curve.addAnchor(V3_1)
+    //   }
+    // }
   }
 
   start(): void {

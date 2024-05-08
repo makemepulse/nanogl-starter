@@ -16,8 +16,8 @@ ${CurveParamsDecl}
 
 @vertex 
 fn vertexMain( @location(0) position: vec3f ) -> @builtin(position) vec4f {
-  var p = position.z * f32( curveParams.numAnchors - 3 );
-  var segIndex = u32(floor( p ));
+  var p = position.z * ( f32( curveParams.numAnchors - 3 ) - 0.00001 );
+  var segIndex = u32( floor( p ) );
   var segment = segments[ segIndex ];
   var t = fract( p );
   var cp = segment.coeffA + t * ( segment.coeffB + t * ( segment.coeffC + t * segment.coeffD ) );

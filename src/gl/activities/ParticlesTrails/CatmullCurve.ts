@@ -69,9 +69,12 @@ export default class CatmullCurve{
 
   updateBufferIfNeeded():void {
     if( this._invalidRange.length == 0 ) return;
-    console.log('update buffer', this._invalidRange.start, this._invalidRange.length);
-    this.device.queue.writeBuffer(this.buffer, 0, this.anchors, this._invalidRange.start*FLOAT_PER_ANCHORS, this._invalidRange.length*FLOAT_PER_ANCHORS);
+    console.log( 'update buffer', this._invalidRange.start, this._invalidRange.length );
+    this.device.queue.writeBuffer(this.buffer, this._invalidRange.start*BYTES_PER_ANCHORS, this.anchors, this._invalidRange.start*FLOAT_PER_ANCHORS, this._invalidRange.length*FLOAT_PER_ANCHORS);
     this.device.queue.writeBuffer(this.parambuffer, 0, new Uint32Array([this.startIndex, this.maxAlloc, this.numAnchors]));
+
+    this._invalidRange.length = 0;
+    this._invalidRange.start = 0;
   }
 
   getAnchor<T extends vec3|vec4>( index:number, out:T ):T {
@@ -103,6 +106,15 @@ export default class CatmullCurve{
     
     this.anchors.set( p, anchorIndex*FLOAT_PER_ANCHORS )
     this.invalidateRange( anchorIndex );
+  }
+
+  setAnchorAt( index:number, p:vec4|vec3 ):void {
+    if( index >= this._numAnchors ) {
+      throw new Error('index out of bounds');
+    }
+    const i = (index+this.startIndex)*FLOAT_PER_ANCHORS;
+    this.anchors.set( p, i );
+    this.invalidateRange( index );
   }
 
 }
