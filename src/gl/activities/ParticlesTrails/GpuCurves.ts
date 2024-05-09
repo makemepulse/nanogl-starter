@@ -4,8 +4,9 @@ import WgslSource from "../../core/WgslSource";
 import { isPOT } from "../../math";
 import type { IRenderable } from "../../renderer/Renderable";
 import type Renderer from "../../renderer/Renderer";
+import { SimplexNoise } from "../../wgsl/SimplexNoise";
 
-const ANCHOR_BYTE_SIZE = 4 * 4; // vec4f
+const ANCHOR_BYTE_SIZE = 4 * 8; // vec4f + vec3f + f32
 const CURVE_META_BYTE_SIZE = 4 * 4; // vec4u
 
 
@@ -14,7 +15,9 @@ const WGSL_CurveStructsDecl = (numAnchors: number) =>
 /* wgsl */`
 
 struct Anchor {
-  p: vec4<f32>
+  p: vec4f,
+  t: vec3f,
+  reserved0: f32,
 }
 
 struct CubicSegment {
@@ -42,6 +45,37 @@ struct CubicData {
 }
 `
 
+/*
+
+
+start 0, length 6, segs 3
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,  13, 14, 15
+
+
+start 0, length 16, segs 13
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X * X
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
+start 1, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+             * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X *
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
+start 2, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+          ...* X * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+
+start 6, length 16
+anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
+        15...*---*---*---*---* X * X * X *---*---*---*---*---*---*---*---*---
+segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  14, 15
+seg : [7 => 15 => 0 => 3] , length 16-1 = 15, mod 16
+
+*/ 
 
 const WGSL_UpdateCurves = (numAnchors: number, numCurves: number) =>
 /* wgsl */`
@@ -58,8 +92,8 @@ fn curvePtr( index: u32 ) -> u32 {
   return index % numAnchors;
 }
 
-fn MakeAnchor( p: vec3<f32> ) -> Anchor {
-  return Anchor( vec4<f32>( p, 0.0 ) );
+fn MakeAnchor( cursor: Anchor, p: vec3f, t: vec3f ) -> Anchor {
+  return Anchor( vec4<f32>( p, cursor.p.w ), t, 0.0);
 }
 
 @compute @workgroup_size(numCurves)
@@ -97,18 +131,18 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
       var dir = normalize( cursor.p.xyz - currentPos );
 
       if( length == 4 ){
-        var a = MakeAnchor( currentPos - dir * segmentLength );
+        var a = MakeAnchor( cursor, currentPos - dir * segmentLength, dir );
         anchors[0] = a;
       }
 
-      var b = MakeAnchor( currentPos + dir * segmentLength );
+      var b = MakeAnchor( cursor, currentPos + dir * segmentLength, dir );
       anchors[ ptr2 ] = b;
 
-      var c = MakeAnchor( currentPos + dir * 2.0 * segmentLength );
+      var c = MakeAnchor( cursor, currentPos + dir * 2.0 * segmentLength, dir );
       anchors[ ptr3 ] = c;
 
       if( dist > segmentLength ){
-        var d = MakeAnchor( currentPos + dir * 3.0 * segmentLength );
+        var d = MakeAnchor( cursor, currentPos + dir * 3.0 * segmentLength, dir );
         anchors[ curvePtr(currPtr + 3) ] = d;
         currPtr = ptr2;
         currentPos = b.p.xyz;
@@ -143,7 +177,6 @@ const numAnchors: u32 = ${numAnchors};
 override C_workgroup_X = 16;
 override C_workgroup_Y = 16;
 
-override segmentLength = 0.1;
 ${WGSL_CurveStructsDecl(numAnchors)}
 
 @group(0) @binding(0) var<storage, read> curves: array<Curve>;
@@ -161,15 +194,15 @@ fn computeSegment( a: Anchor, b: Anchor, c: Anchor, d: Anchor ) -> CubicSegment 
 
 @compute @workgroup_size(C_workgroup_X, C_workgroup_Y)
 fn computeCubics(@builtin(global_invocation_id) globalId: vec3<u32>) {
-  let anchors = &curves[globalId.x].anchors;
-  let cubic = &cubics[globalId.x];
+  let anchors = &curves[globalId.y].anchors;
+  let cubic = &cubics[globalId.y];
   let segments = &cubic.segments;
 
-  segments[globalId.y] = computeSegment( 
-    anchors[ (globalId.y - 1 + numAnchors) % numAnchors ],
-    anchors[ globalId.y ], 
-    anchors[ (globalId.y+1) % numAnchors ], 
-    anchors[ (globalId.y+2) % numAnchors ], 
+  segments[globalId.x] = computeSegment( 
+    anchors[ (globalId.x - 1 + numAnchors) % numAnchors ],
+    anchors[ globalId.x ], 
+    anchors[ (globalId.x+1) % numAnchors ], 
+    anchors[ (globalId.x+2) % numAnchors ], 
   );
 
 }
@@ -235,37 +268,39 @@ fn fragmentCurve() -> @location(0) vec4f {
 }
 
 `
-/*
 
+const WGSL_AnimateCurve = (numAnchors: number) =>
 
-start 0, length 6, segs 3
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
-             * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
-segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12,  13, 14, 15
+/* wgsl */`
+const numAnchors: u32 = ${numAnchors};
 
+override C_workgroup_X = 16;
+override C_workgroup_Y = 16;
 
-start 0, length 16, segs 13
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
-             * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X * X
-segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+${WGSL_CurveStructsDecl(numAnchors)}
+${SimplexNoise}
 
-start 1, length 16
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
-             * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---* X *
-segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+@group(0) @binding(0) var<storage, read_write> curves: array<Curve>;
 
-start 2, length 16
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
-          ...* X * X * X *---*---*---*---*---*---*---*---*---*---*---*---*---
-segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15
+const UP = vec3f(0.0, 1.0, 0.0);
 
-start 6, length 16
-anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
-        15...*---*---*---*---* X * X * X *---*---*---*---*---*---*---*---*---
-segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  14, 15
-seg : [7 => 15 => 0 => 3] , length 16-1 = 15, mod 16
+@compute @workgroup_size(C_workgroup_X, C_workgroup_Y)
+fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
+  let anchors = &curves[globalId.y].anchors;
+  let anchor = anchors[globalId.x];
+  var pos = anchor.p.xyz;
+  var tan = anchor.t;
+  var nrm = normalize(cross(tan, UP));
+  var binorm = cross(tan, nrm);
 
-*/ 
+  var angle = 13.0 * snoise3D( pos * .2 ) + f32(globalId.y);
+  var dir = nrm * cos(angle) + binorm * sin(angle);
+  pos += dir * 0.01;
+
+  anchors[globalId.x].p = vec4f( pos, anchor.p.w );
+}
+`
+
 export default class GpuCurves implements IRenderable {
 
   private cursorsBuffer: GPUBuffer
@@ -276,17 +311,20 @@ export default class GpuCurves implements IRenderable {
 
   readonly numSegments: number
   private updateCurvesSource : WgslSource
+  private animateCurvesSource: WgslSource
   private computeCoeffsSource: WgslSource
   private debugAnchorsSource : WgslSource
 
-  private updateCurveBindGroup: GPUBindGroup
+  private updateCurveBindGroup  : GPUBindGroup
+  private animateCurveBindGroup : GPUBindGroup
   private computeCoeffsBindGroup: GPUBindGroup
-  private debugAnchorsBindGroup: GPUBindGroup 
+  private debugAnchorsBindGroup : GPUBindGroup 
 
-  private updateCurvesPipeline!: GPUComputePipeline
+  private updateCurvesPipeline !: GPUComputePipeline
+  private animateCurvesPipeline!: GPUComputePipeline
   private computeCoeffsPipeline!: GPUComputePipeline
-  private debugAnchorsPipeline!: GPURenderPipeline
-  private debugCurvePipeline!: GPURenderPipeline
+  private debugAnchorsPipeline !: GPURenderPipeline
+  private debugCurvePipeline   !: GPURenderPipeline
 
   private coeffDispatch: [number, number];
 
@@ -320,14 +358,19 @@ export default class GpuCurves implements IRenderable {
 
 
 
-    this.updateCurvesSource  = new WgslSource(device, WGSL_UpdateCurves      (numAnchors, numCurves), 'GpuCurves UpdateCurves'     )
-    this.computeCoeffsSource = new WgslSource(device, WGSL_ComputeCubicCoeffs(numAnchors), 'GpuCurves ComputeCubicCoeff')
-    this.debugAnchorsSource  = new WgslSource(device, WGSL_DebugAnchors      (numAnchors, numAnchors*10 ), 'GpuCurves DebugAnchors'     )
+    this.updateCurvesSource  = new WgslSource(device, WGSL_UpdateCurves       (numAnchors, numCurves     ), 'GpuCurves UpdateCurves'      )
+    this.animateCurvesSource = new WgslSource(device, WGSL_AnimateCurve       (numAnchors                ), 'GpuCurves AnimateCurves'     )
+    this.computeCoeffsSource = new WgslSource(device, WGSL_ComputeCubicCoeffs (numAnchors                ), 'GpuCurves ComputeCubicCoeff' )
+    this.debugAnchorsSource  = new WgslSource(device, WGSL_DebugAnchors       (numAnchors, numAnchors*10 ), 'GpuCurves DebugAnchors'      )
 
 
     this.updateCurveBindGroup = this.updateCurvesSource.createBindGroup( 0, [
       { binding: 0, resource: { buffer: this.cursorsBuffer } },
       { binding: 1, resource: { buffer: this.anchorsBuffer } },
+    ])
+ 
+    this.animateCurveBindGroup = this.animateCurvesSource.createBindGroup( 0, [
+      { binding: 0, resource: { buffer: this.anchorsBuffer } },
     ])
 
     this.computeCoeffsBindGroup = this.computeCoeffsSource.createBindGroup( 0, [
@@ -362,6 +405,15 @@ export default class GpuCurves implements IRenderable {
         }
       }).then(pipeline => {
         this.updateCurvesPipeline = pipeline
+      }),
+
+      this.animateCurvesSource.createComputePipelineAsync('animateCurves', {
+        constants: {
+          C_workgroup_X,
+          C_workgroup_Y,
+        }
+      }).then(pipeline => {
+        this.animateCurvesPipeline = pipeline
       }),
 
       this.computeCoeffsSource.createComputePipelineAsync('computeCubics', {
@@ -423,6 +475,10 @@ export default class GpuCurves implements IRenderable {
       pass.setPipeline(this.updateCurvesPipeline)
       pass.setBindGroup(0, this.updateCurveBindGroup)
       pass.dispatchWorkgroups(1)
+
+      pass.setPipeline(this.animateCurvesPipeline)
+      pass.setBindGroup(0, this.animateCurveBindGroup)
+      pass.dispatchWorkgroups(this.coeffDispatch[0], this.coeffDispatch[1])
 
       pass.setPipeline(this.computeCoeffsPipeline)
       pass.setBindGroup(0, this.computeCoeffsBindGroup)

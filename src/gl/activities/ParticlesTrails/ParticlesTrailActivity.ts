@@ -64,7 +64,7 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.trail = new Trail( engine.device, this.curve )
     // this.renderer.addRenderable( this.trail )
     
-    this.gpuCurves = new GpuCurves( engine.device, 128, 128, 0.1)
+    this.gpuCurves = new GpuCurves( engine.device, 128, 1024, 0.1)
     this.cursorSource = new CurveCursorsSource( this.gpuCurves )
 
     this.renderer.addRenderable( this.gpuCurves )
@@ -81,7 +81,7 @@ export default class ParticlesTrailActivity extends BaseActivity {
 
     this.drawer.update(V3_1)
     this.cursorSource.update(V3_1)
-    
+
     // this.gpuCurves.setAllCursors(V3_1)
     // this.renderer.debugDraw.drawAxis( V3_1 )
 
