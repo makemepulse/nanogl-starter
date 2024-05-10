@@ -83,6 +83,8 @@ override numCurves: u32 = ${numCurves};
 override segmentLength = 0.1;
 override numAnchors: u32 = ${numAnchors};
 
+const X_AXIS = vec3f(1.0, 0.0, 0.0);
+
 ${WGSL_CurveStructsDecl(numAnchors)}
 
 @group(0) @binding(0) var<storage, read> cursors: array<Anchor>;
@@ -111,10 +113,10 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
     start = 0;
     length = 4;
-    anchors[0] = cursor;
-    anchors[1] = cursor;
-    anchors[2] = cursor;
-    anchors[3] = cursor;
+    anchors[0] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
+    anchors[1] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
+    anchors[2] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
+    anchors[3] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
   } 
   else {
 
@@ -200,9 +202,9 @@ fn computeCubics(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
   segments[globalId.x] = computeSegment( 
     anchors[ (globalId.x - 1 + numAnchors) % numAnchors ],
-    anchors[ globalId.x ], 
-    anchors[ (globalId.x+1) % numAnchors ], 
-    anchors[ (globalId.x+2) % numAnchors ], 
+    anchors[ globalId.x ],
+    anchors[ (globalId.x+1) % numAnchors ],
+    anchors[ (globalId.x+2) % numAnchors ],
   );
 
 }
@@ -222,6 +224,7 @@ fn curvePtr( index: u32 ) -> u32 {
 @group(1) @binding(0) var<storage> curves: array<Curve>;
 @group(1) @binding(1) var<storage> cubics: array<CubicData>;
 
+
 @vertex
 fn vertexAnchors( 
   @builtin(vertex_index) anchorIndex: u32,
@@ -235,15 +238,53 @@ fn vertexAnchors(
   return camera.viewProj * vec4f( pos, 1.0 );
 }
 
+fn resolveCurveSegment( curveIndex: u32, vertexZ: f32, t : ptr<function,f32> ) -> CubicSegment {
+  let infos = curves[curveIndex].infos;
+  var p = vertexZ * f32(infos.length) - 3.00001;
+  
+  var segIndex = u32( floor( p ) );
+  segIndex = segIndex + infos.start + 1;
+  segIndex = segIndex % ${numAnchors};
+
+  *t = fract( p );
+  return cubics[curveIndex].segments[ segIndex ];
+}
+
+
 @vertex
 fn vertexCurve( 
   @builtin(vertex_index) vertexIndex: u32,
   @builtin(instance_index) curveIndex: u32 
 ) -> @builtin(position) vec4f {
+  
   let infos = curves[curveIndex].infos;
   var p = f32(vertexIndex) / f32(${totalVertices});
+  var t:f32 = 0;
+  var segment = resolveCurveSegment( curveIndex, p, &t );
+  var cp = segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) );
+
+  // cp = curves[curveIndex].anchors[segIndex].p;
+  return camera.viewProj * vec4f( cp.xyz, 1.0 );
+}
+
+struct RibbonVertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) side: f32,
+  @location(1) p: f32,
+};
+
+@vertex
+fn vertexRibbon( 
+  @builtin(vertex_index) vertexIndex: u32,
+  @builtin(instance_index) curveIndex: u32 
+) -> RibbonVertexOutput {
+  let infos = curves[curveIndex].infos;
+  var vSide = vertexIndex % 2;
+  var pIndex = (vertexIndex-vSide) / 2;
+
+  var rawp = f32(pIndex) / f32(${totalVertices/2.0});
   // p *= ${numAnchors-3.00001};
-  p *= f32(infos.length) - 3.00001;
+  var p = rawp * f32(infos.length) - 3.00001;
   
   var segIndex = u32( floor( p ) );
   segIndex = segIndex + infos.start + 1;
@@ -251,10 +292,23 @@ fn vertexCurve(
 
   var segment = cubics[curveIndex].segments[ segIndex ];
   var t = fract( p );
-  var cp = segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) );
 
+  var cp = ( segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) ) ).xyz;
+  var ct = ( normalize( segment.b + t * ( 2.0 * segment.c + t * 3.0 * segment.d ) ) ).xyz;
+
+  var viewDir = camera.worldPos - cp;
+  var binorm = normalize( cross( ct, viewDir ) );
+
+  var thickness = 0.01;
+  var side = f32(vSide) * 2.0 - 1.0;
+  cp += side*binorm * thickness;
+   
   // cp = curves[curveIndex].anchors[segIndex].p;
-  return camera.viewProj * vec4f(cp.xyz, 1.0);
+  return RibbonVertexOutput(
+    camera.viewProj * vec4f(cp, 1.0),
+    side, rawp
+  );
+
 }
 
 @fragment
@@ -265,6 +319,15 @@ fn fragmentAnchors() -> @location(0) vec4f {
 @fragment
 fn fragmentCurve() -> @location(0) vec4f {
   return vec4f(1.0, 0.0, 0.0, 1.0);
+}
+
+@fragment
+@blend( one, one )
+fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
+  var s = varyings.side;
+  var p = varyings.p;
+  var lum = (1.0 - abs(s))*.3 * p;
+  return vec4f(lum, lum, lum, 1.0);
 }
 
 `
@@ -293,15 +356,17 @@ fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
   var nrm = normalize(cross(tan, UP));
   var binorm = cross(tan, nrm);
 
-  var angle = 13.0 * snoise3D( pos * .2 ) + f32(globalId.y);
+  var angle = 13.0 * snoise3D( pos * 0.2 ) + f32(globalId.y);
   var dir = nrm * cos(angle) + binorm * sin(angle);
-  pos += dir * 0.01;
+  pos += dir * 0.001;
 
   anchors[globalId.x].p = vec4f( pos, anchor.p.w );
 }
 `
 
 export default class GpuCurves implements IRenderable {
+
+  static readonly ANCHOR_BYTE_SIZE = ANCHOR_BYTE_SIZE
 
   private cursorsBuffer: GPUBuffer
   private anchorsBuffer: GPUBuffer
@@ -318,13 +383,14 @@ export default class GpuCurves implements IRenderable {
   private updateCurveBindGroup  : GPUBindGroup
   private animateCurveBindGroup : GPUBindGroup
   private computeCoeffsBindGroup: GPUBindGroup
-  private debugAnchorsBindGroup : GPUBindGroup 
+  private debugAnchorsBindGroup : GPUBindGroup
 
   private updateCurvesPipeline !: GPUComputePipeline
   private animateCurvesPipeline!: GPUComputePipeline
   private computeCoeffsPipeline!: GPUComputePipeline
   private debugAnchorsPipeline !: GPURenderPipeline
   private debugCurvePipeline   !: GPURenderPipeline
+  private ribbonPipeline       !: GPURenderPipeline
 
   private coeffDispatch: [number, number];
 
@@ -439,6 +505,15 @@ export default class GpuCurves implements IRenderable {
         },
       }, 'vertexCurve', 'fragmentCurve' ).then(pipeline => {
         this.debugCurvePipeline = pipeline
+      }),
+
+      this.debugAnchorsSource.createRenderPipelineAsync({
+        primitive: {
+          topology: 'triangle-strip'
+        },
+
+      }, 'vertexRibbon', 'fragmentRibbon' ).then(pipeline => {
+        this.ribbonPipeline = pipeline
       })
 
     ])
@@ -499,7 +574,10 @@ export default class GpuCurves implements IRenderable {
       // encoder.setPipeline(this.debugAnchorsPipeline);
       // encoder.draw( this.numAnchors, this.numCurves, 0, 0 );
 
-      encoder.setPipeline(this.debugCurvePipeline);
+      // encoder.setPipeline(this.debugCurvePipeline);
+      // encoder.draw( this.numAnchors * 10, this.numCurves, 0, 0 );
+
+      encoder.setPipeline(this.ribbonPipeline);
       encoder.draw( this.numAnchors * 10, this.numCurves, 0, 0 );
     })
   }

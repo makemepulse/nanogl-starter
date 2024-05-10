@@ -457,6 +457,7 @@ export default class WgslSource {
         entryPoint: fragmentEntry,
         targets,
       },
+
     }
 
     // console.log( pipelineDescriptor )
