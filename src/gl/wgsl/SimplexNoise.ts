@@ -19,6 +19,113 @@
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+export const SimplexDNoise = 
+/* wgsl */ `
+
+
+/* skew constants for 3d simplex functions */
+const F3 =  0.3333333;
+const G3 =  0.1666667;
+
+fn quat_times_vec(q: vec4f, v: vec3f) -> vec3f
+{
+	//http://molecularmusings.wordpress.com/2013/05/24/a-faster-quaternion-vector-multiplication/
+	var t: vec3f = 2. * cross(q.xyz, v);
+	return v + q.w * t + cross(q.xyz, t);
+}
+
+/* Created by Nikita Miropolskiy, nikat/2013
+ * This work is licensed under a 
+ * Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
+ * http://creativecommons.org/licenses/by-nc-sa/3.0/
+ *  - You must attribute the work in the source code 
+ *    (link to https://www.shadertoy.com/view/XsX3zB).
+ *  - You may not use this work for commercial purposes.
+ *  - You may distribute a derivative work only under the same license.
+ */
+
+/* discontinuous pseudorandom uniformly distributed in [-0.5, +0.5]^3 */
+fn random3(c: vec3f ) -> vec3f
+{
+	var j: f32 = 4096.0 * sin(dot(c,vec3f(17.0, 59.4, 15.0)));
+	var r : vec3f;
+	r.z = fract(512.0*j);
+	j *= .125;
+	r.x = fract(512.0*j);
+	j *= .125;
+	r.y = fract(512.0*j);
+	r = r - 0.5;
+
+	
+	//rotate for extra flow!
+	// r=quat_times_vec(quat,r);
+	
+	return r;
+}
+
+
+fn dnoise3D(p: vec3f)  -> vec4f
+{
+	 /* 1. find current tetrahedron T and its four vertices */
+	 /* s, s+i1, s+i2, s+1.0 - absolute skewed (integer) coordinates of T vertices */
+	 /* x, x1, x2, x3 - unskewed coordinates of p relative to each of T vertices*/
+	 
+	 var s: vec3f = floor(p + (p.x+p.y+p.z)*F3);
+	 var x: vec3f = p - s + (s.x+s.y+s.z)*G3;
+	 
+	 var e: vec3f = step(vec3f(0.0), x - x.yzx);
+	 var i1: vec3f = e*(1.0 - e.zxy);
+	 var i2: vec3f = 1.0 - e.zxy*(1.0 - e);
+	 	
+	 var x1: vec3f = x - i1 + G3;
+	 var x2: vec3f = x - i2 + 2.0*G3;
+	 var x3: vec3f = x - 1.0 + 3.0*G3;
+	 		 
+	 /* calculate surflet weights */
+	 var w: vec4f;;
+	 w.x = dot(x, x);
+	 w.y = dot(x1, x1);
+	 w.z = dot(x2, x2);
+	 w.w = dot(x3, x3);
+	 
+	 /* w fades from 0.6 at the center of the surflet to 0.0 at the margin */
+	 w = max(0.6 - w, vec4f(0.0));		//aka t0,t1,t2,t3
+	 var w2: vec4f = w*w;				//aka t20,t21,t22,t23
+	 var w4: vec4f = w2*w2;			//aka t40,t41,t42,t43
+	 
+	 /* 2. find four surflets and store them in d */
+	 var g0 : vec3f = random3(s);
+	 var g1 : vec3f = random3(s + i1);
+	 var g2 : vec3f = random3(s + i2);
+	 var g3 : vec3f = random3(s + 1.0);
+	 
+	 var d: vec4f;
+	 /* calculate surflet components */
+	 d.x = dot(g0, x);		//aka graddotp3( gx0, gy0, gz0, x0, y0, z0 )
+	 d.y = dot(g1, x1);
+	 d.z = dot(g2, x2);
+	 d.w = dot(g3, x3);
+	 
+	 //derivatives as per
+	 //http://webstaff.itn.liu.se/~stegu/aqsis/flownoisedemo/srdnoise23.c
+	 var w3: vec4f = w*w2;
+	 var temp: vec4f = w3*d;
+	 var dnoise: vec3f = temp[0]*x;
+	     dnoise += temp[1]*x1;
+	     dnoise += temp[2]*x2;
+		 dnoise += temp[3]*x3;
+		 dnoise *= -8.;
+		 dnoise += w4[0]*g0+w4[1]*g1+w4[2]*g2+w4[3]*g3;
+		 dnoise *= 52.; //???
+		 
+	 d *= w4;	//aka n0,n1,n2,n3
+	 
+	var n: f32 = (d.x+d.y+d.z+d.w)*52.;
+	
+	return vec4f(dnoise,n);
+}
+
+`
 export const SimplexNoise = 
 /* wgsl */ `
 

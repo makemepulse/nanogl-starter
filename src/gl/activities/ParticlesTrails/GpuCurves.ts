@@ -4,6 +4,7 @@ import WgslSource from "../../core/WgslSource";
 import { isPOT } from "../../math";
 import type { IRenderable } from "../../renderer/Renderable";
 import type Renderer from "../../renderer/Renderer";
+import { CurlNoise } from "../../wgsl/CurlNoise";
 import { SimplexNoise } from "../../wgsl/SimplexNoise";
 
 const ANCHOR_BYTE_SIZE = 4 * 8; // vec4f + vec3f + f32
@@ -334,6 +335,7 @@ fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
 
 const WGSL_AnimateCurve = (numAnchors: number) =>
 
+  // ${SimplexNoise}
 /* wgsl */`
 const numAnchors: u32 = ${numAnchors};
 
@@ -341,7 +343,7 @@ override C_workgroup_X = 16;
 override C_workgroup_Y = 16;
 
 ${WGSL_CurveStructsDecl(numAnchors)}
-${SimplexNoise}
+${CurlNoise}
 
 @group(0) @binding(0) var<storage, read_write> curves: array<Curve>;
 
@@ -352,13 +354,14 @@ fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let anchors = &curves[globalId.y].anchors;
   let anchor = anchors[globalId.x];
   var pos = anchor.p.xyz;
-  var tan = anchor.t;
-  var nrm = normalize(cross(tan, UP));
-  var binorm = cross(tan, nrm);
+  // var tan = anchor.t;
+  // var nrm = normalize(cross(tan, UP));
+  // var binorm = cross(tan, nrm);
 
-  var angle = 13.0 * snoise3D( pos * 0.2 ) + f32(globalId.y);
-  var dir = nrm * cos(angle) + binorm * sin(angle);
-  pos += dir * 0.001;
+  // var angle = 13.0 * snoise3D( pos * 0.2 ) + f32(globalId.y);
+  // var dir = nrm * cos(angle) + binorm * sin(angle);
+  // pos += dir * 0.001;
+  pos += curlNoise( pos * 2.0 ) * 0.001;
 
   anchors[globalId.x].p = vec4f( pos, anchor.p.w );
 }
