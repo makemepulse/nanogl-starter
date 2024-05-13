@@ -1,4 +1,4 @@
-import { quat, vec3, type vec4 } from "gl-matrix";
+import { quat, vec3 } from "gl-matrix";
 import Time from "../../core/Time";
 import GpuCurves from "./GpuCurves";
 
@@ -9,7 +9,6 @@ const Q0 = quat.create()
 
 
 export default class CurveCursorsSource {
-
 
   datas : Float32Array
   cursors : vec3[] = []
@@ -29,6 +28,7 @@ export default class CurveCursorsSource {
     }
   }
 
+
   update( center: vec3){
     quat.rotateX( Q0, Q_ID, 0.1 * Time.seconds )
     quat.rotateY( Q0, Q0, 0.16 * Time.seconds )
@@ -41,7 +41,7 @@ export default class CurveCursorsSource {
       vec3.scaleAndAdd( c, center, c, .3 )
       c[3] = performance.now() * 0.00001
     }
-    this.curves.setCursors( this.datas )
+    // this.curves.setCursors( this.datas )
 
   }
 

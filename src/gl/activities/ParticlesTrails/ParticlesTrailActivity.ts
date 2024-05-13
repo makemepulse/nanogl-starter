@@ -14,8 +14,10 @@ import TexturedQuadRenderable from "../TexturedQuadRenderable";
 import CatmullCurve from "./CatmullCurve";
 import Trail from "./Trail";
 import CurveDrawer from "./CurveDrawer";
-import GpuCurves from "./GpuCurves";
+import GpuCurves, { type CurveBehaviour } from "./GpuCurves";
 import CurveCursorsSource from "./CurveCursorsSource";
+import CurvePaintBehaviour from "./CurvePaintBehaviour";
+import CurveTeleportBehaviour from "./CurveTeleportBehaviour";
 
 const V3_1 = vec3.create()
 const V3_2 = vec3.create()
@@ -40,7 +42,7 @@ export default class ParticlesTrailActivity extends BaseActivity {
   drawer: CurveDrawer
 
   gpuCurves: GpuCurves;
-  cursorSource: CurveCursorsSource;
+  behaviour: CurveBehaviour;
 
   constructor(engine: Engine) {
     super(engine)
@@ -64,44 +66,44 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.trail = new Trail( engine.device, this.curve )
     // this.renderer.addRenderable( this.trail )
     
-    this.gpuCurves = new GpuCurves( engine.device, 128, 128, 0.1)
-    this.cursorSource = new CurveCursorsSource( this.gpuCurves )
+    this.gpuCurves = new GpuCurves( engine.device, 256, 32, 0.1)
+
+    // this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
+    this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )
+    
+    this.gpuCurves.setCurveBehaviour( this.behaviour )
 
     this.renderer.addRenderable( this.gpuCurves )
   }
 
-  onMouseMove = (e: MouseEvent) => {
+  raycastMouseEvent( e: MouseEvent, out: vec3 ){
     const x = e.clientX / window.innerWidth
     const y = e.clientY / window.innerHeight
 
-    // this.camera.unproject(V3_1, V3_1)
+    RAY.unproject( [x*2-1, -y*2+1], this.camera );
+    rayPlaneIntersection( out, RAY, PROJ_PLANE );
 
-    RAY.unproject( [x*2-1, -y*2+1], this.camera )
-    rayPlaneIntersection( V3_1, RAY, PROJ_PLANE )
+    return out
+  }
 
-    this.drawer.update(V3_1)
-    this.cursorSource.update(V3_1)
+  onClick = (e: MouseEvent) => {
+    this.raycastMouseEvent(e, V3_1);
+    (this.behaviour as CurveTeleportBehaviour).init(V3_1)
+  }
 
-    // this.gpuCurves.setAllCursors(V3_1)
-    // this.renderer.debugDraw.drawAxis( V3_1 )
-
-    // if( this.curve.numAnchors === 0 ){
-    //   this.curve.addAnchor(V3_1)
-    // } else {
-    //   this.curve.getAnchor(this.curve.numAnchors-1, V3_2)
-    //   const dist = vec3.distance(V3_1, V3_2)
-    //   if( dist > .3 ){
-    //     this.curve.addAnchor(V3_1)
-    //   }
-    // }
+  onMouseMove = (e: MouseEvent) => {
+    this.raycastMouseEvent(e, V3_1);
+    // (this.behaviour as CurvePaintBehaviour).update(V3_1)
   }
 
   start(): void {
     document.addEventListener( 'mousemove',this.onMouseMove )
+    document.addEventListener( 'click',this.onClick )
   }
 
   stop(): void {
     document.removeEventListener( 'mousemove',this.onMouseMove )
+    document.removeEventListener( 'click',this.onClick )
   }
 
 

@@ -1,6 +1,7 @@
 import { vec3, vec4 } from "gl-matrix";
 import type CatmullCurve from "./CatmullCurve";
 
+
 const V4A = vec4.create()
 const V4B = vec4.create()
 const V4C = vec4.create()

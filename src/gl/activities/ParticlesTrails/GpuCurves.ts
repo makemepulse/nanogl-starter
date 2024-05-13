@@ -11,7 +11,7 @@ const ANCHOR_BYTE_SIZE = 4 * 8; // vec4f + vec3f + f32
 const CURVE_META_BYTE_SIZE = 4 * 4; // vec4u
 
 
-const WGSL_CurveStructsDecl = (numAnchors: number) =>
+export const WGSL_CurveStructsDecl = (numAnchors: number) =>
 
 /* wgsl */`
 
@@ -48,7 +48,6 @@ struct CubicData {
 
 /*
 
-
 start 0, length 6, segs 3
 anchors :    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 0
              * X *---*---*---* X *,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  ?,  
@@ -77,6 +76,7 @@ segmnts :      0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,  14, 15
 seg : [7 => 15 => 0 => 3] , length 16-1 = 15, mod 16
 
 */ 
+
 
 const WGSL_UpdateCurves = (numAnchors: number, numCurves: number) =>
 /* wgsl */`
@@ -300,7 +300,7 @@ fn vertexRibbon(
   var viewDir = camera.worldPos - cp;
   var binorm = normalize( cross( ct, viewDir ) );
 
-  var thickness = 0.01;
+  var thickness = 0.02;
   var side = f32(vSide) * 2.0 - 1.0;
   cp += side*binorm * thickness;
    
@@ -333,58 +333,28 @@ fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
 
 `
 
-const WGSL_AnimateCurve = (numAnchors: number) =>
+export interface CurveBehaviour {
 
-  // ${SimplexNoise}
-/* wgsl */`
-const numAnchors: u32 = ${numAnchors};
+  updateCursors( encoder: GPUComputePassEncoder ): void;
 
-override C_workgroup_X = 16;
-override C_workgroup_Y = 16;
+  animateCurve( encoder: GPUComputePassEncoder ): void;
 
-${WGSL_CurveStructsDecl(numAnchors)}
-${CurlNoise}
-
-@group(0) @binding(0) var<storage, read_write> curves: array<Curve>;
-
-const UP = vec3f(0.0, 1.0, 0.0);
-
-@compute @workgroup_size(C_workgroup_X, C_workgroup_Y)
-fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
-  let anchors = &curves[globalId.y].anchors;
-  let anchor = anchors[globalId.x];
-  var pos = anchor.p.xyz;
-  // var tan = anchor.t;
-  // var nrm = normalize(cross(tan, UP));
-  // var binorm = cross(tan, nrm);
-
-  // var angle = 13.0 * snoise3D( pos * 0.2 ) + f32(globalId.y);
-  // var dir = nrm * cos(angle) + binorm * sin(angle);
-  // pos += dir * 0.001;
-  pos += curlNoise( pos * 2.0 ) * 0.001;
-
-  anchors[globalId.x].p = vec4f( pos, anchor.p.w );
 }
-`
 
 export default class GpuCurves implements IRenderable {
 
   static readonly ANCHOR_BYTE_SIZE = ANCHOR_BYTE_SIZE
 
-  private cursorsBuffer: GPUBuffer
-  private anchorsBuffer: GPUBuffer
-  private cubicCoeffBuffer: GPUBuffer
-
-  private cursorsData: Float32Array;
+  readonly cursorsBuffer: GPUBuffer
+  readonly anchorsBuffer: GPUBuffer
+  readonly cubicCoeffBuffer: GPUBuffer
 
   readonly numSegments: number
   private updateCurvesSource : WgslSource
-  private animateCurvesSource: WgslSource
   private computeCoeffsSource: WgslSource
   private debugAnchorsSource : WgslSource
 
   private updateCurveBindGroup  : GPUBindGroup
-  private animateCurveBindGroup : GPUBindGroup
   private computeCoeffsBindGroup: GPUBindGroup
   private debugAnchorsBindGroup : GPUBindGroup
 
@@ -395,7 +365,9 @@ export default class GpuCurves implements IRenderable {
   private debugCurvePipeline   !: GPURenderPipeline
   private ribbonPipeline       !: GPURenderPipeline
 
-  private coeffDispatch: [number, number];
+  readonly perAnchorsDispatch: [dispatchX:number, dispatchY:number, wgSize_X: number, wgSize_Y: number];
+
+  private _curveBehaviour: CurveBehaviour | null = null;
 
 
   constructor(private device: GPUDevice, readonly numCurves = 64, readonly numAnchors = 128, readonly segmentLength = 0.1) {
@@ -404,8 +376,6 @@ export default class GpuCurves implements IRenderable {
     if( !isPOT(numCurves) ) throw new Error('numCurves must be a power of two')
 
     this.numSegments = numAnchors - 3;
-
-    this.cursorsData = new Float32Array(numCurves * ANCHOR_BYTE_SIZE / 4)
 
     this.cursorsBuffer = device.createBuffer({
       label: "GpuCurves Cursors Buffer",
@@ -428,7 +398,6 @@ export default class GpuCurves implements IRenderable {
 
 
     this.updateCurvesSource  = new WgslSource(device, WGSL_UpdateCurves       (numAnchors, numCurves     ), 'GpuCurves UpdateCurves'      )
-    this.animateCurvesSource = new WgslSource(device, WGSL_AnimateCurve       (numAnchors                ), 'GpuCurves AnimateCurves'     )
     this.computeCoeffsSource = new WgslSource(device, WGSL_ComputeCubicCoeffs (numAnchors                ), 'GpuCurves ComputeCubicCoeff' )
     this.debugAnchorsSource  = new WgslSource(device, WGSL_DebugAnchors       (numAnchors, numAnchors*10 ), 'GpuCurves DebugAnchors'      )
 
@@ -438,9 +407,7 @@ export default class GpuCurves implements IRenderable {
       { binding: 1, resource: { buffer: this.anchorsBuffer } },
     ])
  
-    this.animateCurveBindGroup = this.animateCurvesSource.createBindGroup( 0, [
-      { binding: 0, resource: { buffer: this.anchorsBuffer } },
-    ])
+
 
     this.computeCoeffsBindGroup = this.computeCoeffsSource.createBindGroup( 0, [
       { binding: 0, resource: { buffer: this.anchorsBuffer } },
@@ -456,13 +423,15 @@ export default class GpuCurves implements IRenderable {
     const C_workgroup_X = Math.min( maxInvokation, numAnchors );
     const C_workgroup_Y = Math.min( maxInvokation / C_workgroup_X, numCurves );
 
-    this.coeffDispatch = [
+    this.perAnchorsDispatch = [
       Math.ceil( numAnchors / C_workgroup_X ),
-      Math.ceil( numCurves / C_workgroup_Y )
+      Math.ceil( numCurves / C_workgroup_Y ),
+      C_workgroup_X,
+      C_workgroup_Y
     ]
 
     console.log( 'numAnchors', numAnchors, 'numCurves', numCurves, 'maxInvokation', maxInvokation)
-    console.log('C_workgroup_X', C_workgroup_X, 'C_workgroup_Y', C_workgroup_Y, 'disp X', this.coeffDispatch[0], 'disp Y', this.coeffDispatch[1] )
+    console.log('C_workgroup_X', C_workgroup_X, 'C_workgroup_Y', C_workgroup_Y, 'disp X', this.perAnchorsDispatch[0], 'disp Y', this.perAnchorsDispatch[1] )
 
     this.ready = Promise.all([
 
@@ -476,14 +445,6 @@ export default class GpuCurves implements IRenderable {
         this.updateCurvesPipeline = pipeline
       }),
 
-      this.animateCurvesSource.createComputePipelineAsync('animateCurves', {
-        constants: {
-          C_workgroup_X,
-          C_workgroup_Y,
-        }
-      }).then(pipeline => {
-        this.animateCurvesPipeline = pipeline
-      }),
 
       this.computeCoeffsSource.createComputePipelineAsync('computeCubics', {
         constants: {
@@ -524,15 +485,10 @@ export default class GpuCurves implements IRenderable {
 
   }
 
-  setCursors(cursors: Float32Array): void {
-    this.cursorsData.set(cursors)
+  setCurveBehaviour( behaviour: CurveBehaviour ): void {
+    this._curveBehaviour = behaviour;
   }
 
-  setAllCursors(cursor: Float32Array): void {
-    for (let i = 0; i < this.numCurves; i++) {
-      this.cursorsData.set(cursor, i * ANCHOR_BYTE_SIZE / 4)
-    }
-  }
 
 
   ready?: AnyPromise | undefined;
@@ -550,20 +506,20 @@ export default class GpuCurves implements IRenderable {
       const encoder = this.device.createCommandEncoder({ label: 'GpuCurves compute command encoder' })
       const pass = encoder.beginComputePass({ label: 'GpuCurves compute pass' });
       
+      // this.device.queue.writeBuffer(this.cursorsBuffer, 0, this.cursorsData)
+      this._curveBehaviour?.updateCursors(pass)
+
       pass.setPipeline(this.updateCurvesPipeline)
       pass.setBindGroup(0, this.updateCurveBindGroup)
       pass.dispatchWorkgroups(1)
 
-      pass.setPipeline(this.animateCurvesPipeline)
-      pass.setBindGroup(0, this.animateCurveBindGroup)
-      pass.dispatchWorkgroups(this.coeffDispatch[0], this.coeffDispatch[1])
+      this._curveBehaviour?.animateCurve(pass)
 
       pass.setPipeline(this.computeCoeffsPipeline)
       pass.setBindGroup(0, this.computeCoeffsBindGroup)
-      pass.dispatchWorkgroups(this.coeffDispatch[0], this.coeffDispatch[1])
+      pass.dispatchWorkgroups(this.perAnchorsDispatch[0], this.perAnchorsDispatch[1])
       pass.end()
       
-      this.device.queue.writeBuffer(this.cursorsBuffer, 0, this.cursorsData)
       this.device.queue.submit([encoder.finish()])
 
     })
