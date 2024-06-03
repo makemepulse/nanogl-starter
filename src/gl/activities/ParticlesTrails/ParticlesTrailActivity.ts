@@ -66,10 +66,10 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.trail = new Trail( engine.device, this.curve )
     // this.renderer.addRenderable( this.trail )
     
-    this.gpuCurves = new GpuCurves( engine.device, 256, 32, 0.1)
+    this.gpuCurves = new GpuCurves( engine.device, 32, 64, 0.1)
 
-    // this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
-    this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )
+    this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
+    // this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )
     
     this.gpuCurves.setCurveBehaviour( this.behaviour )
 
@@ -88,12 +88,12 @@ export default class ParticlesTrailActivity extends BaseActivity {
 
   onClick = (e: MouseEvent) => {
     this.raycastMouseEvent(e, V3_1);
-    (this.behaviour as CurveTeleportBehaviour).init(V3_1)
+    // (this.behaviour as CurveTeleportBehaviour).init(V3_1)
   }
 
   onMouseMove = (e: MouseEvent) => {
     this.raycastMouseEvent(e, V3_1);
-    // (this.behaviour as CurvePaintBehaviour).update(V3_1)
+    (this.behaviour as CurvePaintBehaviour).update(V3_1)
   }
 
   start(): void {

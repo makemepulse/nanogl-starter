@@ -28,7 +28,7 @@ fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
   let anchors = &curves[globalId.y].anchors;
   let anchor = anchors[globalId.x];
   var pos = anchor.p.xyz;
-  pos += curlNoise( pos * 2.0 ) * 0.001;
+  pos += curlNoise( pos * 2.0 ) * 0.0001;
   anchors[globalId.x].p = vec4f( pos, anchor.p.w );
 }
 `

@@ -4,6 +4,8 @@ import WgslSource from "../../core/WgslSource";
 import { isPOT } from "../../math";
 import type { IRenderable } from "../../renderer/Renderable";
 import type Renderer from "../../renderer/Renderer";
+import { TextureSrcSet } from "../../resources/TextureRequest";
+import TextureResource from "../../resources/TextureResource";
 import { CurlNoise } from "../../wgsl/CurlNoise";
 import { SimplexNoise } from "../../wgsl/SimplexNoise";
 
@@ -224,6 +226,8 @@ fn curvePtr( index: u32 ) -> u32 {
 
 @group(1) @binding(0) var<storage> curves: array<Curve>;
 @group(1) @binding(1) var<storage> cubics: array<CubicData>;
+@group(1) @binding(2) var tDiffuse: texture_2d<f32>;
+@group(1) @binding(3) var tSampler: sampler;
 
 
 @vertex
@@ -272,6 +276,7 @@ struct RibbonVertexOutput {
   @builtin(position) position: vec4<f32>,
   @location(0) side: f32,
   @location(1) p: f32,
+  @location(2) ci: f32,
 };
 
 @vertex
@@ -300,14 +305,14 @@ fn vertexRibbon(
   var viewDir = camera.worldPos - cp;
   var binorm = normalize( cross( ct, viewDir ) );
 
-  var thickness = 0.02;
+  var thickness = 0.05;
   var side = f32(vSide) * 2.0 - 1.0;
   cp += side*binorm * thickness;
    
   // cp = curves[curveIndex].anchors[segIndex].p;
   return RibbonVertexOutput(
     camera.viewProj * vec4f(cp, 1.0),
-    side, rawp
+    side, rawp, f32(curveIndex)
   );
 
 }
@@ -323,12 +328,17 @@ fn fragmentCurve() -> @location(0) vec4f {
 }
 
 @fragment
-@blend( one, one )
+@blend( src_alpha, one )
 fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
   var s = varyings.side;
   var p = varyings.p;
-  var lum = (1.0 - abs(s))*.3 * p;
-  return vec4f(lum, lum, lum, 1.0);
+  var ci = varyings.ci;
+  var lum = p;
+  // return vec4f(lum, lum, lum, 1.0);
+
+  var uvs: vec2f = vec2f(p*3.0 + ci*.234, s*0.5+0.5);
+
+  return textureSample(tDiffuse, tSampler, uvs)*lum;
 }
 
 `
@@ -356,7 +366,7 @@ export default class GpuCurves implements IRenderable {
 
   private updateCurveBindGroup  : GPUBindGroup
   private computeCoeffsBindGroup: GPUBindGroup
-  private debugAnchorsBindGroup : GPUBindGroup
+  private debugAnchorsBindGroup! : GPUBindGroup
 
   private updateCurvesPipeline !: GPUComputePipeline
   private animateCurvesPipeline!: GPUComputePipeline
@@ -364,6 +374,7 @@ export default class GpuCurves implements IRenderable {
   private debugAnchorsPipeline !: GPURenderPipeline
   private debugCurvePipeline   !: GPURenderPipeline
   private ribbonPipeline       !: GPURenderPipeline
+  private trailDiffuseTex: TextureResource;
 
   readonly perAnchorsDispatch: [dispatchX:number, dispatchY:number, wgSize_X: number, wgSize_Y: number];
 
@@ -414,10 +425,15 @@ export default class GpuCurves implements IRenderable {
       { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
     ])
 
-    this.debugAnchorsBindGroup = this.debugAnchorsSource.createBindGroup( 1, [
-      { binding: 0, resource: { buffer: this.anchorsBuffer } },
-      { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
-    ])
+
+    const sampler = device.createSampler({addressModeU: 'repeat', addressModeV: 'repeat'});
+
+    this.trailDiffuseTex = new TextureResource( new TextureSrcSet([
+      ['webp', 'assets/trail_diffuse.webp'],
+      ['std', 'assets/trail_diffuse.png']
+    ] ), device )
+
+  
 
     const maxInvokation = device.limits.maxComputeInvocationsPerWorkgroup
     const C_workgroup_X = Math.min( maxInvokation, numAnchors );
@@ -433,7 +449,12 @@ export default class GpuCurves implements IRenderable {
     console.log( 'numAnchors', numAnchors, 'numCurves', numCurves, 'maxInvokation', maxInvokation)
     console.log('C_workgroup_X', C_workgroup_X, 'C_workgroup_Y', C_workgroup_Y, 'disp X', this.perAnchorsDispatch[0], 'disp Y', this.perAnchorsDispatch[1] )
 
+
+
+
     this.ready = Promise.all([
+      
+      this.trailDiffuseTex.load(),
 
       this.updateCurvesSource.createComputePipelineAsync('updateCurves', {
         constants: {
@@ -482,14 +503,21 @@ export default class GpuCurves implements IRenderable {
 
     ])
 
+    this.ready.then( ()=>{
+      this.debugAnchorsBindGroup = this.debugAnchorsSource.createBindGroup( 1, [
+        { binding: 0, resource: { buffer: this.anchorsBuffer } },
+        { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
+        { binding: 2, resource: this.trailDiffuseTex.texture!.createView() },
+        { binding: 3, resource: sampler },
+      ])
+    })
 
   }
+
 
   setCurveBehaviour( behaviour: CurveBehaviour ): void {
     this._curveBehaviour = behaviour;
   }
-
-
 
   ready?: AnyPromise | undefined;
 
