@@ -9,7 +9,7 @@ import { CameraBindGroupFactory, type BindGroup } from "../core/BindGroup";
 import Time from "../core/Time";
 import DebugDraw from "../dev/debugDraw/DebugDraw";
 import type { RenderActionContext } from "../renderer/RenderActions";
-import { RendererTarget } from "../renderer/RendererTarget";
+import { RendererCanvasTarget, RendererTarget } from "../renderer/RendererTarget";
 import SimpleTexturedQuad from "./SimpleTexturedQuad";
 
 
@@ -40,7 +40,7 @@ export default class SampleActivity extends BaseActivity {
 
     this.cameraBindGroup = CameraBindGroupFactory.createBindGroup(engine.device)
 
-    this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
+    this.rendererTarget = new RendererCanvasTarget( this.engine.canvasTarget )
 
     this.node = new Node()
 

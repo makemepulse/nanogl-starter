@@ -5,7 +5,7 @@ import DevCameraController from "../cameras/DevCameraController";
 import { BaseActivity } from "../core/Activity";
 import Time from "../core/Time";
 import Renderer from "../renderer/Renderer";
-import { RendererTarget } from "../renderer/RendererTarget";
+import { RendererCanvasTarget, RendererTarget } from "../renderer/RendererTarget";
 import TexturedQuadRenderable from "./TexturedQuadRenderable";
 
 
@@ -35,7 +35,7 @@ export default class TestActivity extends BaseActivity {
     this.camCtrl.start(this.camera)
 
 
-    this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
+    this.rendererTarget = new RendererCanvasTarget( this.engine.canvasTarget )
     this.renderer = new Renderer( engine.device, this.rendererTarget, this.camera)
     this.renderer.addRenderable( this.quad )
   }

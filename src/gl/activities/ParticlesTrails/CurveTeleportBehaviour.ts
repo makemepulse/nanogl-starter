@@ -32,7 +32,7 @@ fn updateCursors(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
   var pos = cursor.p.xyz;
   pos += curlNoise( pos * 2.0 ) * 0.0005;
-  pos += cursor.t * 0.02;
+  pos += cursor.t * 0.08;
 
   var tangent = normalize( pos - cursor.p.xyz );
   cursors[globalId.x].p = vec4f( pos, cursor.p.w );
@@ -60,7 +60,6 @@ ${CurlNoise}
 
 @group(0) @binding(0) var<storage, read_write> curves: array<Curve>;
 
-const UP = vec3f( 0.0, 1.0, 0.0 );
 
 @compute @workgroup_size(C_workgroup_X, C_workgroup_Y)
 fn animateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
@@ -142,6 +141,7 @@ export default class CurveTeleportBehaviour implements CurveBehaviour {
     }
 
     this.device.queue.writeBuffer( this.curves.cursorsBuffer, 0, this.datas )
+    this.curves.reset()
   }
 
   updateCursors(pass: GPUComputePassEncoder): void {

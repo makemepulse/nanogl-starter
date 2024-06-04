@@ -9,7 +9,7 @@ import Plane from "../../math/Plane";
 import Ray from "../../math/Ray";
 import rayPlaneIntersection from "../../math/rayPlaneIntersection";
 import Renderer from "../../renderer/Renderer";
-import { RendererTarget } from "../../renderer/RendererTarget";
+import { RendererCanvasTarget, RendererTarget } from "../../renderer/RendererTarget";
 import TexturedQuadRenderable from "../TexturedQuadRenderable";
 import CatmullCurve from "./CatmullCurve";
 import Trail from "./Trail";
@@ -60,13 +60,13 @@ export default class ParticlesTrailActivity extends BaseActivity {
     this.curve = new CatmullCurve(engine.device)
     this.drawer = new CurveDrawer(this.curve)
 
-    this.rendererTarget = new RendererTarget( this.engine.canvasTarget )
+    this.rendererTarget = new RendererCanvasTarget( this.engine.canvasTarget )
     this.renderer = new Renderer( engine.device, this.rendererTarget, this.camera )
 
     this.trail = new Trail( engine.device, this.curve )
     // this.renderer.addRenderable( this.trail )
     
-    this.gpuCurves = new GpuCurves( engine.device, 32, 64, 0.1)
+    this.gpuCurves = new GpuCurves( engine.device, 128, 256, 0.1)
 
     this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
     // this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )

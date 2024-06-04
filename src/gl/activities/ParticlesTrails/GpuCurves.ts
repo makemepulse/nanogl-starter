@@ -20,15 +20,19 @@ export const WGSL_CurveStructsDecl = (numAnchors: number) =>
 struct Anchor {
   p: vec4f,
   t: vec3f,
-  reserved0: f32,
+  absV: f32,
 }
 
 struct CubicSegment {
-  a: vec4<f32>,
-  b: vec4<f32>,
-  c: vec4<f32>,
-  d: vec4<f32>,
+  a: vec4f,
+  b: vec4f,
+  c: vec4f,
+  d: vec4f,
+
+  absV: vec4f
 }
+
+
 
 
 struct CurveInfos {
@@ -97,8 +101,9 @@ fn curvePtr( index: u32 ) -> u32 {
   return index % numAnchors;
 }
 
-fn MakeAnchor( cursor: Anchor, p: vec3f, t: vec3f ) -> Anchor {
-  return Anchor( vec4<f32>( p, cursor.p.w ), t, 0.0);
+fn MakeAnchor( cursor: Anchor, p: vec3f, t: vec3f, absV: f32 ) -> Anchor {
+  // return Anchor( vec4<f32>( p, cursor.p.w ), t, 0.0);
+  return Anchor( vec4<f32>( p, cursor.p.w ), t, absV);
 }
 
 @compute @workgroup_size(numCurves)
@@ -116,16 +121,17 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
 
     start = 0;
     length = 4;
-    anchors[0] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
-    anchors[1] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
-    anchors[2] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
-    anchors[3] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS );
+    anchors[0] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS, 0.0 );
+    anchors[1] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS, 1.0 );
+    anchors[2] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS, 2.0 );
+    anchors[3] = MakeAnchor( cursor, cursor.p.xyz, X_AXIS, 3.0 );
   } 
   else {
 
     var currPtr = curvePtr(start + length - 3);
 
     var currentPos = anchors[ currPtr ].p.xyz;
+    var currentAbsV = anchors[ currPtr ].absV;
     var dist = distance( cursor.p.xyz, currentPos );
     
 
@@ -136,21 +142,22 @@ fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
       var dir = normalize( cursor.p.xyz - currentPos );
 
       if( length == 4 ){
-        var a = MakeAnchor( cursor, currentPos - dir * segmentLength, dir );
+        var a = MakeAnchor( cursor, currentPos - dir * segmentLength, dir, 0.0 );
         anchors[0] = a;
       }
 
-      var b = MakeAnchor( cursor, currentPos + dir * segmentLength, dir );
+      var b = MakeAnchor( cursor, currentPos + dir * segmentLength, dir, currentAbsV + 1.0 );
       anchors[ ptr2 ] = b;
 
-      var c = MakeAnchor( cursor, currentPos + dir * 2.0 * segmentLength, dir );
+      var c = MakeAnchor( cursor, currentPos + dir * 2.0 * segmentLength, dir, currentAbsV + 2.0 );
       anchors[ ptr3 ] = c;
 
       if( dist > segmentLength ){
-        var d = MakeAnchor( cursor, currentPos + dir * 3.0 * segmentLength, dir );
+        var d = MakeAnchor( cursor, currentPos + dir * 3.0 * segmentLength, dir, currentAbsV + 3.0);
         anchors[ curvePtr(currPtr + 3) ] = d;
         currPtr = ptr2;
         currentPos = b.p.xyz;
+        currentAbsV = b.absV;
         dist = distance( cursor.p.xyz, currentPos );
    
         length++;
@@ -193,7 +200,9 @@ fn computeSegment( a: Anchor, b: Anchor, c: Anchor, d: Anchor ) -> CubicSegment 
     b.p,
     0.5*(c.p-a.p),
     a.p - 2.5*b.p + 2.0*c.p - 0.5*d.p,
-    0.5*(d.p-a.p) + 1.5*( b.p-c.p )
+    0.5*(d.p-a.p) + 1.5*( b.p-c.p ),
+
+    vec4f( b.absV, c.absV, 0.0, 0.0 )
   );
 }
 
@@ -228,6 +237,7 @@ fn curvePtr( index: u32 ) -> u32 {
 @group(1) @binding(1) var<storage> cubics: array<CubicData>;
 @group(1) @binding(2) var tDiffuse: texture_2d<f32>;
 @group(1) @binding(3) var tSampler: sampler;
+@group(1) @binding(4) var<uniform> uTime: f32;
 
 
 @vertex
@@ -277,6 +287,8 @@ struct RibbonVertexOutput {
   @location(0) side: f32,
   @location(1) p: f32,
   @location(2) ci: f32,
+  @location(3) absV: f32,
+  @location(4) ct: f32, // creation time
 };
 
 @vertex
@@ -299,20 +311,22 @@ fn vertexRibbon(
   var segment = cubics[curveIndex].segments[ segIndex ];
   var t = fract( p );
 
-  var cp = ( segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) ) ).xyz;
+  var cp = ( segment.a + t * ( segment.b + t * ( segment.c + t * segment.d ) ) );
   var ct = ( normalize( segment.b + t * ( 2.0 * segment.c + t * 3.0 * segment.d ) ) ).xyz;
 
-  var viewDir = camera.worldPos - cp;
+  var viewDir = camera.worldPos - cp.xyz;
   var binorm = normalize( cross( ct, viewDir ) );
 
   var thickness = 0.05;
   var side = f32(vSide) * 2.0 - 1.0;
-  cp += side*binorm * thickness;
+  var finalP = cp.xyz + side*binorm * thickness;
+
+  var absV = segment.absV.x * (1.0-t) + segment.absV.y * t;
    
   // cp = curves[curveIndex].anchors[segIndex].p;
   return RibbonVertexOutput(
-    camera.viewProj * vec4f(cp, 1.0),
-    side, rawp, f32(curveIndex)
+    camera.viewProj * vec4f(finalP, 1.0),
+    side, rawp, f32(curveIndex), absV, cp.w
   );
 
 }
@@ -333,12 +347,17 @@ fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
   var s = varyings.side;
   var p = varyings.p;
   var ci = varyings.ci;
-  var lum = p;
+  var absV = varyings.absV;
   // return vec4f(lum, lum, lum, 1.0);
+  
+  var life = uTime - varyings.ct;
+  var lifeFade = 1.0 - smoothstep(0.0, 0.01, life);
+  
+  var lum = pow( p, 0.5) * lifeFade;
 
-  var uvs: vec2f = vec2f(p*3.0 + ci*.234, s*0.5+0.5);
+  var uvs: vec2f = vec2f(absV*0.1 + ci*.234, s*0.5+0.5);
 
-  return textureSample(tDiffuse, tSampler, uvs)*lum;
+  return textureSample(tDiffuse, tSampler, uvs) - 1.0 + lum;
 }
 
 `
@@ -358,6 +377,7 @@ export default class GpuCurves implements IRenderable {
   readonly cursorsBuffer: GPUBuffer
   readonly anchorsBuffer: GPUBuffer
   readonly cubicCoeffBuffer: GPUBuffer
+  readonly renderUniformBuffer: GPUBuffer
 
   readonly numSegments: number
   private updateCurvesSource : WgslSource
@@ -397,12 +417,12 @@ export default class GpuCurves implements IRenderable {
     this.anchorsBuffer = device.createBuffer({
       label: "GpuCurves Anchors Buffer",
       size: numCurves * ( ( numAnchors+3) * ANCHOR_BYTE_SIZE + CURVE_META_BYTE_SIZE), // vec4f
-      usage: GPUBufferUsage.STORAGE
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
     })
 
     this.cubicCoeffBuffer = device.createBuffer({
       label: "GpuCurves Cubic Coeff Buffer",
-      size: numCurves * (numAnchors * 4 * 4 * 4), // vec4f
+      size: numCurves * (numAnchors * 4 * 4 * 5), // vec4f
       usage: GPUBufferUsage.STORAGE
     })
 
@@ -503,15 +523,26 @@ export default class GpuCurves implements IRenderable {
 
     ])
 
+    this.renderUniformBuffer = device.createBuffer({
+      size: 4,
+      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
     this.ready.then( ()=>{
       this.debugAnchorsBindGroup = this.debugAnchorsSource.createBindGroup( 1, [
         { binding: 0, resource: { buffer: this.anchorsBuffer } },
         { binding: 1, resource: { buffer: this.cubicCoeffBuffer } },
         { binding: 2, resource: this.trailDiffuseTex.texture!.createView() },
         { binding: 3, resource: sampler },
+        { binding: 4, resource: {buffer: this.renderUniformBuffer } },
       ])
     })
 
+  }
+
+  reset(){
+    const anchorsBufferByteSize = this.numCurves * ( ( this.numAnchors+3) * ANCHOR_BYTE_SIZE + CURVE_META_BYTE_SIZE)
+    this.device.queue.writeBuffer(this.anchorsBuffer, 0, new Float32Array( anchorsBufferByteSize/4 ).buffer)
   }
 
 
@@ -528,6 +559,11 @@ export default class GpuCurves implements IRenderable {
   addedToRenderer(renderer: Renderer): void {
 
     renderer.defaultPass.beforeRender(() => {
+
+      // update rendering uniforms
+
+      const time = performance.now() * 0.00001;
+      this.device.queue.writeBuffer(this.renderUniformBuffer, 0, new Float32Array([time]).buffer)
 
       // update cursors buffer here
       
