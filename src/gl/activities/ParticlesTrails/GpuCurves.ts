@@ -86,9 +86,9 @@ seg : [7 => 15 => 0 => 3] , length 16-1 = 15, mod 16
 
 const WGSL_UpdateCurves = (numAnchors: number, numCurves: number) =>
 /* wgsl */`
-override numCurves: u32 = ${numCurves};
 override segmentLength = 0.1;
 override numAnchors: u32 = ${numAnchors};
+override C_workgroup_X: u32 = ${numCurves};
 
 const X_AXIS = vec3f(1.0, 0.0, 0.0);
 
@@ -106,7 +106,7 @@ fn MakeAnchor( cursor: Anchor, p: vec3f, t: vec3f, absV: f32 ) -> Anchor {
   return Anchor( vec4<f32>( p, cursor.p.w ), t, absV);
 }
 
-@compute @workgroup_size(numCurves)
+@compute @workgroup_size(C_workgroup_X)
 fn updateCurves(@builtin(global_invocation_id) globalId: vec3<u32>) {
   
   let curve = &curves[globalId.x];
@@ -317,7 +317,7 @@ fn vertexRibbon(
   var viewDir = camera.worldPos - cp.xyz;
   var binorm = normalize( cross( ct, viewDir ) );
 
-  var thickness = 0.05;
+  var thickness = 0.01;
   var side = f32(vSide) * 2.0 - 1.0;
   var finalP = cp.xyz + side*binorm * thickness;
 
@@ -351,11 +351,13 @@ fn fragmentRibbon( varyings: RibbonVertexOutput) -> @location(0) vec4f {
   // return vec4f(lum, lum, lum, 1.0);
   
   var life = uTime - varyings.ct;
-  var lifeFade = 1.0 - smoothstep(0.0, 0.01, life);
+  var lifeFade = 1.0 - smoothstep(0.0, 0.003, life);
   
   var lum = pow( p, 0.5) * lifeFade;
 
   var uvs: vec2f = vec2f(absV*0.1 + ci*.234, s*0.5+0.5);
+
+  lum *= .7;
 
   return textureSample(tDiffuse, tSampler, uvs) - 1.0 + lum;
 }
@@ -397,6 +399,7 @@ export default class GpuCurves implements IRenderable {
   private trailDiffuseTex: TextureResource;
 
   readonly perAnchorsDispatch: [dispatchX:number, dispatchY:number, wgSize_X: number, wgSize_Y: number];
+  readonly perCurvesDispatch: [dispatchX:number, wgSize_X: number];
 
   private _curveBehaviour: CurveBehaviour | null = null;
 
@@ -458,13 +461,22 @@ export default class GpuCurves implements IRenderable {
     const maxInvokation = device.limits.maxComputeInvocationsPerWorkgroup
     const C_workgroup_X = Math.min( maxInvokation, numAnchors );
     const C_workgroup_Y = Math.min( maxInvokation / C_workgroup_X, numCurves );
-
+    
     this.perAnchorsDispatch = [
       Math.ceil( numAnchors / C_workgroup_X ),
       Math.ceil( numCurves / C_workgroup_Y ),
       C_workgroup_X,
       C_workgroup_Y
     ]
+    
+    const PC_workgroup_X = Math.min( device.limits.maxComputeWorkgroupSizeX, numCurves );
+    this.perCurvesDispatch = [
+      Math.ceil( numCurves / PC_workgroup_X ),
+      PC_workgroup_X,
+    ]
+
+    console.log(this.perCurvesDispatch)
+
 
     console.log( 'numAnchors', numAnchors, 'numCurves', numCurves, 'maxInvokation', maxInvokation)
     console.log('C_workgroup_X', C_workgroup_X, 'C_workgroup_Y', C_workgroup_Y, 'disp X', this.perAnchorsDispatch[0], 'disp Y', this.perAnchorsDispatch[1] )
@@ -478,9 +490,9 @@ export default class GpuCurves implements IRenderable {
 
       this.updateCurvesSource.createComputePipelineAsync('updateCurves', {
         constants: {
-          numCurves,
           segmentLength,
           numAnchors,
+          C_workgroup_X : this.perCurvesDispatch[1],
         }
       }).then(pipeline => {
         this.updateCurvesPipeline = pipeline
@@ -575,7 +587,7 @@ export default class GpuCurves implements IRenderable {
 
       pass.setPipeline(this.updateCurvesPipeline)
       pass.setBindGroup(0, this.updateCurveBindGroup)
-      pass.dispatchWorkgroups(1)
+      pass.dispatchWorkgroups(this.perCurvesDispatch[0])
 
       this._curveBehaviour?.animateCurve(pass)
 

@@ -18,6 +18,7 @@ import GpuCurves, { type CurveBehaviour } from "./GpuCurves";
 import CurveCursorsSource from "./CurveCursorsSource";
 import CurvePaintBehaviour from "./CurvePaintBehaviour";
 import CurveTeleportBehaviour from "./CurveTeleportBehaviour";
+import CurveTeleportBehaviour2 from "./CurveTeleportBehaviour2";
 
 const V3_1 = vec3.create()
 const V3_2 = vec3.create()
@@ -26,6 +27,14 @@ const PROJ_PLANE = new Plane( )
 PROJ_PLANE.normal.set( [0,0,1] )
 
 const RAY = new Ray()
+
+
+enum BehaviourType {
+  PAINT,
+  TELEPORT,
+  TELEPORT2
+}
+const expe : BehaviourType = BehaviourType.PAINT 
 
 export default class ParticlesTrailActivity extends BaseActivity {
 
@@ -68,8 +77,15 @@ export default class ParticlesTrailActivity extends BaseActivity {
     
     this.gpuCurves = new GpuCurves( engine.device, 128, 256, 0.1)
 
-    this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
-    // this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )
+    if( expe === BehaviourType.PAINT ){
+      this.behaviour = new CurvePaintBehaviour( engine.device, this.gpuCurves )
+    }
+    
+    if( expe === BehaviourType.TELEPORT ){
+      this.behaviour = new CurveTeleportBehaviour( engine.device, this.gpuCurves )
+    }
+
+    this.behaviour = new CurveTeleportBehaviour2( engine.device, this.gpuCurves )
     
     this.gpuCurves.setCurveBehaviour( this.behaviour )
 
