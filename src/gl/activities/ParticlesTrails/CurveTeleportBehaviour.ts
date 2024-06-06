@@ -38,6 +38,10 @@ fn updateCursors(@builtin(global_invocation_id) globalId: vec3<u32>) {
   cursors[globalId.x].p = vec4f( pos, cursor.p.w );
   cursors[globalId.x].t = tangent;
 }
+
+
+
+@group(0) @binding(0) var<storage> bones: array<mat4x4f>;
 `
 
 

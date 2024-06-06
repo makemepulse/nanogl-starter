@@ -1,4 +1,5 @@
 import { ResourceType, WgslReflect, type Attribute, type VariableInfo } from "wgsl_reflect";
+import { Uniform } from "./Uniforms";
 
 
 type DepthStencilOptions = Partial<GPUDepthStencilState>
@@ -463,6 +464,13 @@ export default class WgslSource {
     // console.log( pipelineDescriptor )
     return this.device.createRenderPipelineAsync( pipelineDescriptor );
 
+  }
+
+
+  createUniform( name: string ): Uniform {
+    const varinfos = this._ast.uniforms.find( v => v.name === name )
+    if( varinfos === undefined ) throw new Error(`Variable ${name} not found in shader`)
+    return new Uniform( this.device, varinfos )
   }
 
 

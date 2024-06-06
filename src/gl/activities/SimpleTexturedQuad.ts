@@ -47,6 +47,15 @@ export default class SimpleTexturedQuad extends Node {
         shaderLocation: 1,
       }],
     };
+    // WGSL
+    // TS
+device.createBindGroupLayout({
+  entries: [
+    { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: {type: 'uniform'} },
+    { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+    { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: {} },
+  ],
+}),
 
   
     this.pipeline = device.createRenderPipeline({

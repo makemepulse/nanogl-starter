@@ -7,6 +7,7 @@ import type { PointCloudData } from "./pcs/PointCloudData";
 import Time from "../../core/Time";
 import { SimplexNoise } from "../../wgsl/SimplexNoise";
 import { easeInOutCubic, easeInOutQuad } from "../../math/ease";
+import type { Uniform } from "../../core/Uniforms";
 
 const V3A = vec3.create()
 const V3B = vec3.create()
@@ -129,19 +130,20 @@ export default class CurveTeleportBehaviour2 implements CurveBehaviour {
   translation = vec3.create()
 
   cursorsDataBuffer: GPUBuffer
-  uniformsBuffer: GPUBuffer
-  uniformsData = new Float32Array(4)
+  // uniformsBuffer: GPUBuffer
+  // uniformsData = new Float32Array(4)
   progress = 0;
 
   currentPos = vec3.create()
+  motionData: Uniform;
 
   constructor( private device: GPUDevice, private curves: GpuCurves ) {
     
-    this.uniformsBuffer = device.createBuffer({
-      label: "CurveTeleportBehaviour2 Uniforms Buffer",
-      size: 16,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    })
+    // this.uniformsBuffer = device.createBuffer({
+    //   label: "CurveTeleportBehaviour2 Uniforms Buffer",
+    //   size: 16,
+    //   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    // })
     
     this.cursors = new Float32Array(curves.numCurves * 4 * 3)
 
@@ -168,11 +170,12 @@ export default class CurveTeleportBehaviour2 implements CurveBehaviour {
 
 
     this.updateCursorsSource = new WgslSource(device, WGSL_UpdateCursorsCurve       (curves.numAnchors, curves.numCurves     ), 'CurveTeleportBehaviour Update cursors'     )
+    this.motionData = this.updateCursorsSource.createUniform( 'motionDatas' )
     
     this.updateCursorsBindGroup = this.updateCursorsSource.createBindGroup( 0, [
       { binding: 0, resource: { buffer: this.curves.cursorsBuffer } },
       { binding: 1, resource: { buffer: this.cursorsDataBuffer } },
-      { binding: 2, resource: { buffer: this.uniformsBuffer } },
+      { binding: 2, resource: { buffer: this.motionData.getBuffer() } },
     ])
 
     this.updateCursorsSource.createComputePipelineAsync('updateCursors', {
@@ -182,6 +185,7 @@ export default class CurveTeleportBehaviour2 implements CurveBehaviour {
     }).then(pipeline => {
       this.updateCursorsPipeline = pipeline
     })
+
 
   }
 
@@ -238,10 +242,13 @@ export default class CurveTeleportBehaviour2 implements CurveBehaviour {
     
     this.progress += Time.dt * 3
     this.progress = Math.min(1, this.progress)
-    this.uniformsData[0] = easeInOutQuad(this.progress)
-    this.uniformsData[1] = performance.now() * 0.00001
+
+    this.motionData.member('progress').value = easeInOutQuad(this.progress)
+    this.motionData.member('time').value = performance.now() * 0.00001
+    // this.uniformsData[0] = easeInOutQuad(this.progress)
+    // this.uniformsData[1] = performance.now() * 0.00001
     
-    this.device.queue.writeBuffer( this.uniformsBuffer, 0, this.uniformsData )
+    this.motionData._update()
 
     pass.setPipeline(this.updateCursorsPipeline)
     pass.setBindGroup(0, this.updateCursorsBindGroup)
